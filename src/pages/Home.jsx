@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 function Home() {
   const [musicais, setMusicais] = useState([])
   const [busca, setBusca] = useState("")
+  const [ordenacao, setOrdenacao] = useState("melhor")
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -20,31 +21,73 @@ function Home() {
     buscarMusicais()
   }, [])
 
-  const musicaisFiltrados = musicais.filter(musical =>
-    musical.titulo.toLowerCase().includes(busca.toLowerCase())
-  )
+  const musicaisFiltrados = musicais
+    .filter(musical =>
+      musical.titulo.toLowerCase().includes(busca.toLowerCase())
+    )
+    .map(musical => ({
+      ...musical,
+      media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0
+    }))
+    .sort((a, b) => {
+      if (ordenacao === "melhor") return b.media - a.media
+      if (ordenacao === "pior") return a.media - b.media
+      if (ordenacao === "mais-votados") return b.totalVotos - a.totalVotos
+      if (ordenacao === "menos-votados") return a.totalVotos - b.totalVotos
+      if (ordenacao === "az") return a.titulo.localeCompare(b.titulo, "pt")
+      if (ordenacao === "za") return b.titulo.localeCompare(a.titulo, "pt")
+      return 0
+    })
 
   return (
     <main>
       <p className="section-label">Musicais Brasileiros Database</p>
-      <h1 className="page-title">Musicais Temporada 2025/2026</h1>
+      <h1 className="page-title">Todos os Musicais</h1>
 
-      <input
-        type="text"
-        placeholder="Buscar musical..."
-        value={busca}
-        onChange={e => setBusca(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "12px 16px",
-          border: "1px solid #e8e8e4",
-          borderRadius: "8px",
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: "15px",
-          marginBottom: "24px",
-          outline: "none"
-        }}
-      />
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+        <input
+          type="text"
+          placeholder="Buscar musical..."
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          style={{
+            flex: 1,
+            minWidth: "200px",
+            padding: "12px 16px",
+            border: "1px solid #e8e8e4",
+            borderRadius: "8px",
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: "15px",
+            outline: "none"
+          }}
+        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
+            Organizar por
+          </label>
+          <select
+            value={ordenacao}
+            onChange={e => setOrdenacao(e.target.value)}
+            style={{
+              padding: "12px 16px",
+              border: "1px solid #e8e8e4",
+              borderRadius: "8px",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "15px",
+              background: "#fff",
+              cursor: "pointer",
+              outline: "none"
+            }}
+          >
+            <option value="melhor">Melhor avaliação</option>
+            <option value="pior">Pior avaliação</option>
+            <option value="mais-votados">Mais votados</option>
+            <option value="menos-votados">Menos votados</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+          </select>
+        </div>
+      </div>
 
       <hr className="divider" />
 
@@ -73,7 +116,7 @@ function Home() {
                 <p className="card-meta">Direção: {musical.direcao || "—"}</p>
                 <div className="rating-badge">
                   ★ {musical.totalVotos > 0
-                    ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
+                    ? musical.media.toFixed(1)
                     : "—"}
                   <span className="rating-votos">
                     ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
