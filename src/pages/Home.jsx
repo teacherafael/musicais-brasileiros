@@ -48,36 +48,42 @@ function Home() {
 
       <hr className="divider" />
 
-      {musicaisFiltrados.length === 0 ? (
-        <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
-      ) : (
-        musicaisFiltrados.map(musical => (
-          <div
-            key={musical.id}
-            className="card-musical"
-            onClick={() => navigate(`/musical/${musical.id}`)}
-          >
-            <div className="card-poster">
-              {musical.capa
-                ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                : musical.titulo
-              }
-            </div>
-            <div className="card-info">
-              <p className="card-titulo">{musical.titulo}</p>
-              <p className="card-meta">Direção: {musical.direcao || "—"}</p>
-              <div className="rating-badge">
-                ★ {musical.totalVotos > 0
-                  ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
-                  : "—"}
-                <span className="rating-votos">
-                  ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
-                </span>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: "16px"
+      }}>
+        {musicaisFiltrados.length === 0 ? (
+          <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
+        ) : (
+          musicaisFiltrados.map(musical => (
+            <div
+              key={musical.id}
+              className="card-musical"
+              onClick={() => navigate(`/musical/${musical.id}`)}
+            >
+              <div className="card-poster" style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+                {musical.capa
+                  ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+                  : musical.titulo
+                }
+              </div>
+              <div className="card-info" style={{ width: "100%" }}>
+                <p className="card-titulo">{musical.titulo}</p>
+                <p className="card-meta">Direção: {musical.direcao || "—"}</p>
+                <div className="rating-badge">
+                  ★ {musical.totalVotos > 0
+                    ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
+                    : "—"}
+                  <span className="rating-votos">
+                    ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))
-      )}
+          ))
+        )}
+      </div>
     </main>
   )
 }
