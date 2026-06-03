@@ -83,7 +83,12 @@ function Musical() {
       </button>
 
       <div className="musical-header">
-        <div className="musical-poster">{musical.titulo}</div>
+        <div className="musical-poster">
+  {musical.capa
+    ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
+    : musical.titulo
+  }
+</div>
         <div>
           <h1 className="musical-titulo">{musical.titulo}</h1>
           <p className="musical-meta">Direção: {musical.direcao || "—"}</p>

@@ -30,7 +30,12 @@ function Home() {
           className="card-musical"
           onClick={() => navigate(`/musical/${musical.id}`)}
         >
-          <div className="card-poster">{musical.titulo}</div>
+          <div className="card-poster">
+            {musical.capa
+              ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+              : musical.titulo
+            }
+          </div>
           <div className="card-info">
             <p className="card-titulo">{musical.titulo}</p>
             <p className="card-meta">Direção: {musical.direcao || "—"}</p>
