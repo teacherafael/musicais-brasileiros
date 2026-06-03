@@ -4,13 +4,53 @@ import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
+function Estrelas({ votoAtual, onVotar }) {
+  const [hover, setHover] = useState(0)
+
+  function calcularValor(e, estrela) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    return x < rect.width / 2 ? estrela - 0.5 : estrela
+  }
+
+  function renderEstrela(estrela, valor) {
+    const cheia = valor >= estrela
+    const meia = valor >= estrela - 0.5 && valor < estrela
+    if (cheia) return "★"
+    if (meia) return "⯨"
+    return "★"
+  }
+
+  function corEstrela(estrela, valor) {
+    if (valor >= estrela - 0.5) return "#F5C518"
+    return "#ddd"
+  }
+
+  const valorAtivo = hover || votoAtual || 0
+
+  return (
+    <div style={{ display: "flex", gap: "4px", fontSize: "36px", cursor: "pointer", marginBottom: "8px" }}>
+      {[1, 2, 3, 4, 5].map(estrela => (
+        <span
+          key={estrela}
+          onClick={e => onVotar(calcularValor(e, estrela))}
+          onMouseMove={e => setHover(calcularValor(e, estrela))}
+          onMouseLeave={() => setHover(0)}
+          style={{ color: corEstrela(estrela, valorAtivo), userSelect: "none", lineHeight: 1 }}
+        >
+          {renderEstrela(estrela, valorAtivo)}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function Musical() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [musical, setMusical] = useState(null)
   const [usuario, setUsuario] = useState(null)
   const [votoAtual, setVotoAtual] = useState(null)
-  const [hover, setHover] = useState(0)
   const [comentarios, setComentarios] = useState([])
   const [textoComentario, setTextoComentario] = useState("")
   const [editandoComentario, setEditandoComentario] = useState(null)
@@ -32,9 +72,7 @@ function Musical() {
         const dados = { id: d.id, ...d.data() }
         if (dados.userId) {
           const votoSnap = await getDoc(doc(db, "musicais", id, "votos", dados.userId))
-          if (votoSnap.exists()) {
-            dados.estrelasComentario = votoSnap.data().estrelas
-          }
+          if (votoSnap.exists()) dados.estrelasComentario = votoSnap.data().estrelas
         }
         return dados
       }))
@@ -103,9 +141,7 @@ function Musical() {
 
   async function salvarEdicao(comentarioId) {
     if (!textoEdicao.trim()) return
-    await updateDoc(doc(db, "musicais", id, "comentarios", comentarioId), {
-      texto: textoEdicao
-    })
+    await updateDoc(doc(db, "musicais", id, "comentarios", comentarioId), { texto: textoEdicao })
     setComentarios(prev => prev.map(c =>
       c.id === comentarioId ? { ...c, texto: textoEdicao } : c
     ))
@@ -121,9 +157,7 @@ function Musical() {
 
   return (
     <main>
-      <button className="voltar" onClick={() => navigate("/")}>
-        ← Voltar
-      </button>
+      <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
 
       <div className="musical-header">
         <div className="musical-poster">
@@ -155,26 +189,10 @@ function Musical() {
       <hr className="divider" />
 
       <p className="avaliacao-titulo">
-        {votoAtual ? "Sua avaliação (clique para mudar)" : "Avalie este musical"}
+        {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
       </p>
-      <div className="estrelas-container">
-        {[1, 2, 3, 4, 5].map(estrela => (
-          <span
-            key={estrela}
-            className={`estrela ${estrela <= (hover || votoAtual || 0) ? "ativa" : ""}`}
-            onClick={() => votar(estrela)}
-            onMouseEnter={() => setHover(estrela)}
-            onMouseLeave={() => setHover(0)}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-      {votoAtual && (
-        <p style={{ fontSize: "13px", color: "#888", marginTop: "4px" }}>
-          Você votou {votoAtual} ★ — clique em outra estrela para mudar
-        </p>
-      )}
+
+      <Estrelas votoAtual={votoAtual} onVotar={votar} />
 
       <hr className="divider" />
 
@@ -187,9 +205,7 @@ function Musical() {
             onChange={e => setTextoComentario(e.target.value)}
             placeholder="Escreva um comentário..."
           />
-          <button className="btn-comentar" onClick={enviarComentario}>
-            Enviar comentário
-          </button>
+          <button className="btn-comentar" onClick={enviarComentario}>Enviar comentário</button>
         </div>
       ) : (
         <p className="login-aviso">Faça login para comentar.</p>
@@ -204,11 +220,10 @@ function Musical() {
               {c.nome}
               {c.estrelasComentario && (
                 <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>
-                  {"★".repeat(c.estrelasComentario)}
+                  {c.estrelasComentario} ★
                 </span>
               )}
             </p>
-
             {editandoComentario === c.id ? (
               <div>
                 <textarea
