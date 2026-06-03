@@ -118,9 +118,9 @@ main {
 }
 
 .card-poster {
-  width: 52px;
-  height: 72px;
-  background: #1a1a1a;
+  width: 70px;
+  height: 100px;
+  background: transparent;
   border-radius: 6px;
   flex-shrink: 0;
   display: flex;
@@ -174,9 +174,9 @@ main {
 }
 
 .musical-poster {
-  width: 90px;
-  height: 124px;
-  background: #1a1a1a;
+  width: 160px;
+  height: 220px;
+  background: transparent;
   border-radius: 8px;
   flex-shrink: 0;
   display: flex;
