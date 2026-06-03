@@ -27,7 +27,7 @@ function Home() {
   return (
     <main>
       <p className="section-label">Musicais Brasileiros Database</p>
-      <h1 className="page-title">Todos os Musicais</h1>
+      <h1 className="page-title">Musicais Temporada 2025/2026</h1>
 
       <input
         type="text"
