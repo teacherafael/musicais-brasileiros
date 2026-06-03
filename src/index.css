@@ -1,0 +1,348 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #f5f5f0;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+header {
+  background: #1a1a1a;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 900;
+  color: #F5C518;
+  text-decoration: none;
+}
+
+.logo span {
+  color: #ffffff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-user {
+  font-size: 14px;
+  color: #aaa;
+}
+
+.btn-login {
+  background: #F5C518;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-login:hover {
+  background: #e6b800;
+}
+
+.btn-sair {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-sair:hover {
+  border-color: #F5C518;
+  color: #F5C518;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 20px;
+}
+
+.card-musical {
+  background: #ffffff;
+  border: 1px solid #e8e8e4;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.card-musical:hover {
+  border-color: #F5C518;
+  transform: translateY(-1px);
+}
+
+.card-poster {
+  width: 52px;
+  height: 72px;
+  background: #1a1a1a;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 9px;
+  color: #F5C518;
+  text-align: center;
+  padding: 4px;
+  line-height: 1.3;
+}
+
+.card-info { flex: 1; }
+
+.card-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card-meta {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a1a1a;
+  color: #F5C518;
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.rating-votos {
+  color: #666;
+  font-size: 12px;
+}
+
+.musical-header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.musical-poster {
+  width: 90px;
+  height: 124px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  color: #F5C518;
+  text-align: center;
+  padding: 8px;
+  line-height: 1.3;
+}
+
+.musical-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.musical-meta {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.rating-grande {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: #1a1a1a;
+  color: #F5C518;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rating-grande-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 400;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e8e8e4;
+  margin: 24px 0;
+}
+
+.sinopse {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.75;
+  margin-bottom: 24px;
+}
+
+.avaliacao-titulo {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.estrelas-container {
+  display: flex;
+  gap: 8px;
+  font-size: 36px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.estrela {
+  color: #ddd;
+  transition: color 0.1s;
+  user-select: none;
+}
+
+.estrela.ativa {
+  color: #F5C518;
+}
+
+.voto-registrado {
+  font-size: 15px;
+  color: #444;
+  padding: 10px 16px;
+  background: #fffbe6;
+  border-radius: 8px;
+  border-left: 3px solid #F5C518;
+  margin-bottom: 8px;
+}
+
+.comentarios-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.comentario-form textarea {
+  width: 100%;
+  height: 90px;
+  padding: 12px;
+  border: 1px solid #e8e8e4;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.comentario-form textarea:focus {
+  outline: none;
+  border-color: #F5C518;
+}
+
+.btn-comentar {
+  background: #1a1a1a;
+  color: #F5C518;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-comentar:hover {
+  background: #333;
+}
+
+.comentario-item {
+  border-top: 1px solid #e8e8e4;
+  padding: 16px 0;
+}
+
+.comentario-nome {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.comentario-texto {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.65;
+}
+
+.login-aviso {
+  font-size: 14px;
+  color: #888;
+  font-style: italic;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+  margin-bottom: 24px;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.voltar:hover { color: #1a1a1a; }
