@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, orderBy, query } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, deleteDoc, orderBy, query } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -13,6 +13,8 @@ function Musical() {
   const [hover, setHover] = useState(0)
   const [comentarios, setComentarios] = useState([])
   const [textoComentario, setTextoComentario] = useState("")
+  const [editandoComentario, setEditandoComentario] = useState(null)
+  const [textoEdicao, setTextoEdicao] = useState("")
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -43,18 +45,29 @@ function Musical() {
 
   async function votar(estrelas) {
     if (!usuario) return alert("Faça login para votar.")
-    if (votoAtual) return alert("Você já votou neste musical.")
-    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-    await updateDoc(doc(db, "musicais", id), {
-      totalVotos: increment(1),
-      somaEstrelas: increment(estrelas)
-    })
+
+    if (votoAtual) {
+      await updateDoc(doc(db, "musicais", id), {
+        somaEstrelas: increment(estrelas - votoAtual)
+      })
+      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+      setMusical(prev => ({
+        ...prev,
+        somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual)
+      }))
+    } else {
+      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+      await updateDoc(doc(db, "musicais", id), {
+        totalVotos: increment(1),
+        somaEstrelas: increment(estrelas)
+      })
+      setMusical(prev => ({
+        ...prev,
+        totalVotos: prev.totalVotos + 1,
+        somaEstrelas: prev.somaEstrelas + estrelas
+      }))
+    }
     setVotoAtual(estrelas)
-    setMusical(prev => ({
-      ...prev,
-      totalVotos: prev.totalVotos + 1,
-      somaEstrelas: prev.somaEstrelas + estrelas
-    }))
   }
 
   async function enviarComentario() {
@@ -62,12 +75,31 @@ function Musical() {
     if (!textoComentario.trim()) return
     const novoComentario = {
       nome: usuario.displayName,
+      userId: usuario.uid,
       texto: textoComentario,
       data: new Date()
     }
     const docRef = await addDoc(collection(db, "musicais", id, "comentarios"), novoComentario)
     setComentarios(prev => [{ id: docRef.id, ...novoComentario }, ...prev])
     setTextoComentario("")
+  }
+
+  async function deletarComentario(comentarioId) {
+    if (!window.confirm("Apagar este comentário?")) return
+    await deleteDoc(doc(db, "musicais", id, "comentarios", comentarioId))
+    setComentarios(prev => prev.filter(c => c.id !== comentarioId))
+  }
+
+  async function salvarEdicao(comentarioId) {
+    if (!textoEdicao.trim()) return
+    await updateDoc(doc(db, "musicais", id, "comentarios", comentarioId), {
+      texto: textoEdicao
+    })
+    setComentarios(prev => prev.map(c =>
+      c.id === comentarioId ? { ...c, texto: textoEdicao } : c
+    ))
+    setEditandoComentario(null)
+    setTextoEdicao("")
   }
 
   if (!musical) return <main><p>Carregando...</p></main>
@@ -84,11 +116,11 @@ function Musical() {
 
       <div className="musical-header">
         <div className="musical-poster">
-  {musical.capa
-    ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
-    : musical.titulo
-  }
-</div>
+          {musical.capa
+            ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
+            : musical.titulo
+          }
+        </div>
         <div>
           <h1 className="musical-titulo">{musical.titulo}</h1>
           <p className="musical-meta">Direção: {musical.direcao || "—"}</p>
@@ -111,23 +143,26 @@ function Musical() {
 
       <hr className="divider" />
 
-      <p className="avaliacao-titulo">Avalie este musical</p>
-      {votoAtual ? (
-        <div className="voto-registrado">Você votou {votoAtual} ★</div>
-      ) : (
-        <div className="estrelas-container">
-          {[1, 2, 3, 4, 5].map(estrela => (
-            <span
-              key={estrela}
-              className={`estrela ${estrela <= (hover || 0) ? "ativa" : ""}`}
-              onClick={() => votar(estrela)}
-              onMouseEnter={() => setHover(estrela)}
-              onMouseLeave={() => setHover(0)}
-            >
-              ★
-            </span>
-          ))}
-        </div>
+      <p className="avaliacao-titulo">
+        {votoAtual ? "Sua avaliação (clique para mudar)" : "Avalie este musical"}
+      </p>
+      <div className="estrelas-container">
+        {[1, 2, 3, 4, 5].map(estrela => (
+          <span
+            key={estrela}
+            className={`estrela ${estrela <= (hover || votoAtual || 0) ? "ativa" : ""}`}
+            onClick={() => votar(estrela)}
+            onMouseEnter={() => setHover(estrela)}
+            onMouseLeave={() => setHover(0)}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+      {votoAtual && (
+        <p style={{ fontSize: "13px", color: "#888", marginTop: "4px" }}>
+          Você votou {votoAtual} ★ — clique em outra estrela para mudar
+        </p>
       )}
 
       <hr className="divider" />
@@ -155,7 +190,40 @@ function Musical() {
         comentarios.map(c => (
           <div key={c.id} className="comentario-item">
             <p className="comentario-nome">{c.nome}</p>
-            <p className="comentario-texto">{c.texto}</p>
+
+            {editandoComentario === c.id ? (
+              <div>
+                <textarea
+                  value={textoEdicao}
+                  onChange={e => setTextoEdicao(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginBottom: "8px" }}
+                />
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button className="btn-comentar" onClick={() => salvarEdicao(c.id)}>Salvar</button>
+                  <button className="btn-sair" onClick={() => setEditandoComentario(null)}>Cancelar</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="comentario-texto">{c.texto}</p>
+                {usuario && usuario.uid === c.userId && (
+                  <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                    <button
+                      onClick={() => { setEditandoComentario(c.id); setTextoEdicao(c.texto) }}
+                      style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => deletarComentario(c.id)}
+                      style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0 }}
+                    >
+                      Apagar
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         ))
       )}
