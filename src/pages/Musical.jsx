@@ -28,7 +28,17 @@ function Musical() {
     async function buscarComentarios() {
       const q = query(collection(db, "musicais", id, "comentarios"), orderBy("data", "desc"))
       const snap = await getDocs(q)
-      setComentarios(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      const lista = await Promise.all(snap.docs.map(async d => {
+        const dados = { id: d.id, ...d.data() }
+        if (dados.userId) {
+          const votoSnap = await getDoc(doc(db, "musicais", id, "votos", dados.userId))
+          if (votoSnap.exists()) {
+            dados.estrelasComentario = votoSnap.data().estrelas
+          }
+        }
+        return dados
+      }))
+      setComentarios(lista)
     }
     buscarMusical()
     buscarComentarios()
@@ -45,7 +55,6 @@ function Musical() {
 
   async function votar(estrelas) {
     if (!usuario) return alert("Faça login para votar.")
-
     if (votoAtual) {
       await updateDoc(doc(db, "musicais", id), {
         somaEstrelas: increment(estrelas - votoAtual)
@@ -80,7 +89,9 @@ function Musical() {
       data: new Date()
     }
     const docRef = await addDoc(collection(db, "musicais", id, "comentarios"), novoComentario)
-    setComentarios(prev => [{ id: docRef.id, ...novoComentario }, ...prev])
+    const votoSnap = await getDoc(doc(db, "musicais", id, "votos", usuario.uid))
+    const estrelasComentario = votoSnap.exists() ? votoSnap.data().estrelas : null
+    setComentarios(prev => [{ id: docRef.id, ...novoComentario, estrelasComentario }, ...prev])
     setTextoComentario("")
   }
 
@@ -189,7 +200,14 @@ function Musical() {
       ) : (
         comentarios.map(c => (
           <div key={c.id} className="comentario-item">
-            <p className="comentario-nome">{c.nome}</p>
+            <p className="comentario-nome">
+              {c.nome}
+              {c.estrelasComentario && (
+                <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>
+                  {"★".repeat(c.estrelasComentario)}
+                </span>
+              )}
+            </p>
 
             {editandoComentario === c.id ? (
               <div>
