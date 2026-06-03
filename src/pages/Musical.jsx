@@ -169,6 +169,8 @@ function Musical() {
         <div>
           <h1 className="musical-titulo">{musical.titulo}</h1>
           <p className="musical-meta">Direção: {musical.direcao || "—"}</p>
+{musical.direcaoMusical && <p className="musical-meta">Direção musical: {musical.direcaoMusical}</p>}
+{musical.producao && <p className="musical-meta">Produção: {musical.producao}</p>}
           {media ? (
             <div className="rating-grande">
               ★ {media}
@@ -185,6 +187,13 @@ function Musical() {
       </div>
 
       <p className="sinopse">{musical.sinopse}</p>
+
+{musical.elenco && (
+  <div style={{ marginBottom: "24px" }}>
+    <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+    <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elenco}</p>
+  </div>
+)}
 
       <hr className="divider" />
 
