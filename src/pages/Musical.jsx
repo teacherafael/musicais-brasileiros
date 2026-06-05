@@ -195,6 +195,13 @@ function Musical() {
   </div>
 )}
 
+{musical.elencoAdicional && (
+  <div style={{ marginBottom: "24px" }}>
+    <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
+    <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elencoAdicional}</p>
+  </div>
+)}
+
       <hr className="divider" />
 
       <p className="avaliacao-titulo">
