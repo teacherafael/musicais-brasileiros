@@ -93,7 +93,7 @@ function Home() {
 
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
         gap: "16px"
       }}>
         {musicaisFiltrados.length === 0 ? (
