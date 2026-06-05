@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 function Home() {
   const [musicais, setMusicais] = useState([])
   const [busca, setBusca] = useState("")
-  const [ordenacao, setOrdenacao] = useState("melhor")
+  const [ordenacao, setOrdenacao] = useState("recentes")
   const navigate = useNavigate()
 
   useEffect(() => {
