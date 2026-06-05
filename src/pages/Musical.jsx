@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs,
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
+import ReportarErro from "../components/ReportarErro"
 
 function Estrelas({ votoAtual, onVotar }) {
   const [hover, setHover] = useState(0)
@@ -212,6 +213,9 @@ function Musical() {
 
       <Estrelas votoAtual={votoAtual} onVotar={votar} />
 
+      <hr className="divider" />
+
+      <ReportarErro musicalId={id} musicalTitulo={musical.titulo} usuario={usuario} />
       <hr className="divider" />
 
       <h2 className="comentarios-titulo">Comentários</h2>
