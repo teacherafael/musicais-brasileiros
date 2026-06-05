@@ -36,6 +36,16 @@ function Home() {
       if (ordenacao === "menos-votados") return a.totalVotos - b.totalVotos
       if (ordenacao === "az") return a.titulo.localeCompare(b.titulo, "pt")
       if (ordenacao === "za") return b.titulo.localeCompare(a.titulo, "pt")
+      if (ordenacao === "recentes") {
+        const dataA = a.dataCriacao?.seconds || 0
+        const dataB = b.dataCriacao?.seconds || 0
+        return dataB - dataA
+      }
+      if (ordenacao === "antigos") {
+        const dataA = a.dataCriacao?.seconds || 0
+        const dataB = b.dataCriacao?.seconds || 0
+        return dataA - dataB
+      }
       return 0
     })
 
@@ -83,8 +93,10 @@ function Home() {
             <option value="pior">Pior avaliação</option>
             <option value="mais-votados">Mais votados</option>
             <option value="menos-votados">Menos votados</option>
-            <option value="az">A → Z</option>
-            <option value="za">Z → A</option>
+<option value="az">A → Z</option>
+<option value="za">Z → A</option>
+<option value="recentes">Adicionados recentemente</option>
+<option value="antigos">Adicionados anteriormente</option>
           </select>
         </div>
       </div>
