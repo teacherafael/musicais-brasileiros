@@ -51,8 +51,11 @@ function Home() {
 
   return (
     <main>
-      <p className="section-label">Musicais Brasileiros Database</p>
-      <h1 className="page-title">Todos os Musicais</h1>
+<p className="section-label">Musicais Brasileiros Database</p>
+<h1 className="page-title">Descubra musicais brasileiros</h1>
+<p style={{ fontSize: "18px", color: "#888", marginBottom: "24px", marginTop: "-8px" }}>
+  {musicais.length} {musicais.length === 1 ? "musical" : "musicais"} na database
+</p>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
         <input
