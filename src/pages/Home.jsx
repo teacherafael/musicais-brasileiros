@@ -89,14 +89,14 @@ function Home() {
               outline: "none"
             }}
           >
-            <option value="melhor">Melhor avaliação</option>
-            <option value="pior">Pior avaliação</option>
-            <option value="mais-votados">Mais votados</option>
-            <option value="menos-votados">Menos votados</option>
+            <option value="recentes">Adicionados recentemente</option>
+<option value="antigos">Adicionados anteriormente</option>
+<option value="melhor">Melhor avaliação</option>
+<option value="pior">Pior avaliação</option>
+<option value="mais-votados">Mais votados</option>
+<option value="menos-votados">Menos votados</option>
 <option value="az">A → Z</option>
 <option value="za">Z → A</option>
-<option value="recentes">Adicionados recentemente</option>
-<option value="antigos">Adicionados anteriormente</option>
           </select>
         </div>
       </div>
