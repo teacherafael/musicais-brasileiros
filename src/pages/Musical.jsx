@@ -174,6 +174,9 @@ function Musical() {
 {musical.producao && <p className="musical-meta">Produção: {musical.producao}</p>}
 {musical.ano && <p className="musical-meta">Ano: {musical.ano}</p>}
 {musical.teatro && <p className="musical-meta">Teatro de estreia: {musical.teatro}</p>}
+{musical.versionista && <p className="musical-meta">Versionista: {musical.versionista}</p>}
+{musical.textoOriginal && <p className="musical-meta">Texto original: {musical.textoOriginal}</p>}
+{musical.musicaOriginal && <p className="musical-meta">Música original: {musical.musicaOriginal}</p>}
           {media ? (
             <div className="rating-grande">
               ★ {media}
