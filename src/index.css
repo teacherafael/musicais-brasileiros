@@ -346,3 +346,12 @@ main {
 }
 
 .voltar:hover { color: #1a1a1a; }
+@media (max-width: 480px) {
+  .grid-musicais {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .card-poster-home {
+    height: 220px !important;
+  }
+}

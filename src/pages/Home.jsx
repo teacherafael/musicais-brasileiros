@@ -91,11 +91,11 @@ function Home() {
 
       <hr className="divider" />
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-        gap: "16px"
-      }}>
+      <div className="grid-musicais" style={{
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+  gap: "16px"
+}}>
         {musicaisFiltrados.length === 0 ? (
           <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
         ) : (
@@ -105,7 +105,7 @@ function Home() {
               className="card-musical"
               onClick={() => navigate(`/musical/${musical.id}`)}
             >
-              <div className="card-poster" style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+              <div className="card-poster card-poster-home" style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
                 {musical.capa
                   ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
                   : musical.titulo
@@ -128,7 +128,7 @@ function Home() {
         )}
       </div>
     </main>
-  )
+  )  
 }
 
 export default Home
