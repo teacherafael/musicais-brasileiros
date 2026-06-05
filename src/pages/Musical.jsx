@@ -168,11 +168,11 @@ function Musical() {
         </div>
         <div>
           <h1 className="musical-titulo">{musical.titulo}</h1>
-          <p className="musical-meta">Direção: {musical.direcao || "—"}</p>
-          {musical.ano && <p className="musical-meta">Ano: {musical.ano}</p>}
-{musical.teatro && <p className="musical-meta">Teatro de estreia: {musical.teatro}</p>}
+ <p className="musical-meta">Direção: {musical.direcao || "—"}</p>
 {musical.direcaoMusical && <p className="musical-meta">Direção musical: {musical.direcaoMusical}</p>}
 {musical.producao && <p className="musical-meta">Produção: {musical.producao}</p>}
+{musical.ano && <p className="musical-meta">Ano: {musical.ano}</p>}
+{musical.teatro && <p className="musical-meta">Teatro de estreia: {musical.teatro}</p>}
           {media ? (
             <div className="rating-grande">
               ★ {media}
