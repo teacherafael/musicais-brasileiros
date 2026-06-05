@@ -22,7 +22,13 @@ function Header() {
       <div className="header-right">
         {usuario ? (
           <>
-            <span className="header-user">Olá, {usuario.displayName}</span>
+            <span
+  className="header-user"
+  onClick={() => navigate(`/perfil/${usuario.uid}`)}
+  style={{ cursor: "pointer" }}
+>
+  Olá, {usuario.displayName}
+</span>
             <button className="btn-sair" onClick={sair}>Sair</button>
           </>
         ) : (

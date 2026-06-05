@@ -225,8 +225,12 @@ function Musical() {
       ) : (
         comentarios.map(c => (
           <div key={c.id} className="comentario-item">
-            <p className="comentario-nome">
-              {c.nome}
+            <p
+  className="comentario-nome"
+  onClick={() => navigate(`/perfil/${c.userId}`)}
+  style={{ cursor: "pointer" }}
+>
+  {c.nome}
               {c.estrelasComentario && (
                 <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>
                   {c.estrelasComentario} ★
