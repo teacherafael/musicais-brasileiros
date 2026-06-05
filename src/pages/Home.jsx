@@ -104,6 +104,14 @@ function Home() {
         </div>
       </div>
 
+<div style={{ marginBottom: "16px" }}>
+  <button
+    className="btn-comentar"
+    onClick={() => navigate("/sugestao")}
+  >
+    + Sugerir um musical
+  </button>
+</div>
       <hr className="divider" />
 
       <div className="grid-musicais" style={{
