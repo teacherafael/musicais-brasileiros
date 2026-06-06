@@ -23,14 +23,6 @@ function Estrelas({ votoAtual, onVotar }) {
     return x < rect.width / 2 ? estrela - 0.5 : estrela
   }
 
-  function renderEstrela(estrela, valor) {
-    const cheia = valor >= estrela
-    const meia = valor >= estrela - 0.5 && valor < estrela
-    if (cheia) return "★"
-    if (meia) return "⯨"
-    return "★"
-  }
-
   function corEstrela(estrela, valor) {
     if (valor >= estrela - 0.5) return "#F5C518"
     return "#ddd"
@@ -40,17 +32,36 @@ function Estrelas({ votoAtual, onVotar }) {
 
   return (
     <div style={{ display: "flex", gap: "4px", fontSize: "36px", cursor: "pointer", marginBottom: "8px" }}>
-      {[1, 2, 3, 4, 5].map(estrela => (
-        <span
-          key={estrela}
-          onClick={e => onVotar(calcularValor(e, estrela))}
-          onMouseMove={e => setHover(calcularValor(e, estrela))}
-          onMouseLeave={() => setHover(0)}
-          style={{ color: corEstrela(estrela, valorAtivo), userSelect: "none", lineHeight: 1 }}
-        >
-          {renderEstrela(estrela, valorAtivo)}
-        </span>
-      ))}
+      {[1, 2, 3, 4, 5].map(estrela => {
+        const cheia = valorAtivo >= estrela
+        const meia = valorAtivo >= estrela - 0.5 && valorAtivo < estrela
+
+        return (
+          <span
+            key={estrela}
+            onClick={e => onVotar(calcularValor(e, estrela))}
+            onMouseMove={e => setHover(calcularValor(e, estrela))}
+            onMouseLeave={() => setHover(0)}
+            style={{ position: "relative", display: "inline-block", userSelect: "none", lineHeight: 1 }}
+          >
+            {meia ? (
+              <>
+                <span style={{ color: "#ddd" }}>★</span>
+                <span style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  width: "50%",
+                  overflow: "hidden",
+                  color: "#F5C518"
+                }}>★</span>
+              </>
+            ) : (
+              <span style={{ color: cheia ? "#F5C518" : "#ddd" }}>★</span>
+            )}
+          </span>
+        )
+      })}
     </div>
   )
 }
