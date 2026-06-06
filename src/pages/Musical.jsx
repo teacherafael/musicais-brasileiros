@@ -5,6 +5,12 @@ import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import ReportarErro from "../components/ReportarErro"
 
+function formatarNome(nomeCompleto) {
+  if (!nomeCompleto) return "Anônimo"
+  const partes = nomeCompleto.trim().split(" ")
+  if (partes.length === 1) return partes[0]
+  return `${partes[0]} ${partes[1][0]}.`
+}
 function Estrelas({ votoAtual, onVotar }) {
   const [hover, setHover] = useState(0)
 
@@ -122,7 +128,8 @@ function Musical() {
     if (!usuario) return alert("Faça login para comentar.")
     if (!textoComentario.trim()) return
     const novoComentario = {
-      nome: usuario.displayName,
+      
+  nome: formatarNome(usuario.displayName),
       userId: usuario.uid,
       texto: textoComentario,
       data: new Date()
@@ -246,7 +253,7 @@ function Musical() {
   onClick={() => navigate(`/perfil/${c.userId}`)}
   style={{ cursor: "pointer" }}
 >
-  {c.nome}
+  {formatarNome(c.nome)}
               {c.estrelasComentario && (
                 <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>
                   {c.estrelasComentario} ★
