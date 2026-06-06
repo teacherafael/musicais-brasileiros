@@ -11,6 +11,7 @@ function formatarNome(nomeCompleto) {
   if (partes.length === 1) return partes[0]
   return `${partes[0]} ${partes[1][0]}.`
 }
+
 function Estrelas({ votoAtual, onVotar }) {
   const [hover, setHover] = useState(0)
 
@@ -58,6 +59,7 @@ function Musical() {
   const [musical, setMusical] = useState(null)
   const [usuario, setUsuario] = useState(null)
   const [votoAtual, setVotoAtual] = useState(null)
+  const [queroVer, setQueroVer] = useState(false)
   const [comentarios, setComentarios] = useState([])
   const [textoComentario, setTextoComentario] = useState("")
   const [editandoComentario, setEditandoComentario] = useState(null)
@@ -94,6 +96,8 @@ function Musical() {
       if (!usuario) return
       const votoSnap = await getDoc(doc(db, "musicais", id, "votos", usuario.uid))
       if (votoSnap.exists()) setVotoAtual(votoSnap.data().estrelas)
+      const queroVerSnap = await getDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
+      setQueroVer(queroVerSnap.exists())
     }
     buscarVoto()
   }, [usuario, id])
@@ -124,12 +128,28 @@ function Musical() {
     setVotoAtual(estrelas)
   }
 
+  async function toggleQueroVer() {
+    if (!usuario) return alert("Faça login para usar esta função.")
+    const ref = doc(db, "usuarios", usuario.uid, "queroVer", id)
+    if (queroVer) {
+      await deleteDoc(ref)
+      setQueroVer(false)
+    } else {
+      await setDoc(ref, {
+        musicalId: id,
+        titulo: musical.titulo,
+        capa: musical.capa || null,
+        direcao: musical.direcao || ""
+      })
+      setQueroVer(true)
+    }
+  }
+
   async function enviarComentario() {
     if (!usuario) return alert("Faça login para comentar.")
     if (!textoComentario.trim()) return
     const novoComentario = {
-      
-  nome: formatarNome(usuario.displayName),
+      nome: formatarNome(usuario.displayName),
       userId: usuario.uid,
       texto: textoComentario,
       data: new Date()
@@ -176,14 +196,14 @@ function Musical() {
         </div>
         <div>
           <h1 className="musical-titulo">{musical.titulo}</h1>
- <p className="musical-meta"><strong>Direção:</strong> {musical.direcao || "—"}</p>
-{musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {musical.direcaoMusical}</p>}
-{musical.producao && <p className="musical-meta"><strong>Produção:</strong> {musical.producao}</p>}
-{musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
-{musical.teatro && <p className="musical-meta"><strong>Teatro de estreia:</strong> {musical.teatro}</p>}
-{musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {musical.versionista}</p>}
-{musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {musical.textoOriginal}</p>}
-{musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {musical.musicaOriginal}</p>}
+          <p className="musical-meta"><strong>Direção:</strong> {musical.direcao || "—"}</p>
+          {musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {musical.direcaoMusical}</p>}
+          {musical.producao && <p className="musical-meta"><strong>Produção:</strong> {musical.producao}</p>}
+          {musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
+          {musical.teatro && <p className="musical-meta"><strong>Teatro de estreia:</strong> {musical.teatro}</p>}
+          {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {musical.versionista}</p>}
+          {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {musical.textoOriginal}</p>}
+          {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {musical.musicaOriginal}</p>}
           {media ? (
             <div className="rating-grande">
               ★ {media}
@@ -199,21 +219,42 @@ function Musical() {
         </div>
       </div>
 
+      <button
+        onClick={toggleQueroVer}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          background: queroVer ? "#F5C518" : "transparent",
+          color: queroVer ? "#1a1a1a" : "#888",
+          border: "1px solid",
+          borderColor: queroVer ? "#F5C518" : "#ccc",
+          borderRadius: "6px",
+          padding: "8px 16px",
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: "14px",
+          cursor: "pointer",
+          marginBottom: "20px"
+        }}
+      >
+        {queroVer ? "✓ Quero ver" : "+ Quero ver"}
+      </button>
+
       <p className="sinopse">{musical.sinopse}</p>
 
-{musical.elenco && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
-    <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elenco}</p>
-  </div>
-)}
+      {musical.elenco && (
+        <div style={{ marginBottom: "24px" }}>
+          <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+          <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elenco}</p>
+        </div>
+      )}
 
-{musical.elencoAdicional && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
-    <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elencoAdicional}</p>
-  </div>
-)}
+      {musical.elencoAdicional && (
+        <div style={{ marginBottom: "24px" }}>
+          <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
+          <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elencoAdicional}</p>
+        </div>
+      )}
 
       <hr className="divider" />
 
@@ -249,11 +290,11 @@ function Musical() {
         comentarios.map(c => (
           <div key={c.id} className="comentario-item">
             <p
-  className="comentario-nome"
-  onClick={() => navigate(`/perfil/${c.userId}`)}
-  style={{ cursor: "pointer" }}
->
-  {formatarNome(c.nome)}
+              className="comentario-nome"
+              onClick={() => navigate(`/perfil/${c.userId}`)}
+              style={{ cursor: "pointer" }}
+            >
+              {formatarNome(c.nome)}
               {c.estrelasComentario && (
                 <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>
                   {c.estrelasComentario} ★

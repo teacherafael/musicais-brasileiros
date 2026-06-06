@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query } from "firebase/firestore"
+import { collection, getDocs, query, doc, getDoc } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -10,6 +10,7 @@ function Perfil() {
   const [usuarioLogado, setUsuarioLogado] = useState(null)
   const [votos, setVotos] = useState([])
   const [comentarios, setComentarios] = useState([])
+  const [queroVer, setQueroVer] = useState([])
   const [musicais, setMusicais] = useState({})
   const [nomeUsuario, setNomeUsuario] = useState("")
   const [carregando, setCarregando] = useState(true)
@@ -34,10 +35,7 @@ function Perfil() {
         const votosSnap = await getDocs(collection(db, "musicais", musicalId, "votos"))
         votosSnap.docs.forEach(d => {
           if (d.id === userId) {
-            votosEncontrados.push({
-              musicalId,
-              estrelas: d.data().estrelas
-            })
+            votosEncontrados.push({ musicalId, estrelas: d.data().estrelas })
           }
         })
 
@@ -46,17 +44,17 @@ function Perfil() {
           const dados = d.data()
           if (dados.userId === userId) {
             if (!nomeUsuario && dados.nome) setNomeUsuario(dados.nome)
-            comentariosEncontrados.push({
-              id: d.id,
-              musicalId,
-              ...dados
-            })
+            comentariosEncontrados.push({ id: d.id, musicalId, ...dados })
           }
         })
       }
 
+      const queroVerSnap = await getDocs(collection(db, "usuarios", userId, "queroVer"))
+      const queroVerLista = queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+
       setVotos(votosEncontrados)
       setComentarios(comentariosEncontrados)
+      setQueroVer(queroVerLista)
       setCarregando(false)
     }
 
@@ -114,6 +112,35 @@ function Perfil() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
+        Quero ver ({queroVer.length})
+      </h2>
+
+      {queroVer.length === 0 ? (
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+          {queroVer.map(item => (
+            <div
+              key={item.id}
+              className="card-musical"
+              onClick={() => navigate(`/musical/${item.musicalId}`)}
+            >
+              <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+                {item.capa
+                  ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+                  : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
+                }
+              </div>
+              <div style={{ width: "100%" }}>
+                <p className="card-titulo">{item.titulo}</p>
+                <p className="card-meta">Direção: {item.direcao || "—"}</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

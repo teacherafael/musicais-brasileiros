@@ -1,14 +1,30 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs } from "firebase/firestore"
-import { db } from "../firebase"
+import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore"
+import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
+import { onAuthStateChanged } from "firebase/auth"
 
 function Home() {
   const [musicais, setMusicais] = useState([])
   const [busca, setBusca] = useState("")
   const [ordenacao, setOrdenacao] = useState("recentes")
   const [filtroAno, setFiltroAno] = useState("")
+  const [usuario, setUsuario] = useState(null)
+  const [queroVerSet, setQueroVerSet] = useState(new Set())
   const navigate = useNavigate()
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      setUsuario(user)
+      if (user) buscarQueroVer(user.uid)
+      else setQueroVerSet(new Set())
+    })
+  }, [])
+
+  async function buscarQueroVer(uid) {
+    const snap = await getDocs(collection(db, "usuarios", uid, "queroVer"))
+    setQueroVerSet(new Set(snap.docs.map(d => d.id)))
+  }
 
   useEffect(() => {
     async function buscarMusicais() {
@@ -21,6 +37,24 @@ function Home() {
     }
     buscarMusicais()
   }, [])
+
+  async function toggleQueroVer(e, musical) {
+    e.stopPropagation()
+    if (!usuario) return alert("Faça login para usar esta função.")
+    const ref = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
+    if (queroVerSet.has(musical.id)) {
+      await deleteDoc(ref)
+      setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
+    } else {
+      await setDoc(ref, {
+        musicalId: musical.id,
+        titulo: musical.titulo,
+        capa: musical.capa || null,
+        direcao: musical.direcao || ""
+      })
+      setQueroVerSet(prev => new Set(prev).add(musical.id))
+    }
+  }
 
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
 
@@ -134,10 +168,7 @@ function Home() {
       </div>
 
       <div style={{ marginBottom: "16px" }}>
-        <button
-          className="btn-comentar"
-          onClick={() => navigate("/sugestao")}
-        >
+        <button className="btn-comentar" onClick={() => navigate("/sugestao")}>
           + Sugerir um musical
         </button>
       </div>
@@ -156,7 +187,32 @@ function Home() {
               key={musical.id}
               className="card-musical"
               onClick={() => navigate(`/musical/${musical.id}`)}
+              style={{ position: "relative" }}
             >
+              <button
+                onClick={e => toggleQueroVer(e, musical)}
+                title={queroVerSet.has(musical.id) ? "Remover da lista" : "Quero ver"}
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  background: queroVerSet.has(musical.id) ? "#F5C518" : "rgba(0,0,0,0.5)",
+                  color: queroVerSet.has(musical.id) ? "#1a1a1a" : "#fff",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1
+                }}
+              >
+                {queroVerSet.has(musical.id) ? "★" : "☆"}
+              </button>
+
               <div className="card-poster card-poster-home" style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
                 {musical.capa
                   ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
@@ -167,9 +223,7 @@ function Home() {
                 <p className="card-titulo">{musical.titulo}</p>
                 <p className="card-meta">Direção: {musical.direcao || "—"}</p>
                 <div className="rating-badge">
-                  ★ {musical.totalVotos > 0
-                    ? musical.media.toFixed(1)
-                    : "—"}
+                  ★ {musical.totalVotos > 0 ? musical.media.toFixed(1) : "—"}
                   <span className="rating-votos">
                     ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
                   </span>
