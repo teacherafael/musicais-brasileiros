@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, addDoc, updateDoc, doc, query, where, orderBy } from "firebase/firestore"
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -10,6 +10,8 @@ function Admin() {
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(null)
   const [sugestoes, setSugestoes] = useState([])
+  const [relatos, setRelatos] = useState([])
+  const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
 
   useEffect(() => {
@@ -17,13 +19,17 @@ function Admin() {
   }, [])
 
   useEffect(() => {
-    async function buscarSugestoes() {
+    async function buscarDados() {
       const q = query(collection(db, "sugestoes"), where("status", "==", "pendente"), orderBy("data", "desc"))
       const snap = await getDocs(q)
       setSugestoes(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+      const relatosSnap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
+      setRelatos(relatosSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
       setCarregando(false)
     }
-    buscarSugestoes()
+    buscarDados()
   }, [])
 
   async function aprovar(sugestao) {
@@ -61,6 +67,11 @@ function Admin() {
     setSugestoes(prev => prev.filter(s => s.id !== sugestaoId))
   }
 
+  async function resolverRelato(relatoId) {
+    await deleteDoc(doc(db, "relatorios", relatoId))
+    setRelatos(prev => prev.filter(r => r.id !== relatoId))
+  }
+
   if (!usuario) return <main><p>Carregando...</p></main>
   if (usuario.uid !== ADMIN_UID) return <main><p>Acesso negado.</p></main>
 
@@ -68,39 +79,83 @@ function Admin() {
     <main>
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
       <p className="section-label">Painel de administração</p>
-      <h1 className="page-title">Sugestões pendentes</h1>
+      <h1 className="page-title">Admin</h1>
+
+      <div style={{ display: "flex", gap: "12px", marginBottom: "32px" }}>
+        <button
+          onClick={() => setAba("sugestoes")}
+          className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}
+        >
+          Sugestões pendentes {sugestoes.length > 0 && `(${sugestoes.length})`}
+        </button>
+        <button
+          onClick={() => setAba("relatos")}
+          className={aba === "relatos" ? "btn-comentar" : "btn-sair"}
+        >
+          Relatos de erro {relatos.length > 0 && `(${relatos.length})`}
+        </button>
+      </div>
 
       {carregando ? (
         <p style={{ color: "#888" }}>Carregando...</p>
-      ) : sugestoes.length === 0 ? (
-        <p style={{ color: "#888" }}>Nenhuma sugestão pendente.</p>
-      ) : (
-        sugestoes.map(s => (
-          <div key={s.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
+      ) : aba === "sugestoes" ? (
+        sugestoes.length === 0 ? (
+          <p style={{ color: "#888" }}>Nenhuma sugestão pendente.</p>
+        ) : (
+          sugestoes.map(s => (
+            <div key={s.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
 
-            {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
-            {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
-            {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
-            {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
-            {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
-            {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
-            {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
-            {s.textoOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Texto original:</strong> {s.textoOriginal}</p>}
-            {s.musicaOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Música original:</strong> {s.musicaOriginal}</p>}
-            {s.ano && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Ano:</strong> {s.ano}</p>}
-            {s.teatro && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Teatro:</strong> {s.teatro}</p>}
+              {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
+              {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
+              {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
+              {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
+              {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
+              {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
+              {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
+              {s.textoOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Texto original:</strong> {s.textoOriginal}</p>}
+              {s.musicaOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Música original:</strong> {s.musicaOriginal}</p>}
+              {s.ano && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Ano:</strong> {s.ano}</p>}
+              {s.teatro && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Teatro:</strong> {s.teatro}</p>}
 
-            <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>
-              Sugerido por: {s.nome}
-            </p>
+              <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>
+                Sugerido por: {s.nome}
+              </p>
 
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
-              <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
+                <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
+              </div>
             </div>
-          </div>
-        ))
+          ))
+        )
+      ) : (
+        relatos.length === 0 ? (
+          <p style={{ color: "#888" }}>Nenhum relato de erro.</p>
+        ) : (
+          relatos.map(r => (
+            <div key={r.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "1px" }}>
+                {r.musicalTitulo}
+              </p>
+              <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
+              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                Reportado por: {r.nome}
+              </p>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  className="btn-comentar"
+                  onClick={() => navigate(`/musical/${r.musicalId}`)}
+                >
+                  Ver musical
+                </button>
+                <button className="btn-sair" onClick={() => resolverRelato(r.id)}>
+                  Marcar como resolvido
+                </button>
+              </div>
+            </div>
+          ))
+        )
       )}
     </main>
   )
