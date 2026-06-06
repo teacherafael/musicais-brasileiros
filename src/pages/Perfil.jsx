@@ -18,6 +18,7 @@ function Perfil() {
   const [votos, setVotos] = useState([])
   const [comentarios, setComentarios] = useState([])
   const [queroVer, setQueroVer] = useState([])
+  const [jaVi, setJaVi] = useState([])
   const [musicais, setMusicais] = useState({})
   const [nomeUsuario, setNomeUsuario] = useState("")
   const [carregando, setCarregando] = useState(true)
@@ -59,9 +60,13 @@ function Perfil() {
       const queroVerSnap = await getDocs(collection(db, "usuarios", userId, "queroVer"))
       const queroVerLista = queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() }))
 
+      const jaViSnap = await getDocs(collection(db, "usuarios", userId, "jaVi"))
+      const jaViLista = jaViSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+
       setVotos(votosEncontrados)
       setComentarios(comentariosEncontrados)
       setQueroVer(queroVerLista)
+      setJaVi(jaViLista)
       setCarregando(false)
     }
 
@@ -76,6 +81,25 @@ function Perfil() {
     : null
 
   if (carregando) return <main><p>Carregando...</p></main>
+
+  const cardMusical = (item, extra) => (
+    <div
+      key={item.id}
+      className="card-musical"
+      onClick={() => navigate(`/musical/${item.musicalId}`)}
+    >
+      <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+        {item.capa
+          ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+          : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
+        }
+      </div>
+      <div style={{ width: "100%" }}>
+        <p className="card-titulo">{item.titulo}</p>
+        {extra}
+      </div>
+    </div>
+  )
 
   return (
     <main>
@@ -117,25 +141,23 @@ function Perfil() {
           {votos.map(voto => {
             const musical = musicais[voto.musicalId]
             if (!musical) return null
-            return (
-              <div
-                key={voto.musicalId}
-                className="card-musical"
-                onClick={() => navigate(`/musical/${voto.musicalId}`)}
-              >
-                <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
-                  {musical.capa
-                    ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                    : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
-                  }
-                </div>
-                <div style={{ width: "100%" }}>
-                  <p className="card-titulo">{musical.titulo}</p>
-                  <div className="rating-badge">★ {voto.estrelas}</div>
-                </div>
-              </div>
+            return cardMusical(
+              { id: voto.musicalId, musicalId: voto.musicalId, ...musical },
+              <div className="rating-badge">★ {voto.estrelas}</div>
             )
           })}
+        </div>
+      )}
+
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
+        Já vi ({jaVi.length})
+      </h2>
+
+      {jaVi.length === 0 ? (
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+          {jaVi.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
         </div>
       )}
 
@@ -147,24 +169,7 @@ function Perfil() {
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {queroVer.map(item => (
-            <div
-              key={item.id}
-              className="card-musical"
-              onClick={() => navigate(`/musical/${item.musicalId}`)}
-            >
-              <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
-                {item.capa
-                  ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                  : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
-                }
-              </div>
-              <div style={{ width: "100%" }}>
-                <p className="card-titulo">{item.titulo}</p>
-                <p className="card-meta">Direção: {item.direcao || "—"}</p>
-              </div>
-            </div>
-          ))}
+          {queroVer.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
         </div>
       )}
 

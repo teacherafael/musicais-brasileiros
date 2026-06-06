@@ -47,14 +47,7 @@ function Estrelas({ votoAtual, onVotar }) {
             {meia ? (
               <>
                 <span style={{ color: "#ddd" }}>★</span>
-                <span style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  width: "50%",
-                  overflow: "hidden",
-                  color: "#F5C518"
-                }}>★</span>
+                <span style={{ position: "absolute", left: 0, top: 0, width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
               </>
             ) : (
               <span style={{ color: cheia ? "#F5C518" : "#ddd" }}>★</span>
@@ -73,6 +66,7 @@ function Musical() {
   const [usuario, setUsuario] = useState(null)
   const [votoAtual, setVotoAtual] = useState(null)
   const [queroVer, setQueroVer] = useState(false)
+  const [jaVi, setJaVi] = useState(false)
   const [comentarios, setComentarios] = useState([])
   const [textoComentario, setTextoComentario] = useState("")
   const [editandoComentario, setEditandoComentario] = useState(null)
@@ -107,14 +101,16 @@ function Musical() {
   }, [id])
 
   useEffect(() => {
-    async function buscarVoto() {
+    async function buscarEstados() {
       if (!usuario) return
       const votoSnap = await getDoc(doc(db, "musicais", id, "votos", usuario.uid))
       if (votoSnap.exists()) setVotoAtual(votoSnap.data().estrelas)
       const queroVerSnap = await getDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
       setQueroVer(queroVerSnap.exists())
+      const jaViSnap = await getDoc(doc(db, "usuarios", usuario.uid, "jaVi", id))
+      setJaVi(jaViSnap.exists())
     }
-    buscarVoto()
+    buscarEstados()
   }, [usuario, id])
 
   function abrirEdicao() {
@@ -182,6 +178,26 @@ function Musical() {
         direcao: musical.direcao || ""
       })
       setQueroVer(true)
+    }
+  }
+
+  async function toggleJaVi() {
+    if (!usuario) return alert("Faça login para usar esta função.")
+    const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
+    const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
+    if (jaVi) {
+      await deleteDoc(refJaVi)
+      setJaVi(false)
+    } else {
+      await setDoc(refJaVi, {
+        musicalId: id,
+        titulo: musical.titulo,
+        capa: musical.capa || null,
+        direcao: musical.direcao || ""
+      })
+      await deleteDoc(refQueroVer)
+      setJaVi(true)
+      setQueroVer(false)
     }
   }
 
@@ -319,26 +335,47 @@ function Musical() {
             </div>
           </div>
 
-          <button
-            onClick={toggleQueroVer}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              background: queroVer ? "#F5C518" : "transparent",
-              color: queroVer ? "#1a1a1a" : "#888",
-              border: "1px solid",
-              borderColor: queroVer ? "#F5C518" : "#ccc",
-              borderRadius: "6px",
-              padding: "8px 16px",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "14px",
-              cursor: "pointer",
-              marginBottom: "20px"
-            }}
-          >
-            {queroVer ? "✓ Quero ver" : "+ Quero ver"}
-          </button>
+          <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
+            <button
+              onClick={toggleJaVi}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: jaVi ? "#1a1a1a" : "transparent",
+                color: jaVi ? "#F5C518" : "#888",
+                border: "1px solid",
+                borderColor: jaVi ? "#1a1a1a" : "#ccc",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "14px",
+                cursor: "pointer"
+              }}
+            >
+              {jaVi ? "✓ Já vi" : "Já vi"}
+            </button>
+
+            <button
+              onClick={toggleQueroVer}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: queroVer ? "#F5C518" : "transparent",
+                color: queroVer ? "#1a1a1a" : "#888",
+                border: "1px solid",
+                borderColor: queroVer ? "#F5C518" : "#ccc",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "14px",
+                cursor: "pointer"
+              }}
+            >
+              {queroVer ? "✓ Quero ver" : "+ Quero ver"}
+            </button>
+          </div>
 
           <p className="sinopse">{musical.sinopse}</p>
 

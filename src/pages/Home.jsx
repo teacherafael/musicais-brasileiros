@@ -11,19 +11,30 @@ function Home() {
   const [filtroAno, setFiltroAno] = useState("")
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
+  const [jaViSet, setJaViSet] = useState(new Set())
   const navigate = useNavigate()
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       setUsuario(user)
-      if (user) buscarQueroVer(user.uid)
-      else setQueroVerSet(new Set())
+      if (user) {
+        buscarQueroVer(user.uid)
+        buscarJaVi(user.uid)
+      } else {
+        setQueroVerSet(new Set())
+        setJaViSet(new Set())
+      }
     })
   }, [])
 
   async function buscarQueroVer(uid) {
     const snap = await getDocs(collection(db, "usuarios", uid, "queroVer"))
     setQueroVerSet(new Set(snap.docs.map(d => d.id)))
+  }
+
+  async function buscarJaVi(uid) {
+    const snap = await getDocs(collection(db, "usuarios", uid, "jaVi"))
+    setJaViSet(new Set(snap.docs.map(d => d.id)))
   }
 
   useEffect(() => {
@@ -53,6 +64,27 @@ function Home() {
         direcao: musical.direcao || ""
       })
       setQueroVerSet(prev => new Set(prev).add(musical.id))
+    }
+  }
+
+  async function toggleJaVi(e, musical) {
+    e.stopPropagation()
+    if (!usuario) return alert("Faça login para usar esta função.")
+    const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", musical.id)
+    const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
+    if (jaViSet.has(musical.id)) {
+      await deleteDoc(refJaVi)
+      setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
+    } else {
+      await setDoc(refJaVi, {
+        musicalId: musical.id,
+        titulo: musical.titulo,
+        capa: musical.capa || null,
+        direcao: musical.direcao || ""
+      })
+      await deleteDoc(refQueroVer)
+      setJaViSet(prev => new Set(prev).add(musical.id))
+      setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     }
   }
 
@@ -189,6 +221,31 @@ function Home() {
               onClick={() => navigate(`/musical/${musical.id}`)}
               style={{ position: "relative" }}
             >
+              <button
+                onClick={e => toggleJaVi(e, musical)}
+                title={jaViSet.has(musical.id) ? "Remover de Já vi" : "Já vi"}
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  left: "8px",
+                  background: jaViSet.has(musical.id) ? "#1a1a1a" : "rgba(0,0,0,0.5)",
+                  color: jaViSet.has(musical.id) ? "#F5C518" : "#fff",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1
+                }}
+              >
+                ✓
+              </button>
+
               <button
                 onClick={e => toggleQueroVer(e, musical)}
                 title={queroVerSet.has(musical.id) ? "Remover da lista" : "Quero ver"}
