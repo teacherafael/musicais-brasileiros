@@ -6,6 +6,7 @@ import Perfil from "./pages/Perfil"
 import Sugestao from "./pages/Sugestao"
 import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
+import Ranking from "./pages/Ranking"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/perfil/:userId" element={<Perfil />} />
         <Route path="/sugestao" element={<Sugestao />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/ranking" element={<Ranking />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

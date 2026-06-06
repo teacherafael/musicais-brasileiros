@@ -20,15 +20,21 @@ function Header() {
         MBD<span>b</span>
       </div>
       <div className="header-right">
+        <span
+          onClick={() => navigate("/ranking")}
+          style={{ fontSize: "14px", color: "#aaa", cursor: "pointer" }}
+        >
+          Top 15
+        </span>
         {usuario ? (
           <>
             <span
-  className="header-user"
-  onClick={() => navigate(`/perfil/${usuario.uid}`)}
-  style={{ cursor: "pointer" }}
->
-  Olá, {usuario.displayName}
-</span>
+              className="header-user"
+              onClick={() => navigate(`/perfil/${usuario.uid}`)}
+              style={{ cursor: "pointer" }}
+            >
+              Olá, {usuario.displayName}
+            </span>
             <button className="btn-sair" onClick={sair}>Sair</button>
           </>
         ) : (
