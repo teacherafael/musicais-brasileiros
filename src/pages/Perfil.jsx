@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, getDoc } from "firebase/firestore"
+import { collection, getDocs, query } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -64,6 +64,10 @@ function Perfil() {
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
 
+  const mediaVotos = votos.length > 0
+    ? (votos.reduce((acc, v) => acc + v.estrelas, 0) / votos.length).toFixed(1)
+    : null
+
   if (carregando) return <main><p>Carregando...</p></main>
 
   return (
@@ -80,6 +84,19 @@ function Perfil() {
         )}
         <h1 className="page-title">{nomePerfil || "Usuário"}</h1>
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este é o seu perfil</p>}
+
+        {votos.length > 0 && (
+          <div style={{ display: "flex", gap: "16px", marginTop: "16px", flexWrap: "wrap" }}>
+            <div style={{ background: "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", display: "inline-flex", alignItems: "baseline", gap: "8px" }}>
+              <span style={{ fontSize: "22px", fontWeight: "700" }}>★ {mediaVotos}</span>
+              <span style={{ fontSize: "12px", color: "#888" }}>média pessoal</span>
+            </div>
+            <div style={{ background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "10px 18px", display: "inline-flex", alignItems: "baseline", gap: "8px" }}>
+              <span style={{ fontSize: "22px", fontWeight: "700" }}>{votos.length}</span>
+              <span style={{ fontSize: "12px", color: "#888" }}>{votos.length === 1 ? "avaliação" : "avaliações"}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
