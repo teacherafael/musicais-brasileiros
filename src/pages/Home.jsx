@@ -7,6 +7,7 @@ function Home() {
   const [musicais, setMusicais] = useState([])
   const [busca, setBusca] = useState("")
   const [ordenacao, setOrdenacao] = useState("recentes")
+  const [filtroAno, setFiltroAno] = useState("")
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,9 +22,12 @@ function Home() {
     buscarMusicais()
   }, [])
 
+  const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
+
   const musicaisFiltrados = musicais
     .filter(musical =>
-      musical.titulo.toLowerCase().includes(busca.toLowerCase())
+      musical.titulo.toLowerCase().includes(busca.toLowerCase()) &&
+      (filtroAno === "" || musical.ano === filtroAno)
     )
     .map(musical => ({
       ...musical,
@@ -51,11 +55,11 @@ function Home() {
 
   return (
     <main>
-<p className="section-label">Musicais Brasileiros Database</p>
-<h1 className="page-title">Descubra musicais brasileiros</h1>
-<p style={{ fontSize: "18px", color: "#888", marginBottom: "24px", marginTop: "-8px" }}>
-  {musicais.length} {musicais.length === 1 ? "musical" : "musicais"} na database
-</p>
+      <p className="section-label">Musicais Brasileiros Database</p>
+      <h1 className="page-title">Descubra musicais brasileiros</h1>
+      <p style={{ fontSize: "18px", color: "#888", marginBottom: "24px", marginTop: "-8px" }}>
+        {musicais.length} {musicais.length === 1 ? "musical" : "musicais"} na database
+      </p>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
         <input
@@ -93,32 +97,57 @@ function Home() {
             }}
           >
             <option value="recentes">Adicionados recentemente</option>
-<option value="antigos">Adicionados anteriormente</option>
-<option value="melhor">Melhor avaliação</option>
-<option value="pior">Pior avaliação</option>
-<option value="mais-votados">Mais votados</option>
-<option value="menos-votados">Menos votados</option>
-<option value="az">A → Z</option>
-<option value="za">Z → A</option>
+            <option value="antigos">Adicionados anteriormente</option>
+            <option value="melhor">Melhor avaliação</option>
+            <option value="pior">Pior avaliação</option>
+            <option value="mais-votados">Mais votados</option>
+            <option value="menos-votados">Menos votados</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+          </select>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
+            Ano
+          </label>
+          <select
+            value={filtroAno}
+            onChange={e => setFiltroAno(e.target.value)}
+            style={{
+              padding: "12px 16px",
+              border: "1px solid #e8e8e4",
+              borderRadius: "8px",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "15px",
+              background: "#fff",
+              cursor: "pointer",
+              outline: "none"
+            }}
+          >
+            <option value="">Todos os anos</option>
+            {anos.map(ano => (
+              <option key={ano} value={ano}>{ano}</option>
+            ))}
           </select>
         </div>
       </div>
 
-<div style={{ marginBottom: "16px" }}>
-  <button
-    className="btn-comentar"
-    onClick={() => navigate("/sugestao")}
-  >
-    + Sugerir um musical
-  </button>
-</div>
+      <div style={{ marginBottom: "16px" }}>
+        <button
+          className="btn-comentar"
+          onClick={() => navigate("/sugestao")}
+        >
+          + Sugerir um musical
+        </button>
+      </div>
       <hr className="divider" />
 
       <div className="grid-musicais" style={{
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-  gap: "16px"
-}}>
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+        gap: "16px"
+      }}>
         {musicaisFiltrados.length === 0 ? (
           <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
         ) : (
@@ -151,7 +180,7 @@ function Home() {
         )}
       </div>
     </main>
-  )  
+  )
 }
 
 export default Home
