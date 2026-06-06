@@ -91,10 +91,24 @@ function Home() {
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
 
   const musicaisFiltrados = musicais
-    .filter(musical =>
-      musical.titulo.toLowerCase().includes(busca.toLowerCase()) &&
-      (filtroAno === "" || musical.ano === filtroAno)
-    )
+.filter(musical => {
+  const termo = busca.toLowerCase()
+  const campos = [
+    musical.titulo,
+    musical.elenco,
+    musical.elencoAdicional,
+    musical.direcao,
+    musical.direcaoMusical,
+    musical.producao,
+    musical.versionista,
+    musical.textoOriginal,
+    musical.musicaOriginal
+  ]
+  return (
+    campos.some(c => c && c.toLowerCase().includes(termo)) &&
+    (filtroAno === "" || musical.ano === filtroAno)
+  )
+})
     .map(musical => ({
       ...musical,
       media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0
@@ -130,7 +144,7 @@ function Home() {
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
         <input
           type="text"
-          placeholder="Buscar musical..."
+          placeholder="Buscar musical ou pessoa..."
           value={busca}
           onChange={e => setBusca(e.target.value)}
           style={{
