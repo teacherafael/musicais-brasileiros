@@ -13,6 +13,7 @@ function Admin() {
   const [relatos, setRelatos] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
+  const [capas, setCapas] = useState({})
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -33,13 +34,6 @@ function Admin() {
   }, [])
 
   async function aprovar(sugestao) {
-    const slug = sugestao.titulo
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "")
-
     await addDoc(collection(db, "musicais"), {
       titulo: sugestao.titulo || "",
       sinopse: sugestao.sinopse || "",
@@ -53,6 +47,7 @@ function Admin() {
       musicaOriginal: sugestao.musicaOriginal || "",
       ano: sugestao.ano || "",
       teatro: sugestao.teatro || "",
+      capa: capas[sugestao.id] || "",
       totalVotos: 0,
       somaEstrelas: 0,
       dataCriacao: new Date()
@@ -60,6 +55,7 @@ function Admin() {
 
     await updateDoc(doc(db, "sugestoes", sugestao.id), { status: "aprovado" })
     setSugestoes(prev => prev.filter(s => s.id !== sugestao.id))
+    setCapas(prev => { const next = { ...prev }; delete next[sugestao.id]; return next })
   }
 
   async function rejeitar(sugestaoId) {
@@ -121,6 +117,26 @@ function Admin() {
               <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>
                 Sugerido por: {s.nome}
               </p>
+
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+                  URL da capa (opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  value={capas[s.id] || ""}
+                  onChange={e => setCapas(prev => ({ ...prev, [s.id]: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }}
+                />
+                {capas[s.id] && (
+                  <img
+                    src={capas[s.id]}
+                    alt="Preview"
+                    style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }}
+                  />
+                )}
+              </div>
 
               <div style={{ display: "flex", gap: "12px" }}>
                 <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
