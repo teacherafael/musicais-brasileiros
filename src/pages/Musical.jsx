@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, deleteDoc, orderBy, query } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import ReportarErro from "../components/ReportarErro"
+import html2canvas from "html2canvas"
 
 const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
 
@@ -73,6 +74,8 @@ function Musical() {
   const [textoEdicao, setTextoEdicao] = useState("")
   const [editandoMusical, setEditandoMusical] = useState(false)
   const [formEdicao, setFormEdicao] = useState({})
+  const [gerando, setGerando] = useState(false)
+  const cartaoRef = useRef(null)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -201,6 +204,25 @@ function Musical() {
     }
   }
 
+  async function gerarImagem() {
+    if (!cartaoRef.current) return
+    setGerando(true)
+    try {
+      const canvas = await html2canvas(cartaoRef.current, {
+        useCORS: true,
+        scale: 2,
+        backgroundColor: null
+      })
+      const link = document.createElement("a")
+      link.download = `${musical.titulo}-mbdb.png`
+      link.href = canvas.toDataURL("image/png")
+      link.click()
+    } catch (e) {
+      alert("Erro ao gerar imagem. Tente novamente.")
+    }
+    setGerando(false)
+  }
+
   async function enviarComentario() {
     if (!usuario) return alert("Faça login para comentar.")
     if (!textoComentario.trim()) return
@@ -238,6 +260,15 @@ function Musical() {
   const media = musical.totalVotos > 0
     ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
     : null
+
+  const estrelasSVG = (nota) => {
+  return [1, 2, 3, 4, 5].map(i => {
+    const cheia = nota >= i
+    const meia = nota >= i - 0.5 && nota < i
+    const cor = (cheia || meia) ? "#1a1a1a" : "rgba(0,0,0,0.2)"
+    return <span key={i} style={{ color: cor, fontSize: "24px" }}>★</span>
+  })
+}
 
   const campo = (label, chave, multiline = false) => (
     <div style={{ marginBottom: "16px" }}>
@@ -339,18 +370,12 @@ function Musical() {
             <button
               onClick={toggleJaVi}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
+                display: "inline-flex", alignItems: "center", gap: "8px",
                 background: jaVi ? "#1a1a1a" : "transparent",
                 color: jaVi ? "#F5C518" : "#888",
-                border: "1px solid",
-                borderColor: jaVi ? "#1a1a1a" : "#ccc",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "14px",
-                cursor: "pointer"
+                border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc",
+                borderRadius: "6px", padding: "8px 16px",
+                fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer"
               }}
             >
               {jaVi ? "✓ Já vi" : "Já vi"}
@@ -359,18 +384,12 @@ function Musical() {
             <button
               onClick={toggleQueroVer}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
+                display: "inline-flex", alignItems: "center", gap: "8px",
                 background: queroVer ? "#F5C518" : "transparent",
                 color: queroVer ? "#1a1a1a" : "#888",
-                border: "1px solid",
-                borderColor: queroVer ? "#F5C518" : "#ccc",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "14px",
-                cursor: "pointer"
+                border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc",
+                borderRadius: "6px", padding: "8px 16px",
+                fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer"
               }}
             >
               {queroVer ? "✓ Quero ver" : "+ Quero ver"}
@@ -400,6 +419,70 @@ function Musical() {
           </p>
 
           <Estrelas votoAtual={votoAtual} onVotar={votar} />
+
+          {votoAtual && (
+  <div style={{ marginTop: "16px", marginBottom: "8px" }}>
+    <div
+      ref={cartaoRef}
+      style={{
+        position: "absolute",
+        left: "-9999px",
+        top: "-9999px",
+        background: "#F5C518",
+        borderRadius: "16px",
+        padding: "40px 32px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "270px",
+        minHeight: "420px",
+        justifyContent: "flex-start",
+        paddingTop: "48px"
+      }}
+    >
+  {musical.capa ? (
+    <img
+      src={musical.capa}
+      alt={musical.titulo}
+      crossOrigin="anonymous"
+      style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}
+    />
+  ) : (
+    <div style={{ width: "160px", height: "220px", background: "#1a1a1a", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
+      <span style={{ color: "#F5C518", fontSize: "12px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
+    </div>
+  )}
+
+  <p style={{ fontFamily: "Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#1a1a1a", textAlign: "center", marginBottom: "6px", lineHeight: 1.3 }}>{musical.titulo}</p>
+  <p style={{ fontSize: "12px", color: "#1a1a1a", opacity: 0.6, textAlign: "center", marginBottom: "16px" }}>Dir. {musical.direcao || "—"}</p>
+
+  <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>
+    {estrelasSVG(votoAtual)}
+  </div>
+
+  <div style={{ width: "40px", height: "1px", background: "#1a1a1a", opacity: 0.2, marginBottom: "12px" }} />
+
+  <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "400", color: "#1a1a1a", opacity: 0.5, letterSpacing: "2px", textTransform: "uppercase", textAlign: "center" }}>
+  Musicais Brasileiros Database
+</p>
+</div>
+
+              <div style={{ marginTop: "12px" }}>
+                <button
+                  onClick={gerarImagem}
+                  disabled={gerando}
+                  style={{
+                    background: "#F5C518", color: "#1a1a1a", border: "none",
+                    borderRadius: "6px", padding: "10px 20px",
+                    fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+                    fontWeight: "500", cursor: gerando ? "wait" : "pointer"
+                  }}
+                >
+                  {gerando ? "Gerando..." : "⬇ Baixar imagem para compartilhar"}
+                </button>
+              </div>
+            </div>
+          )}
 
           <hr className="divider" />
 
