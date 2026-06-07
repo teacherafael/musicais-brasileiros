@@ -394,6 +394,27 @@ function Musical() {
             >
               {queroVer ? "✓ Quero ver" : "+ Quero ver"}
             </button>
+            <button
+  onClick={() => {
+    navigator.clipboard.writeText(window.location.href)
+    alert("Link copiado!")
+  }}
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    background: "transparent",
+    color: "#888",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    padding: "8px 16px",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: "14px",
+    cursor: "pointer"
+  }}
+>
+  🔗 Copiar link
+</button>
           </div>
 
           <p className="sinopse">{musical.sinopse}</p>
