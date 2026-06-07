@@ -50,6 +50,7 @@ function Home() {
   }, [])
 
   async function toggleQueroVer(e, musical) {
+    e.preventDefault()
     e.stopPropagation()
     if (!usuario) return alert("Faça login para usar esta função.")
     const ref = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
@@ -68,6 +69,7 @@ function Home() {
   }
 
   async function toggleJaVi(e, musical) {
+    e.preventDefault()
     e.stopPropagation()
     if (!usuario) return alert("Faça login para usar esta função.")
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", musical.id)
@@ -91,24 +93,24 @@ function Home() {
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
 
   const musicaisFiltrados = musicais
-.filter(musical => {
-  const termo = busca.toLowerCase()
-  const campos = [
-    musical.titulo,
-    musical.elenco,
-    musical.elencoAdicional,
-    musical.direcao,
-    musical.direcaoMusical,
-    musical.producao,
-    musical.versionista,
-    musical.textoOriginal,
-    musical.musicaOriginal
-  ]
-  return (
-    campos.some(c => c && c.toLowerCase().includes(termo)) &&
-    (filtroAno === "" || musical.ano === filtroAno)
-  )
-})
+    .filter(musical => {
+      const termo = busca.toLowerCase()
+      const campos = [
+        musical.titulo,
+        musical.elenco,
+        musical.elencoAdicional,
+        musical.direcao,
+        musical.direcaoMusical,
+        musical.producao,
+        musical.versionista,
+        musical.textoOriginal,
+        musical.musicaOriginal
+      ]
+      return (
+        campos.some(c => c && c.toLowerCase().includes(termo)) &&
+        (filtroAno === "" || musical.ano === filtroAno)
+      )
+    })
     .map(musical => ({
       ...musical,
       media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0
@@ -229,11 +231,11 @@ function Home() {
           <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
         ) : (
           musicaisFiltrados.map(musical => (
-            <div
+            <a
               key={musical.id}
+              href={"/musical/" + musical.id}
               className="card-musical"
-              onClick={() => navigate(`/musical/${musical.id}`)}
-              style={{ position: "relative" }}
+              style={{ position: "relative", textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
             >
               <button
                 onClick={e => toggleJaVi(e, musical)}
@@ -300,7 +302,7 @@ function Home() {
                   </span>
                 </div>
               </div>
-            </div>
+            </a>
           ))
         )}
       </div>
