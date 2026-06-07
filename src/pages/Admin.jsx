@@ -11,6 +11,7 @@ function Admin() {
   const [usuario, setUsuario] = useState(null)
   const [sugestoes, setSugestoes] = useState([])
   const [relatos, setRelatos] = useState([])
+  const [musicais, setMusicais] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
   const [capas, setCapas] = useState({})
@@ -27,6 +28,9 @@ function Admin() {
 
       const relatosSnap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
       setRelatos(relatosSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+      const musicaisSnap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
+      setMusicais(musicaisSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
       setCarregando(false)
     }
@@ -68,6 +72,12 @@ function Admin() {
     setRelatos(prev => prev.filter(r => r.id !== relatoId))
   }
 
+  async function deletarMusical(musicalId, titulo) {
+    if (!window.confirm(`Tem certeza que quer deletar "${titulo}"? Esta ação não pode ser desfeita.`)) return
+    await deleteDoc(doc(db, "musicais", musicalId))
+    setMusicais(prev => prev.filter(m => m.id !== musicalId))
+  }
+
   if (!usuario) return <main><p>Carregando...</p></main>
   if (usuario.uid !== ADMIN_UID) return <main><p>Acesso negado.</p></main>
 
@@ -77,7 +87,7 @@ function Admin() {
       <p className="section-label">Painel de administração</p>
       <h1 className="page-title">Admin</h1>
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "32px" }}>
+      <div style={{ display: "flex", gap: "12px", marginBottom: "32px", flexWrap: "wrap" }}>
         <button
           onClick={() => setAba("sugestoes")}
           className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}
@@ -89,6 +99,12 @@ function Admin() {
           className={aba === "relatos" ? "btn-comentar" : "btn-sair"}
         >
           Relatos de erro {relatos.length > 0 && `(${relatos.length})`}
+        </button>
+        <button
+          onClick={() => setAba("musicais")}
+          className={aba === "musicais" ? "btn-comentar" : "btn-sair"}
+        >
+          Musicais publicados ({musicais.length})
         </button>
       </div>
 
@@ -145,7 +161,7 @@ function Admin() {
             </div>
           ))
         )
-      ) : (
+      ) : aba === "relatos" ? (
         relatos.length === 0 ? (
           <p style={{ color: "#888" }}>Nenhum relato de erro.</p>
         ) : (
@@ -159,14 +175,42 @@ function Admin() {
                 Reportado por: {r.nome}
               </p>
               <div style={{ display: "flex", gap: "12px" }}>
-                <button
-                  className="btn-comentar"
-                  onClick={() => navigate(`/musical/${r.musicalId}`)}
-                >
+                <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>
                   Ver musical
                 </button>
                 <button className="btn-sair" onClick={() => resolverRelato(r.id)}>
                   Marcar como resolvido
+                </button>
+              </div>
+            </div>
+          ))
+        )
+      ) : (
+        musicais.length === 0 ? (
+          <p style={{ color: "#888" }}>Nenhum musical publicado.</p>
+        ) : (
+          musicais.map(m => (
+            <div key={m.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
+              {m.capa ? (
+                <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: "48px", height: "64px", background: "#1a1a1a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ color: "#F5C518", fontSize: "8px", textAlign: "center", padding: "4px" }}>{m.titulo}</span>
+                </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
+                <p style={{ fontSize: "13px", color: "#888" }}>{m.direcao || "—"} · {m.ano || "—"}</p>
+              </div>
+              <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>
+                  Ver
+                </button>
+                <button
+                  onClick={() => deletarMusical(m.id, m.titulo)}
+                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}
+                >
+                  Deletar
                 </button>
               </div>
             </div>
