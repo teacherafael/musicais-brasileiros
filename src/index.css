@@ -198,8 +198,8 @@ main {
 }
 
 .musical-poster {
-  width: 160px;
-  height: 220px;
+  width: 225px;
+  height: 305px;
   background: transparent;
   border-radius: 8px;
   flex-shrink: 0;
