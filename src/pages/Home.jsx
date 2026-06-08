@@ -231,61 +231,12 @@ function Home() {
           <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
         ) : (
           musicaisFiltrados.map(musical => (
-            <a
-              key={musical.id}
+            
+              <a key={musical.id}
               href={"/musical/" + musical.id}
               className="card-musical"
               style={{ position: "relative", textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
             >
-              <button
-                onClick={e => toggleJaVi(e, musical)}
-                title={jaViSet.has(musical.id) ? "Remover de Já vi" : "Já vi"}
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  left: "8px",
-                  background: jaViSet.has(musical.id) ? "#1a1a1a" : "rgba(0,0,0,0.5)",
-                  color: jaViSet.has(musical.id) ? "#F5C518" : "#fff",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "32px",
-                  height: "32px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 1
-                }}
-              >
-                ✓
-              </button>
-
-              <button
-                onClick={e => toggleQueroVer(e, musical)}
-                title={queroVerSet.has(musical.id) ? "Remover da lista" : "Quero ver"}
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  background: queroVerSet.has(musical.id) ? "#F5C518" : "rgba(0,0,0,0.5)",
-                  color: queroVerSet.has(musical.id) ? "#1a1a1a" : "#fff",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "32px",
-                  height: "32px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 1
-                }}
-              >
-                {queroVerSet.has(musical.id) ? "★" : "☆"}
-              </button>
-
               <div className="card-poster card-poster-home" style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
                 {musical.capa
                   ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
@@ -301,6 +252,41 @@ function Home() {
                     ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
                   </span>
                 </div>
+                {usuario && (
+                  <div style={{ display: "flex", gap: "8px", marginTop: "10px", justifyContent: "center" }}>
+                    <button
+                      onClick={e => toggleJaVi(e, musical)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        color: jaViSet.has(musical.id) ? "#1a1a1a" : "#aaa",
+                        fontWeight: jaViSet.has(musical.id) ? "600" : "400"
+                      }}
+                    >
+                      {jaViSet.has(musical.id) ? "✓ Já vi" : "Já vi"}
+                    </button>
+                    <span style={{ color: "#ddd", fontSize: "12px" }}>·</span>
+                    <button
+                      onClick={e => toggleQueroVer(e, musical)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        color: queroVerSet.has(musical.id) ? "#F5C518" : "#aaa",
+                        fontWeight: queroVerSet.has(musical.id) ? "600" : "400"
+                      }}
+                    >
+                      {queroVerSet.has(musical.id) ? "★ Quero ver" : "☆ Quero ver"}
+                    </button>
+                  </div>
+                )}
               </div>
             </a>
           ))
