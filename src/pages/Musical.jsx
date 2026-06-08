@@ -8,12 +8,7 @@ import html2canvas from "html2canvas"
 
 const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
 
-function formatarNome(nomeCompleto) {
-  if (!nomeCompleto) return "Anônimo"
-  const partes = nomeCompleto.trim().split(" ")
-  if (partes.length === 1) return partes[0]
-  return `${partes[0]} ${partes[1][0]}.`
-}
+
 
 function Estrelas({ votoAtual, onVotar }) {
   const [hover, setHover] = useState(0)
@@ -205,7 +200,7 @@ function Musical() {
     const confirmado = window.confirm("Lembre-se de manter sua crítica respeitosa e sem ataques à produção. Deseja publicar o comentário?")
     if (!confirmado) return
     const novoComentario = {
-      nome: formatarNome(usuario.displayName),
+      nome: usuario.displayName || "Anônimo",
       userId: usuario.uid,
       texto: textoComentario,
       data: new Date()
@@ -241,7 +236,7 @@ function Musical() {
       comentarioTexto: comentario.texto,
       comentarioAutor: comentario.nome,
       texto: textoDenuncia,
-      nome: usuario ? formatarNome(usuario.displayName) : "Anônimo",
+      nome: usuario ? (usuario.displayName || "Anônimo") : "Anônimo",
       userId: usuario ? usuario.uid : null,
       data: serverTimestamp()
     })
@@ -442,7 +437,7 @@ function Musical() {
             comentarios.map(c => (
               <div key={c.id} className="comentario-item">
                 <p className="comentario-nome" onClick={() => navigate(`/perfil/${c.userId}`)} style={{ cursor: "pointer" }}>
-                  {formatarNome(c.nome)}
+                  {c.nome || "Anônimo"}
                   {c.estrelasComentario && (
                     <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
                   )}

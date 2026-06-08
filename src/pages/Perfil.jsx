@@ -4,12 +4,6 @@ import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
-function formatarNome(nomeCompleto) {
-  if (!nomeCompleto) return "Anônimo"
-  const partes = nomeCompleto.trim().split(" ")
-  if (partes.length === 1) return partes[0]
-  return `${partes[0]} ${partes[1][0]}.`
-}
 
 function Perfil() {
   const { userId } = useParams()
@@ -113,7 +107,7 @@ function Perfil() {
             style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }}
           />
         )}
-        <h1 className="page-title">{formatarNome(nomePerfil) || "Usuário"}</h1>
+        <h1 className="page-title">{nomePerfil || "Usuário"}</h1>
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este é o seu perfil</p>}
 
         {votos.length > 0 && (
