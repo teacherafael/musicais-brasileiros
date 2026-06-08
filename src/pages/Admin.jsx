@@ -56,7 +56,6 @@ function Admin() {
       somaEstrelas: 0,
       dataCriacao: new Date()
     })
-
     await updateDoc(doc(db, "sugestoes", sugestao.id), { status: "aprovado" })
     setSugestoes(prev => prev.filter(s => s.id !== sugestao.id))
     setCapas(prev => { const next = { ...prev }; delete next[sugestao.id]; return next })
@@ -88,22 +87,13 @@ function Admin() {
       <h1 className="page-title">Admin</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "32px", flexWrap: "wrap" }}>
-        <button
-          onClick={() => setAba("sugestoes")}
-          className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}
-        >
+        <button onClick={() => setAba("sugestoes")} className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}>
           Sugestões pendentes {sugestoes.length > 0 && `(${sugestoes.length})`}
         </button>
-        <button
-          onClick={() => setAba("relatos")}
-          className={aba === "relatos" ? "btn-comentar" : "btn-sair"}
-        >
-          Relatos de erro {relatos.length > 0 && `(${relatos.length})`}
+        <button onClick={() => setAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
+          Relatos e denúncias {relatos.length > 0 && `(${relatos.length})`}
         </button>
-        <button
-          onClick={() => setAba("musicais")}
-          className={aba === "musicais" ? "btn-comentar" : "btn-sair"}
-        >
+        <button onClick={() => setAba("musicais")} className={aba === "musicais" ? "btn-comentar" : "btn-sair"}>
           Musicais publicados ({musicais.length})
         </button>
       </div>
@@ -117,7 +107,6 @@ function Admin() {
           sugestoes.map(s => (
             <div key={s.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
               <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
-
               {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
               {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
               {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
@@ -129,11 +118,7 @@ function Admin() {
               {s.musicaOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Música original:</strong> {s.musicaOriginal}</p>}
               {s.ano && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Ano:</strong> {s.ano}</p>}
               {s.teatro && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Teatro:</strong> {s.teatro}</p>}
-
-              <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>
-                Sugerido por: {s.nome}
-              </p>
-
+              <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>Sugerido por: {s.nome}</p>
               <div style={{ marginBottom: "16px" }}>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
                   URL da capa (opcional)
@@ -146,14 +131,9 @@ function Admin() {
                   style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }}
                 />
                 {capas[s.id] && (
-                  <img
-                    src={capas[s.id]}
-                    alt="Preview"
-                    style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }}
-                  />
+                  <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
                 )}
               </div>
-
               <div style={{ display: "flex", gap: "12px" }}>
                 <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
                 <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
@@ -163,16 +143,27 @@ function Admin() {
         )
       ) : aba === "relatos" ? (
         relatos.length === 0 ? (
-          <p style={{ color: "#888" }}>Nenhum relato de erro.</p>
+          <p style={{ color: "#888" }}>Nenhum relato ou denúncia.</p>
         ) : (
           relatos.map(r => (
             <div key={r.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "1px" }}>
-                {r.musicalTitulo}
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                <span style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", background: r.tipo === "denuncia_comentario" ? "#fff0f0" : "#fffbe6", color: r.tipo === "denuncia_comentario" ? "#cc0000" : "#888", borderRadius: "4px", padding: "2px 8px" }}>
+                  {r.tipo === "denuncia_comentario" ? "Denúncia de comentário" : "Relato de erro"}
+                </span>
+                <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518" }}>{r.musicalTitulo}</p>
+              </div>
+
+              {r.tipo === "denuncia_comentario" && r.comentarioTexto && (
+                <div style={{ background: "#f9f9f9", borderLeft: "3px solid #e8e8e4", padding: "8px 12px", marginBottom: "10px", borderRadius: "4px" }}>
+                  <p style={{ fontSize: "12px", color: "#888", marginBottom: "2px" }}>Comentário denunciado de {r.comentarioAutor}:</p>
+                  <p style={{ fontSize: "13px", color: "#555", fontStyle: "italic" }}>"{r.comentarioTexto}"</p>
+                </div>
+              )}
+
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
               <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                Reportado por: {r.nome}
+                {r.tipo === "denuncia_comentario" ? "Denunciado por" : "Reportado por"}: {r.nome}
               </p>
               <div style={{ display: "flex", gap: "12px" }}>
                 <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>
@@ -203,13 +194,8 @@ function Admin() {
                 <p style={{ fontSize: "13px", color: "#888" }}>{m.direcao || "—"} · {m.ano || "—"}</p>
               </div>
               <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>
-                  Ver
-                </button>
-                <button
-                  onClick={() => deletarMusical(m.id, m.titulo)}
-                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}
-                >
+                <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
+                <button onClick={() => deletarMusical(m.id, m.titulo)} style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
                   Deletar
                 </button>
               </div>

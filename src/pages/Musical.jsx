@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, deleteDoc, orderBy, query } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, deleteDoc, orderBy, query, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -36,7 +36,6 @@ function Estrelas({ votoAtual, onVotar }) {
       {[1, 2, 3, 4, 5].map(estrela => {
         const cheia = valorAtivo >= estrela
         const meia = valorAtivo >= estrela - 0.5 && valorAtivo < estrela
-
         return (
           <span
             key={estrela}
@@ -75,6 +74,9 @@ function Musical() {
   const [editandoMusical, setEditandoMusical] = useState(false)
   const [formEdicao, setFormEdicao] = useState({})
   const [gerando, setGerando] = useState(false)
+  const [denunciandoComentario, setDenunciandoComentario] = useState(null)
+  const [textoDenuncia, setTextoDenuncia] = useState("")
+  const [denunciaEnviada, setDenunciaEnviada] = useState(null)
   const cartaoRef = useRef(null)
 
   useEffect(() => {
@@ -144,25 +146,13 @@ function Musical() {
   async function votar(estrelas) {
     if (!usuario) return alert("Faça login para votar.")
     if (votoAtual) {
-      await updateDoc(doc(db, "musicais", id), {
-        somaEstrelas: increment(estrelas - votoAtual)
-      })
+      await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
       await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      setMusical(prev => ({
-        ...prev,
-        somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual)
-      }))
+      setMusical(prev => ({ ...prev, somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual) }))
     } else {
       await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      await updateDoc(doc(db, "musicais", id), {
-        totalVotos: increment(1),
-        somaEstrelas: increment(estrelas)
-      })
-      setMusical(prev => ({
-        ...prev,
-        totalVotos: prev.totalVotos + 1,
-        somaEstrelas: prev.somaEstrelas + estrelas
-      }))
+      await updateDoc(doc(db, "musicais", id), { totalVotos: increment(1), somaEstrelas: increment(estrelas) })
+      setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
     }
     setVotoAtual(estrelas)
   }
@@ -174,12 +164,7 @@ function Musical() {
       await deleteDoc(ref)
       setQueroVer(false)
     } else {
-      await setDoc(ref, {
-        musicalId: id,
-        titulo: musical.titulo,
-        capa: musical.capa || null,
-        direcao: musical.direcao || ""
-      })
+      await setDoc(ref, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       setQueroVer(true)
     }
   }
@@ -192,12 +177,7 @@ function Musical() {
       await deleteDoc(refJaVi)
       setJaVi(false)
     } else {
-      await setDoc(refJaVi, {
-        musicalId: id,
-        titulo: musical.titulo,
-        capa: musical.capa || null,
-        direcao: musical.direcao || ""
-      })
+      await setDoc(refJaVi, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refQueroVer)
       setJaVi(true)
       setQueroVer(false)
@@ -208,11 +188,7 @@ function Musical() {
     if (!cartaoRef.current) return
     setGerando(true)
     try {
-      const canvas = await html2canvas(cartaoRef.current, {
-        useCORS: true,
-        scale: 2,
-        backgroundColor: null
-      })
+      const canvas = await html2canvas(cartaoRef.current, { useCORS: true, scale: 2, backgroundColor: null })
       const link = document.createElement("a")
       link.download = `${musical.titulo}-mbdb.png`
       link.href = canvas.toDataURL("image/png")
@@ -227,7 +203,7 @@ function Musical() {
     if (!usuario) return alert("Faça login para comentar.")
     if (!textoComentario.trim()) return
     const confirmado = window.confirm("Lembre-se de manter sua crítica respeitosa e sem ataques à produção. Deseja publicar o comentário?")
-  if (!confirmado) return
+    if (!confirmado) return
     const novoComentario = {
       nome: formatarNome(usuario.displayName),
       userId: usuario.uid,
@@ -250,11 +226,29 @@ function Musical() {
   async function salvarEdicao(comentarioId) {
     if (!textoEdicao.trim()) return
     await updateDoc(doc(db, "musicais", id, "comentarios", comentarioId), { texto: textoEdicao })
-    setComentarios(prev => prev.map(c =>
-      c.id === comentarioId ? { ...c, texto: textoEdicao } : c
-    ))
+    setComentarios(prev => prev.map(c => c.id === comentarioId ? { ...c, texto: textoEdicao } : c))
     setEditandoComentario(null)
     setTextoEdicao("")
+  }
+
+  async function enviarDenuncia(comentario) {
+    if (!textoDenuncia.trim()) return
+    await addDoc(collection(db, "relatorios"), {
+      tipo: "denuncia_comentario",
+      musicalId: id,
+      musicalTitulo: musical.titulo,
+      comentarioId: comentario.id,
+      comentarioTexto: comentario.texto,
+      comentarioAutor: comentario.nome,
+      texto: textoDenuncia,
+      nome: usuario ? formatarNome(usuario.displayName) : "Anônimo",
+      userId: usuario ? usuario.uid : null,
+      data: serverTimestamp()
+    })
+    setDenunciaEnviada(comentario.id)
+    setDenunciandoComentario(null)
+    setTextoDenuncia("")
+    setTimeout(() => setDenunciaEnviada(null), 3000)
   }
 
   if (!musical) return <main><p>Carregando...</p></main>
@@ -264,13 +258,13 @@ function Musical() {
     : null
 
   const estrelasSVG = (nota) => {
-  return [1, 2, 3, 4, 5].map(i => {
-    const cheia = nota >= i
-    const meia = nota >= i - 0.5 && nota < i
-    const cor = (cheia || meia) ? "#1a1a1a" : "rgba(0,0,0,0.2)"
-    return <span key={i} style={{ color: cor, fontSize: "24px" }}>★</span>
-  })
-}
+    return [1, 2, 3, 4, 5].map(i => {
+      const cheia = nota >= i
+      const meia = nota >= i - 0.5 && nota < i
+      const cor = (cheia || meia) ? "#1a1a1a" : "rgba(0,0,0,0.2)"
+      return <span key={i} style={{ color: cor, fontSize: "24px" }}>★</span>
+    })
+  }
 
   const campo = (label, chave, multiline = false) => (
     <div style={{ marginBottom: "16px" }}>
@@ -315,11 +309,7 @@ function Musical() {
           {campo("Teatro de estreia", "teatro")}
           {campo("URL da capa", "capa")}
           {formEdicao.capa && (
-            <img
-              src={formEdicao.capa}
-              alt="Preview"
-              style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }}
-            />
+            <img src={formEdicao.capa} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
           )}
           <div style={{ display: "flex", gap: "12px" }}>
             <button className="btn-comentar" onClick={salvarEdicaoMusical}>Salvar alterações</button>
@@ -348,20 +338,13 @@ function Musical() {
               {media ? (
                 <div className="rating-grande">
                   ★ {media}
-                  <span className="rating-grande-label">
-                    {musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}
-                  </span>
+                  <span className="rating-grande-label">{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
                 </div>
               ) : (
-                <div className="rating-grande">
-                  — <span className="rating-grande-label">sem votos ainda</span>
-                </div>
+                <div className="rating-grande">— <span className="rating-grande-label">sem votos ainda</span></div>
               )}
               {usuario && usuario.uid === ADMIN_UID && (
-                <button
-                  onClick={abrirEdicao}
-                  style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
-                >
+                <button onClick={abrirEdicao} style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                   ✏️ Editar musical
                 </button>
               )}
@@ -369,54 +352,15 @@ function Musical() {
           </div>
 
           <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
-            <button
-              onClick={toggleJaVi}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "8px",
-                background: jaVi ? "#1a1a1a" : "transparent",
-                color: jaVi ? "#F5C518" : "#888",
-                border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc",
-                borderRadius: "6px", padding: "8px 16px",
-                fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer"
-              }}
-            >
+            <button onClick={toggleJaVi} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: jaVi ? "#1a1a1a" : "transparent", color: jaVi ? "#F5C518" : "#888", border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               {jaVi ? "✓ Já vi" : "Já vi"}
             </button>
-
-            <button
-              onClick={toggleQueroVer}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "8px",
-                background: queroVer ? "#F5C518" : "transparent",
-                color: queroVer ? "#1a1a1a" : "#888",
-                border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc",
-                borderRadius: "6px", padding: "8px 16px",
-                fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer"
-              }}
-            >
+            <button onClick={toggleQueroVer} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               {queroVer ? "✓ Quero ver" : "+ Quero ver"}
             </button>
-            <button
-  onClick={() => {
-    navigator.clipboard.writeText(window.location.href)
-    alert("Link copiado!")
-  }}
-  style={{
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "8px",
-    background: "transparent",
-    color: "#888",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
-    padding: "8px 16px",
-    fontFamily: "'DM Sans', sans-serif",
-    fontSize: "14px",
-    cursor: "pointer"
-  }}
->
-  🔗 Copiar link
-</button>
+            <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copiado!") }} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+              🔗 Copiar link
+            </button>
           </div>
 
           <p className="sinopse">{musical.sinopse}</p>
@@ -444,63 +388,23 @@ function Musical() {
           <Estrelas votoAtual={votoAtual} onVotar={votar} />
 
           {votoAtual && (
-  <div style={{ marginTop: "16px", marginBottom: "8px" }}>
-    <div
-      ref={cartaoRef}
-      style={{
-        position: "absolute",
-        left: "-9999px",
-        top: "-9999px",
-        background: "#F5C518",
-        borderRadius: "16px",
-        padding: "40px 32px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "270px",
-        minHeight: "420px",
-        justifyContent: "flex-start",
-        paddingTop: "48px"
-      }}
-    >
-  {musical.capa ? (
-    <img
-      src={musical.capa}
-      alt={musical.titulo}
-      crossOrigin="anonymous"
-      style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}
-    />
-  ) : (
-    <div style={{ width: "160px", height: "220px", background: "#1a1a1a", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-      <span style={{ color: "#F5C518", fontSize: "12px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
-    </div>
-  )}
-
-  <p style={{ fontFamily: "Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#1a1a1a", textAlign: "center", marginBottom: "6px", lineHeight: 1.3 }}>{musical.titulo}</p>
-  <p style={{ fontSize: "12px", color: "#1a1a1a", opacity: 0.6, textAlign: "center", marginBottom: "16px" }}>Dir. {musical.direcao || "—"}</p>
-
-  <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>
-    {estrelasSVG(votoAtual)}
-  </div>
-
-  <div style={{ width: "40px", height: "1px", background: "#1a1a1a", opacity: 0.2, marginBottom: "12px" }} />
-
-  <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "400", color: "#1a1a1a", opacity: 0.5, letterSpacing: "2px", textTransform: "uppercase", textAlign: "center" }}>
-  Musicais Brasileiros Database
-</p>
-</div>
-
+            <div style={{ marginTop: "16px", marginBottom: "8px" }}>
+              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "#F5C518", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", width: "270px", minHeight: "420px", justifyContent: "flex-start", paddingTop: "48px" }}>
+                {musical.capa ? (
+                  <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }} />
+                ) : (
+                  <div style={{ width: "160px", height: "220px", background: "#1a1a1a", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
+                    <span style={{ color: "#F5C518", fontSize: "12px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
+                  </div>
+                )}
+                <p style={{ fontFamily: "Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#1a1a1a", textAlign: "center", marginBottom: "6px", lineHeight: 1.3 }}>{musical.titulo}</p>
+                <p style={{ fontSize: "12px", color: "#1a1a1a", opacity: 0.6, textAlign: "center", marginBottom: "16px" }}>Dir. {musical.direcao || "—"}</p>
+                <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>{estrelasSVG(votoAtual)}</div>
+                <div style={{ width: "40px", height: "1px", background: "#1a1a1a", opacity: 0.2, marginBottom: "12px" }} />
+                <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "400", color: "#1a1a1a", opacity: 0.5, letterSpacing: "2px", textTransform: "uppercase", textAlign: "center" }}>Musicais Brasileiros Database</p>
+              </div>
               <div style={{ marginTop: "12px" }}>
-                <button
-                  onClick={gerarImagem}
-                  disabled={gerando}
-                  style={{
-                    background: "#F5C518", color: "#1a1a1a", border: "none",
-                    borderRadius: "6px", padding: "10px 20px",
-                    fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-                    fontWeight: "500", cursor: gerando ? "wait" : "pointer"
-                  }}
-                >
+                <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
                   {gerando ? "Gerando..." : "⬇ Baixar imagem para compartilhar"}
                 </button>
               </div>
@@ -522,8 +426,8 @@ function Musical() {
                 placeholder="Escreva um comentário..."
               />
               <p style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
-  Lembre-se de manter sua crítica respeitosa e sem ataques a produção.
-</p>
+                Lembre-se de manter sua crítica respeitosa e sem ataques a produção.
+              </p>
               <button className="btn-comentar" onClick={enviarComentario}>Enviar comentário</button>
             </div>
           ) : (
@@ -531,24 +435,19 @@ function Musical() {
           )}
 
           {!usuario ? (
-  <p className="login-aviso" style={{ marginTop: "16px" }}>Faça login para ver os comentários.</p>
-) : comentarios.length === 0 ? (
-  <p className="login-aviso" style={{ marginTop: "16px" }}>Nenhum comentário ainda.</p>
-) : (
-  comentarios.map(c => (
+            <p className="login-aviso" style={{ marginTop: "16px" }}>Faça login para ver os comentários.</p>
+          ) : comentarios.length === 0 ? (
+            <p className="login-aviso" style={{ marginTop: "16px" }}>Nenhum comentário ainda.</p>
+          ) : (
+            comentarios.map(c => (
               <div key={c.id} className="comentario-item">
-                <p
-                  className="comentario-nome"
-                  onClick={() => navigate(`/perfil/${c.userId}`)}
-                  style={{ cursor: "pointer" }}
-                >
+                <p className="comentario-nome" onClick={() => navigate(`/perfil/${c.userId}`)} style={{ cursor: "pointer" }}>
                   {formatarNome(c.nome)}
                   {c.estrelasComentario && (
-                    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>
-                      {c.estrelasComentario} ★
-                    </span>
+                    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
                   )}
                 </p>
+
                 {editandoComentario === c.id ? (
                   <div>
                     <textarea
@@ -564,22 +463,43 @@ function Musical() {
                 ) : (
                   <>
                     <p className="comentario-texto">{c.texto}</p>
-                    {usuario && usuario.uid === c.userId && (
-                      <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
-                        <button
-                          onClick={() => { setEditandoComentario(c.id); setTextoEdicao(c.texto) }}
-                          style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => deletarComentario(c.id)}
-                          style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0 }}
-                        >
-                          Apagar
-                        </button>
-                      </div>
-                    )}
+
+                    <div style={{ display: "flex", gap: "12px", marginTop: "8px", flexWrap: "wrap" }}>
+                      {usuario && usuario.uid === c.userId && (
+                        <>
+                          <button onClick={() => { setEditandoComentario(c.id); setTextoEdicao(c.texto) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>
+                            Editar
+                          </button>
+                          <button onClick={() => deletarComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0 }}>
+                            Apagar
+                          </button>
+                        </>
+                      )}
+                      {usuario && usuario.uid !== c.userId && (
+                        <>
+                          {denunciaEnviada === c.id ? (
+                            <span style={{ fontSize: "13px", color: "#888" }}>Denúncia enviada!</span>
+                          ) : denunciandoComentario === c.id ? (
+                            <div style={{ width: "100%", marginTop: "8px" }}>
+                              <textarea
+                                value={textoDenuncia}
+                                onChange={e => setTextoDenuncia(e.target.value)}
+                                placeholder="Descreva o motivo da denúncia..."
+                                style={{ width: "100%", height: "70px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", marginBottom: "8px", resize: "none" }}
+                              />
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <button className="btn-comentar" onClick={() => enviarDenuncia(c)} style={{ fontSize: "13px", padding: "6px 14px" }}>Enviar</button>
+                                <button className="btn-sair" onClick={() => { setDenunciandoComentario(null); setTextoDenuncia("") }} style={{ fontSize: "13px", padding: "6px 14px" }}>Cancelar</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button onClick={() => setDenunciandoComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#bbb", cursor: "pointer", padding: 0 }}>
+                              Denunciar
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
