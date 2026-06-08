@@ -13,12 +13,12 @@ function Footer() {
       alignItems: "center",
       gap: "12px"
     }}>
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "900", color: "#F5C518" }}>
-        MBD<span style={{ fontWeight: "400", color: "#fff" }}>b</span>
-      </p>
       <p style={{ fontSize: "12px", color: "#555", textAlign: "center" }}>
-        Musicais Brasileiros Database
-      </p>
+  Musicais Brasileiros Database
+</p>
+<p style={{ fontSize: "12px", color: "#555", textAlign: "center" }}>
+  Feito com ❤️ para o teatro musical brasileiro
+</p>
       <div style={{ display: "flex", gap: "20px" }}>
         <button
           onClick={() => navigate("/termos")}
