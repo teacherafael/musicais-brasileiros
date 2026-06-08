@@ -6,7 +6,7 @@
 
 body {
   font-family: 'DM Sans', sans-serif;
-  background: #f5f5f0;
+  background: #f7f4ef;
   color: #1a1a1a;
   min-height: 100vh;
 }
@@ -20,6 +20,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 2px solid #F5C518;
 }
 
 .logo {
@@ -109,7 +110,14 @@ main {
   align-items: center;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
+  transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.card-musical:hover {
+  border-color: #F5C518;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
 .card-musical:hover {
