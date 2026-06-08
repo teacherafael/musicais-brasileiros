@@ -346,12 +346,24 @@ main {
 }
 
 .voltar:hover { color: #1a1a1a; }
+
 @media (max-width: 600px) {
   .grid-musicais {
     grid-template-columns: 1fr !important;
   }
+  .header-user-nome {
+    display: none;
+  }
+  .btn-login-texto-completo {
+    display: none;
+  }
+  .btn-login-texto-curto {
+    display: inline;
+  }
+}
 
-  .card-poster-home {
-    
+@media (min-width: 601px) {
+  .btn-login-texto-curto {
+    display: none;
   }
 }
