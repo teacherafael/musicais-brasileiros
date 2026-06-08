@@ -525,10 +525,12 @@ function Musical() {
             <p className="login-aviso">Faça login para comentar.</p>
           )}
 
-          {comentarios.length === 0 ? (
-            <p className="login-aviso" style={{ marginTop: "16px" }}>Nenhum comentário ainda.</p>
-          ) : (
-            comentarios.map(c => (
+          {!usuario ? (
+  <p className="login-aviso" style={{ marginTop: "16px" }}>Faça login para ver os comentários.</p>
+) : comentarios.length === 0 ? (
+  <p className="login-aviso" style={{ marginTop: "16px" }}>Nenhum comentário ainda.</p>
+) : (
+  comentarios.map(c => (
               <div key={c.id} className="comentario-item">
                 <p
                   className="comentario-nome"
