@@ -226,6 +226,8 @@ function Musical() {
   async function enviarComentario() {
     if (!usuario) return alert("Faça login para comentar.")
     if (!textoComentario.trim()) return
+    const confirmado = window.confirm("Lembre-se de manter sua crítica respeitosa e sem ataques à produção. Deseja publicar o comentário?")
+  if (!confirmado) return
     const novoComentario = {
       nome: formatarNome(usuario.displayName),
       userId: usuario.uid,
@@ -519,6 +521,9 @@ function Musical() {
                 onChange={e => setTextoComentario(e.target.value)}
                 placeholder="Escreva um comentário..."
               />
+              <p style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
+  Lembre-se de manter sua crítica respeitosa e sem ataques a produção.
+</p>
               <button className="btn-comentar" onClick={enviarComentario}>Enviar comentário</button>
             </div>
           ) : (
