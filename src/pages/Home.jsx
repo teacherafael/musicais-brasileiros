@@ -237,11 +237,13 @@ function Home() {
               className="card-musical"
               style={{ position: "relative", textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
             >
-             <div className="card-poster card-poster-home" style={{ width: "100%", aspectRatio: "2/3", minHeight: "280px", marginBottom: "12px" }}>
-  {musical.capa
-    ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-    : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", borderRadius: "6px", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
-  }
+             <div className="card-poster card-poster-home" style={{ width: "100%", position: "relative", paddingBottom: "140%", marginBottom: "12px" }}>
+  <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
+    {musical.capa
+      ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+      : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", borderRadius: "6px", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
+    }
+  </div>
 </div>
               <div className="card-info" style={{ width: "100%" }}>
                 <p className="card-titulo">{musical.titulo}</p>
