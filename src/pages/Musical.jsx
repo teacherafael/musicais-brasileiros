@@ -358,7 +358,12 @@ function Musical() {
             </button>
           </div>
 
-          <p className="sinopse">{musical.sinopse}</p>
+          {musical.sinopse && (
+  <div style={{ marginBottom: "24px" }}>
+    <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Sinopse</p>
+    <p className="sinopse" style={{ marginBottom: 0 }}>{musical.sinopse}</p>
+  </div>
+)}
 
           {musical.elenco && (
             <div style={{ marginBottom: "24px" }}>
