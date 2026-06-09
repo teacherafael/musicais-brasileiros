@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
 import Politica from "./pages/Politica"
+import Pessoa from "./pages/Pessoa"
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/termos" element={<Termos />} />
         <Route path="/politica" element={<Politica />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/pessoa/:nome" element={<Pessoa />} />
       </Routes>
       <Footer />
     </BrowserRouter>
