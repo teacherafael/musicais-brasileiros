@@ -15,6 +15,8 @@ function Admin() {
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
   const [capas, setCapas] = useState({})
+  const [editandoSugestao, setEditandoSugestao] = useState(null)
+  const [formSugestao, setFormSugestao] = useState({})
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -36,6 +38,31 @@ function Admin() {
     }
     buscarDados()
   }, [])
+
+  function abrirEdicaoSugestao(s) {
+    setFormSugestao({
+      titulo: s.titulo || "",
+      sinopse: s.sinopse || "",
+      direcao: s.direcao || "",
+      direcaoMusical: s.direcaoMusical || "",
+      producao: s.producao || "",
+      elenco: s.elenco || "",
+      elencoAdicional: s.elencoAdicional || "",
+      versionista: s.versionista || "",
+      textoOriginal: s.textoOriginal || "",
+      musicaOriginal: s.musicaOriginal || "",
+      ano: s.ano || "",
+      teatro: s.teatro || ""
+    })
+    setEditandoSugestao(s.id)
+  }
+
+  async function salvarEdicaoSugestao(sugestaoId) {
+    await updateDoc(doc(db, "sugestoes", sugestaoId), formSugestao)
+    setSugestoes(prev => prev.map(s => s.id === sugestaoId ? { ...s, ...formSugestao } : s))
+    setEditandoSugestao(null)
+    setFormSugestao({})
+  }
 
   async function aprovar(sugestao) {
     await addDoc(collection(db, "musicais"), {
@@ -77,6 +104,28 @@ function Admin() {
     setMusicais(prev => prev.filter(m => m.id !== musicalId))
   }
 
+  const campoSugestao = (label, chave, multiline = false) => (
+    <div style={{ marginBottom: "12px" }}>
+      <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          value={formSugestao[chave] || ""}
+          onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }}
+        />
+      ) : (
+        <input
+          type="text"
+          value={formSugestao[chave] || ""}
+          onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+        />
+      )}
+    </div>
+  )
+
   if (!usuario) return <main><p>Carregando...</p></main>
   if (usuario.uid !== ADMIN_UID) return <main><p>Acesso negado.</p></main>
 
@@ -106,38 +155,71 @@ function Admin() {
         ) : (
           sugestoes.map(s => (
             <div key={s.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
-              {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
-              {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
-              {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
-              {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
-              {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
-              {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
-              {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
-              {s.textoOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Texto original:</strong> {s.textoOriginal}</p>}
-              {s.musicaOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Música original:</strong> {s.musicaOriginal}</p>}
-              {s.ano && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Ano:</strong> {s.ano}</p>}
-              {s.teatro && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Teatro:</strong> {s.teatro}</p>}
-              <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>Sugerido por: {s.nome}</p>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
-                  URL da capa (opcional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://..."
-                  value={capas[s.id] || ""}
-                  onChange={e => setCapas(prev => ({ ...prev, [s.id]: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }}
-                />
-                {capas[s.id] && (
-                  <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
-                )}
-              </div>
-              <div style={{ display: "flex", gap: "12px" }}>
-                <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
-                <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
-              </div>
+
+              {editandoSugestao === s.id ? (
+                <>
+                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "16px" }}>Editando sugestão</h2>
+                  {campoSugestao("Título", "titulo")}
+                  {campoSugestao("Sinopse", "sinopse", true)}
+                  {campoSugestao("Direção", "direcao")}
+                  {campoSugestao("Direção musical", "direcaoMusical")}
+                  {campoSugestao("Produção", "producao")}
+                  {campoSugestao("Elenco", "elenco")}
+                  {campoSugestao("Elenco adicional", "elencoAdicional")}
+                  {campoSugestao("Versionista", "versionista")}
+                  {campoSugestao("Texto original", "textoOriginal")}
+                  {campoSugestao("Música original", "musicaOriginal")}
+                  {campoSugestao("Ano", "ano")}
+                  {campoSugestao("Teatro", "teatro")}
+                  <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                    <button className="btn-comentar" onClick={() => salvarEdicaoSugestao(s.id)}>Salvar edição</button>
+                    <button className="btn-sair" onClick={() => setEditandoSugestao(null)}>Cancelar</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
+                  {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
+                  {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
+                  {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
+                  {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
+                  {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
+                  {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
+                  {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
+                  {s.textoOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Texto original:</strong> {s.textoOriginal}</p>}
+                  {s.musicaOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Música original:</strong> {s.musicaOriginal}</p>}
+                  {s.ano && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Ano:</strong> {s.ano}</p>}
+                  {s.teatro && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Teatro:</strong> {s.teatro}</p>}
+                  <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>Sugerido por: {s.nome}</p>
+
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+                      URL da capa (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={capas[s.id] || ""}
+                      onChange={e => setCapas(prev => ({ ...prev, [s.id]: e.target.value }))}
+                      style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }}
+                    />
+                    {capas[s.id] && (
+                      <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
+                    <button
+                      onClick={() => abrirEdicaoSugestao(s)}
+                      style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
+                  </div>
+                </>
+              )}
             </div>
           ))
         )
@@ -153,25 +235,19 @@ function Admin() {
                 </span>
                 <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518" }}>{r.musicalTitulo}</p>
               </div>
-
               {r.tipo === "denuncia_comentario" && r.comentarioTexto && (
                 <div style={{ background: "#f9f9f9", borderLeft: "3px solid #e8e8e4", padding: "8px 12px", marginBottom: "10px", borderRadius: "4px" }}>
                   <p style={{ fontSize: "12px", color: "#888", marginBottom: "2px" }}>Comentário denunciado de {r.comentarioAutor}:</p>
                   <p style={{ fontSize: "13px", color: "#555", fontStyle: "italic" }}>"{r.comentarioTexto}"</p>
                 </div>
               )}
-
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
               <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
                 {r.tipo === "denuncia_comentario" ? "Denunciado por" : "Reportado por"}: {r.nome}
               </p>
               <div style={{ display: "flex", gap: "12px" }}>
-                <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>
-                  Ver musical
-                </button>
-                <button className="btn-sair" onClick={() => resolverRelato(r.id)}>
-                  Marcar como resolvido
-                </button>
+                <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>Ver musical</button>
+                <button className="btn-sair" onClick={() => resolverRelato(r.id)}>Marcar como resolvido</button>
               </div>
             </div>
           ))
