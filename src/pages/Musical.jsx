@@ -367,7 +367,7 @@ function Musical() {
 
           {musical.elenco && (
             <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
               <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{musical.elenco}</p>
             </div>
           )}
