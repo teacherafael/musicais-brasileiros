@@ -338,6 +338,8 @@ function Musical() {
               <p className="musical-meta"><strong>Direção:</strong> {nomesClicaveis(musical.direcao, navigate) || "—"}</p>
 {musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {nomesClicaveis(musical.direcaoMusical, navigate)}</p>}
 {musical.producao && <p className="musical-meta"><strong>Produção:</strong> {nomesClicaveis(musical.producao, navigate)}</p>}
+{musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
+{musical.teatro && <p className="musical-meta"><strong>Teatro de estreia:</strong> {musical.teatro}</p>}
 {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista, navigate)}</p>}
 {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal, navigate)}</p>}
 {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal, navigate)}</p>}
