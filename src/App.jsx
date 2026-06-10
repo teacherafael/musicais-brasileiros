@@ -58,7 +58,6 @@ function App() {
         
       </Routes>
       <VoltarAoTopo />
-<Footer />
       <Footer />
     </BrowserRouter>
   )
