@@ -44,11 +44,11 @@ function Pessoa() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
           {musicais.map(m => (
-            <div
-              key={m.id}
+            
+             <a key={m.id}
+              href={"/musical/" + m.id}
               className="card-musical"
-              onClick={() => navigate("/musical/" + m.id)}
-              style={{ cursor: "pointer" }}
+              style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
             >
               <div style={{ width: "100%", position: "relative", paddingBottom: "140%", marginBottom: "12px" }}>
                 <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
@@ -68,7 +68,7 @@ function Pessoa() {
                   </div>
                 )}
               </div>
-            </div>
+            </a>
           ))}
         </div>
       )}
