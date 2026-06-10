@@ -6,7 +6,12 @@ import { onAuthStateChanged } from "firebase/auth"
 
 function Home() {
   const [musicais, setMusicais] = useState([])
-  const [busca, setBusca] = useState("")
+ const [buscaInput, setBuscaInput] = useState("")
+
+useEffect(() => {
+  const timer = setTimeout(() => setBusca(buscaInput), 300)
+  return () => clearTimeout(timer)
+}, [buscaInput])
   const [ordenacao, setOrdenacao] = useState("recentes")
   const [filtroAno, setFiltroAno] = useState("")
   const [usuario, setUsuario] = useState(null)
@@ -147,8 +152,8 @@ function Home() {
         <input
           type="text"
           placeholder="Buscar musical ou pessoa..."
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
+          value={buscaInput}
+onChange={e => setBuscaInput(e.target.value)}
           style={{
             flex: 1,
             minWidth: "200px",
