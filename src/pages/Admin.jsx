@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
+import { collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -65,7 +65,16 @@ function Admin() {
   }
 
   async function aprovar(sugestao) {
-    await addDoc(collection(db, "musicais"), {
+    const slug = (sugestao.titulo
+  .toLowerCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/\s+/g, "-")
+  .replace(/[^a-z0-9-]/g, "")
+  .replace(/^-+|-+$/g, "") // remove hífens no início e fim
+) || "musical-" + Date.now()
+
+await setDoc(doc(db, "musicais", slug), {
       titulo: sugestao.titulo || "",
       sinopse: sugestao.sinopse || "",
       direcao: sugestao.direcao || "",
