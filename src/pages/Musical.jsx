@@ -8,16 +8,16 @@ import html2canvas from "html2canvas"
 
 const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
 
-function nomesClicaveis(texto, navigate) {
+function nomesClicaveis(texto) {
   if (!texto) return null
   return texto.split(",").map((nome, i, arr) => (
     <span key={i}>
-      <span
-        onClick={() => navigate("/pessoa/" + encodeURIComponent(nome.trim()))}
-        style={{ cursor: "pointer", color: "#444", borderBottom: "1px dotted #aaa" }}
+      <a
+        href={"/pessoa/" + encodeURIComponent(nome.trim())}
+        style={{ color: "#444", borderBottom: "1px dotted #aaa", textDecoration: "none" }}
       >
         {nome.trim()}
-      </span>
+      </a>
       {i < arr.length - 1 ? ", " : ""}
     </span>
   ))
@@ -335,14 +335,14 @@ function Musical() {
             </div>
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
-              <p className="musical-meta"><strong>Direção:</strong> {nomesClicaveis(musical.direcao, navigate) || "—"}</p>
-{musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {nomesClicaveis(musical.direcaoMusical, navigate)}</p>}
-{musical.producao && <p className="musical-meta"><strong>Produção:</strong> {nomesClicaveis(musical.producao, navigate)}</p>}
-{musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
-{musical.teatro && <p className="musical-meta"><strong>Teatro de estreia:</strong> {musical.teatro}</p>}
-{musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista, navigate)}</p>}
-{musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal, navigate)}</p>}
-{musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal, navigate)}</p>}
+              <p className="musical-meta"><strong>Direção:</strong> {nomesClicaveis(musical.direcao) || "—"}</p>
+              {musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {nomesClicaveis(musical.direcaoMusical)}</p>}
+              {musical.producao && <p className="musical-meta"><strong>Produção:</strong> {nomesClicaveis(musical.producao)}</p>}
+              {musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
+              {musical.teatro && <p className="musical-meta"><strong>Teatro de estreia:</strong> {musical.teatro}</p>}
+              {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
+              {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
+              {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
               {media ? (
                 <div className="rating-grande">
                   ★ {media}
@@ -372,25 +372,25 @@ function Musical() {
           </div>
 
           {musical.sinopse && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Sinopse</p>
-    <p className="sinopse" style={{ marginBottom: 0 }}>{musical.sinopse}</p>
-  </div>
-)}
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Sinopse</p>
+              <p className="sinopse" style={{ marginBottom: 0 }}>{musical.sinopse}</p>
+            </div>
+          )}
 
-  {musical.elenco && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
-    <p style={{ fontSize: "15px", lineHeight: "1.75" }}>{nomesClicaveis(musical.elenco, navigate)}</p>
-  </div>
-)}
+          {musical.elenco && (
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+              <p style={{ fontSize: "15px", lineHeight: "1.75" }}>{nomesClicaveis(musical.elenco)}</p>
+            </div>
+          )}
 
-{musical.elencoAdicional && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
-    <p style={{ fontSize: "15px", lineHeight: "1.75" }}>{nomesClicaveis(musical.elencoAdicional, navigate)}</p>
-  </div>
-)}
+          {musical.elencoAdicional && (
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
+              <p style={{ fontSize: "15px", lineHeight: "1.75" }}>{nomesClicaveis(musical.elencoAdicional)}</p>
+            </div>
+          )}
 
           <hr className="divider" />
 
@@ -476,7 +476,6 @@ function Musical() {
                 ) : (
                   <>
                     <p className="comentario-texto">{c.texto}</p>
-
                     <div style={{ display: "flex", gap: "12px", marginTop: "8px", flexWrap: "wrap" }}>
                       {usuario && usuario.uid === c.userId && (
                         <>
