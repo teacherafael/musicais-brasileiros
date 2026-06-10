@@ -126,6 +126,8 @@ main {
   cursor: pointer;
   transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
 .card-musical:hover {
