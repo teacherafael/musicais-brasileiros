@@ -6,13 +6,14 @@ import { onAuthStateChanged } from "firebase/auth"
 
 function Home() {
   const [musicais, setMusicais] = useState([])
- const [buscaInput, setBuscaInput] = useState("")
+const [busca, setBusca] = useState("")
+const [buscaInput, setBuscaInput] = useState("")
+const [ordenacao, setOrdenacao] = useState("recentes")
 
 useEffect(() => {
   const timer = setTimeout(() => setBusca(buscaInput), 300)
   return () => clearTimeout(timer)
 }, [buscaInput])
-  const [ordenacao, setOrdenacao] = useState("recentes")
   const [filtroAno, setFiltroAno] = useState("")
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
