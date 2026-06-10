@@ -11,6 +11,34 @@ import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
 import Politica from "./pages/Politica"
 import Pessoa from "./pages/Pessoa"
+import { useState, useEffect } from "react"
+
+function VoltarAoTopo() {
+  const [visivel, setVisivel] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setVisivel(window.scrollY > 300)
+    window.addEventListener("scroll", onScroll)
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  if (!visivel) return null
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      style={{
+        position: "fixed", bottom: "24px", right: "24px",
+        background: "#1a1a1a", color: "#F5C518", border: "none",
+        borderRadius: "50%", width: "44px", height: "44px",
+        fontSize: "20px", cursor: "pointer", zIndex: 999,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+      }}
+    >
+      ↑
+    </button>
+  )
+}
 
 function App() {
   return (
@@ -27,7 +55,10 @@ function App() {
         <Route path="/politica" element={<Politica />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
+        
       </Routes>
+      <VoltarAoTopo />
+<Footer />
       <Footer />
     </BrowserRouter>
   )
