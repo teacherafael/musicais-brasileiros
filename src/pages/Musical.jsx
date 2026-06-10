@@ -85,6 +85,7 @@ function Musical() {
   const [denunciandoComentario, setDenunciandoComentario] = useState(null)
   const [textoDenuncia, setTextoDenuncia] = useState("")
   const [denunciaEnviada, setDenunciaEnviada] = useState(null)
+  const [toast, setToast] = useState(null)
   const cartaoRef = useRef(null)
 
   useEffect(() => {
@@ -126,6 +127,11 @@ function Musical() {
     buscarEstados()
   }, [usuario, id])
 
+  function mostrarToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
+
   function abrirEdicao() {
     setFormEdicao({
       titulo: musical.titulo || "",
@@ -163,6 +169,23 @@ function Musical() {
       setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
     }
     setVotoAtual(estrelas)
+    mostrarToast("Avaliação salva!")
+  }
+
+  async function removerVoto() {
+    if (!window.confirm("Remover sua avaliação deste musical?")) return
+    await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
+    await updateDoc(doc(db, "musicais", id), {
+      totalVotos: increment(-1),
+      somaEstrelas: increment(-votoAtual)
+    })
+    setMusical(prev => ({
+      ...prev,
+      totalVotos: prev.totalVotos - 1,
+      somaEstrelas: prev.somaEstrelas - votoAtual
+    }))
+    setVotoAtual(null)
+    mostrarToast("Avaliação removida.")
   }
 
   async function toggleQueroVer() {
@@ -298,6 +321,17 @@ function Musical() {
 
   return (
     <main>
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
+          background: "#1a1a1a", color: "#F5C518", padding: "12px 24px",
+          borderRadius: "8px", fontSize: "14px", fontWeight: "500",
+          zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+        }}>
+          {toast}
+        </div>
+      )}
+
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
 
       {editandoMusical ? (
@@ -401,7 +435,16 @@ function Musical() {
           <Estrelas votoAtual={votoAtual} onVotar={votar} />
 
           {votoAtual && (
-            <div style={{ marginTop: "16px", marginBottom: "8px" }}>
+            <button
+              onClick={removerVoto}
+              style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, marginBottom: "8px", textDecoration: "underline" }}
+            >
+              Remover avaliação
+            </button>
+          )}
+
+          {votoAtual && (
+            <div style={{ marginTop: "8px", marginBottom: "8px" }}>
               <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "#F5C518", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", width: "270px", minHeight: "420px", justifyContent: "flex-start", paddingTop: "48px" }}>
                 {musical.capa ? (
                   <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }} />
