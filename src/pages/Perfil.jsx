@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, setDoc, getDoc, deleteDoc } from "firebase/firestore"
+import { collection, getDocs, query, doc, setDoc, deleteDoc } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -124,10 +124,11 @@ function Perfil() {
   )
 
   const cardMusical = (item, extra) => (
-    <div
+    <a
       key={item.id}
+      href={"/musical/" + item.musicalId}
       className="card-musical"
-      onClick={() => navigate(`/musical/${item.musicalId}`)}
+      style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
     >
       <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
         {item.capa
@@ -139,7 +140,7 @@ function Perfil() {
         <p className="card-titulo">{item.titulo}</p>
         {extra}
       </div>
-    </div>
+    </a>
   )
 
   return (
@@ -172,21 +173,21 @@ function Perfil() {
       </div>
 
       {/* MEU TOP 3 */}
-<div style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
-  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-    <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
-    {isProprioPerfil && !editandoTop3 && (
-      <button
-        onClick={() => {
-          setTop3Selecionado(top3.map(t => t.musicalId))
-          setEditandoTop3(true)
-        }}
-        style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}
-      >
-        ✏️ Editar
-      </button>
-    )}
-  </div>
+      <div style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
+          {isProprioPerfil && !editandoTop3 && (
+            <button
+              onClick={() => {
+                setTop3Selecionado(top3.map(t => t.musicalId))
+                setEditandoTop3(true)
+              }}
+              style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}
+            >
+              ✏️ Editar
+            </button>
+          )}
+        </div>
 
         {editandoTop3 ? (
           <div>
@@ -200,7 +201,7 @@ function Perfil() {
               onChange={e => setBuscaTop3(e.target.value)}
               style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "12px" }}
             />
-            <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #e8e8e4", borderRadius: "8px", marginBottom: "16px" }}>
+            <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #333", borderRadius: "8px", marginBottom: "16px" }}>
               {musicaisFiltradosTop3.map(m => (
                 <div
                   key={m.id}
@@ -208,17 +209,17 @@ function Perfil() {
                   style={{
                     display: "flex", alignItems: "center", gap: "12px",
                     padding: "10px 14px", cursor: "pointer",
-                    background: top3Selecionado.includes(m.id) ? "#fffbe6" : "#fff",
-                    borderBottom: "1px solid #f0f0f0"
+                    background: top3Selecionado.includes(m.id) ? "#2a2a1a" : "#222",
+                    borderBottom: "1px solid #333"
                   }}
                 >
                   {m.capa
                     ? <img src={m.capa} alt={m.titulo} style={{ width: "32px", height: "44px", objectFit: "cover", borderRadius: "3px", flexShrink: 0 }} />
-                    : <div style={{ width: "32px", height: "44px", background: "#1a1a1a", borderRadius: "3px", flexShrink: 0 }} />
+                    : <div style={{ width: "32px", height: "44px", background: "#333", borderRadius: "3px", flexShrink: 0 }} />
                   }
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: "14px", fontWeight: "500" }}>{m.titulo}</p>
-                    <p style={{ fontSize: "12px", color: "#888" }}>{m.direcao || "—"}</p>
+                    <p style={{ fontSize: "14px", fontWeight: "500", color: "#fff" }}>{m.titulo}</p>
+                    <p style={{ fontSize: "12px", color: "#666" }}>{m.direcao || "—"}</p>
                   </div>
                   {top3Selecionado.includes(m.id) && (
                     <span style={{ color: "#F5C518", fontSize: "18px" }}>★</span>
@@ -232,17 +233,18 @@ function Perfil() {
             </div>
           </div>
         ) : top3.length === 0 ? (
-          <p className="login-aviso">
+          <p style={{ fontSize: "14px", color: "#666", fontStyle: "italic" }}>
             {isProprioPerfil ? "Clique em editar para escolher seus 3 musicais favoritos." : "Nenhum favorito definido ainda."}
           </p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+   
             {top3.map((item, i) => (
-              <div
+              <a
                 key={item.id}
+                href={"/musical/" + item.musicalId}
                 className="card-musical"
-                onClick={() => navigate("/musical/" + item.musicalId)}
-                style={{ cursor: "pointer", position: "relative" }}
+                style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518" }}
               >
                 <div style={{ position: "absolute", top: "8px", left: "8px", background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "700", zIndex: 1 }}>
                   {i + 1}
@@ -250,14 +252,14 @@ function Perfil() {
                 <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
                   {item.capa
                     ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                    : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
+                    : <div style={{ width: "100%", height: "100%", background: "#333", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
                   }
                 </div>
                 <div style={{ width: "100%" }}>
                   <p className="card-titulo">{item.titulo}</p>
                   <p className="card-meta">Direção: {item.direcao || "—"}</p>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}
@@ -316,17 +318,17 @@ function Perfil() {
         comentarios.map(c => {
           const musical = musicais[c.musicalId]
           return (
-            <div
+            <a
               key={c.id}
+              href={"/musical/" + c.musicalId}
               className="comentario-item"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate(`/musical/${c.musicalId}`)}
+              style={{ display: "block", textDecoration: "none", color: "inherit", cursor: "pointer" }}
             >
               <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "4px" }}>
                 {musical?.titulo}
               </p>
               <p className="comentario-texto">{c.texto}</p>
-            </div>
+            </a>
           )
         })
       )}
