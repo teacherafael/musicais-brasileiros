@@ -197,6 +197,32 @@ main {
   margin-bottom: 24px;
 }
 
+@media (max-width: 600px) {
+  .musical-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .musical-poster {
+    width: 200px !important;
+    height: 280px !important;
+  }
+
+  .musical-titulo {
+    font-size: 24px !important;
+    text-align: center;
+  }
+
+  .musical-meta {
+    text-align: center;
+  }
+
+  .rating-grande {
+    display: flex;
+    justify-content: center;
+  }
+}
+
 .musical-poster {
   width: 225px;
   height: 305px;
