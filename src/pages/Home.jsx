@@ -6,6 +6,9 @@ import { onAuthStateChanged } from "firebase/auth"
 
 const POR_PAGINA = 12
 
+const normalizar = (texto) =>
+  texto?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ?? ""
+
 function Home() {
   const [musicais, setMusicais] = useState([])
   const [destaques, setDestaques] = useState([])
@@ -121,7 +124,7 @@ function Home() {
   const musicaisFiltrados = musicais
     .filter(m => !idsExcluidos.has(m.id))
     .filter(musical => {
-      const termo = busca.toLowerCase()
+      const termo = normalizar(busca)
       const campos = [
         musical.titulo,
         musical.elenco,
@@ -134,7 +137,7 @@ function Home() {
         musical.musicaOriginal
       ]
       return (
-        campos.some(c => c && c.toLowerCase().includes(termo)) &&
+        campos.some(c => normalizar(c).includes(termo)) &&
         (filtroAno === "" || musical.ano === filtroAno)
       )
     })
