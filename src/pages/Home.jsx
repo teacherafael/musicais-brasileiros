@@ -251,11 +251,11 @@ function Home() {
         O maior arquivo colaborativo do teatro musical brasileiro.
       </p>
 
-      {/* ── EM DESTAQUE ── */}
+      {/* ── EM CARTAZ ── */}
       {destaques.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
-          <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
-            Em destaque
+          <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
+            EM CARTAZ
           </p>
           <div style={{
             display: "flex",
@@ -275,7 +275,7 @@ function Home() {
       {/* ── RECÉM ADICIONADOS ── */}
       {recentesIds.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
-          <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
+          <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
             Recém adicionados
           </p>
           <div style={{
