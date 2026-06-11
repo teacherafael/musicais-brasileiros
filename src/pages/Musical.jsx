@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async"
 import { useEffect, useState, useRef } from "react"
 import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, deleteDoc, orderBy, query, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
@@ -283,6 +284,7 @@ function Musical() {
   }
 
   if (!musical) return <main><p>Carregando...</p></main>
+  
 
   const media = musical.totalVotos > 0
     ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
@@ -321,6 +323,16 @@ function Musical() {
 
   return (
     <main>
+      <Helmet>
+        <title>{musical.titulo} — MBDb</title>
+        <meta name="description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
+        <meta property="og:title" content={musical.titulo} />
+        <meta property="og:description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
+        {musical.capa && <meta property="og:image" content={musical.capa} />}
+        <meta property="og:url" content={`https://musicais-brasileiros.vercel.app/musical/${id}`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
       {toast && (
         <div style={{
           position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
