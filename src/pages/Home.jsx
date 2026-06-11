@@ -326,10 +326,13 @@ function Home() {
     Recém adicionados
   </p>
   <div style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(5, 140px)",
-    gap: "16px",
-  }}>
+  display: "flex",
+  gap: "16px",
+  overflowX: "auto",
+  paddingBottom: "8px",
+  scrollbarWidth: "none",
+  msOverflowStyle: "none"
+}}>
     {recentesIds.map(musical => (
       <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
     ))}
