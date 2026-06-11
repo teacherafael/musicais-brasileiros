@@ -9,6 +9,17 @@ import html2canvas from "html2canvas"
 
 const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
 
+function SeloVerificado() {
+  return (
+    <span title="Usuário verificado" style={{ marginLeft: "5px", verticalAlign: "middle", display: "inline-flex" }}>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
+        <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  )
+}
+
 function nomesClicaveis(texto) {
   if (!texto) return null
   return texto.split(",").map((nome, i, arr) => (
@@ -31,11 +42,6 @@ function Estrelas({ votoAtual, onVotar }) {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     return x < rect.width / 2 ? estrela - 0.5 : estrela
-  }
-
-  function corEstrela(estrela, valor) {
-    if (valor >= estrela - 0.5) return "#F5C518"
-    return "#ddd"
   }
 
   const valorAtivo = hover || votoAtual || 0
@@ -87,6 +93,7 @@ function Musical() {
   const [textoDenuncia, setTextoDenuncia] = useState("")
   const [denunciaEnviada, setDenunciaEnviada] = useState(null)
   const [toast, setToast] = useState(null)
+  const [usuariosVerificados, setUsuariosVerificados] = useState({})
   const cartaoRef = useRef(null)
 
   useEffect(() => {
@@ -110,6 +117,15 @@ function Musical() {
         return dados
       }))
       setComentarios(lista)
+
+      // Buscar quais usuários dos comentários são verificados
+      const userIds = [...new Set(lista.map(c => c.userId).filter(Boolean))]
+      const verificados = {}
+      await Promise.all(userIds.map(async uid => {
+        const userSnap = await getDoc(doc(db, "usuarios", uid))
+        if (userSnap.exists()) verificados[uid] = userSnap.data().verificado ?? false
+      }))
+      setUsuariosVerificados(verificados)
     }
     buscarMusical()
     buscarComentarios()
@@ -157,12 +173,14 @@ function Musical() {
     setMusical(prev => ({ ...prev, ...formEdicao }))
     setEditandoMusical(false)
   }
-async function toggleDestaque() {
-  const novoValor = !musical.destaque
-  await updateDoc(doc(db, "musicais", id), { destaque: novoValor })
-  setMusical(prev => ({ ...prev, destaque: novoValor }))
-  mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
-}
+
+  async function toggleDestaque() {
+    const novoValor = !musical.destaque
+    await updateDoc(doc(db, "musicais", id), { destaque: novoValor })
+    setMusical(prev => ({ ...prev, destaque: novoValor }))
+    mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
+  }
+
   async function votar(estrelas) {
     if (!usuario) return alert("Faça login para votar.")
     if (votoAtual) {
@@ -250,6 +268,12 @@ async function toggleDestaque() {
     const docRef = await addDoc(collection(db, "musicais", id, "comentarios"), novoComentario)
     const votoSnap = await getDoc(doc(db, "musicais", id, "votos", usuario.uid))
     const estrelasComentario = votoSnap.exists() ? votoSnap.data().estrelas : null
+
+    // Verificar se o usuário que comentou é verificado
+    const userSnap = await getDoc(doc(db, "usuarios", usuario.uid))
+    const eVerificado = userSnap.exists() ? (userSnap.data().verificado ?? false) : false
+    setUsuariosVerificados(prev => ({ ...prev, [usuario.uid]: eVerificado }))
+
     setComentarios(prev => [{ id: docRef.id, ...novoComentario, estrelasComentario }, ...prev])
     setTextoComentario("")
   }
@@ -289,7 +313,6 @@ async function toggleDestaque() {
   }
 
   if (!musical) return <main><p>Carregando...</p></main>
-  
 
   const media = musical.totalVotos > 0
     ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
@@ -408,10 +431,10 @@ async function toggleDestaque() {
                 </button>
               )}
               {usuario && usuario.uid === ADMIN_UID && (
-  <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
-    {musical.destaque ? "★ Em destaque" : "☆ Colocar em destaque"}
-  </button>
-)}
+                <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
+                  {musical.destaque ? "★ Em destaque" : "☆ Colocar em destaque"}
+                </button>
+              )}
             </div>
           </div>
 
@@ -519,12 +542,13 @@ async function toggleDestaque() {
           ) : (
             comentarios.map(c => (
               <div key={c.id} className="comentario-item">
-                <a href={`/perfil/${c.userId}`} className="comentario-nome" style={{ cursor: "pointer", textDecoration: "none", color: "inherit" }}>
-  {c.nome || "Anônimo"}
-  {c.estrelasComentario && (
-    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
-  )}
-</a>
+                <a href={`/perfil/${c.userId}`} className="comentario-nome" style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center" }}>
+                  {c.nome || "Anônimo"}
+                  {usuariosVerificados[c.userId] && <SeloVerificado />}
+                  {c.estrelasComentario && (
+                    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
+                  )}
+                </a>
 
                 {editandoComentario === c.id ? (
                   <div>

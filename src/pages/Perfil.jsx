@@ -4,6 +4,19 @@ import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
+const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
+
+function SeloVerificado() {
+  return (
+    <span title="Usuário verificado" style={{ marginLeft: "6px", verticalAlign: "middle", display: "inline-flex" }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
+        <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  )
+}
+
 function Perfil() {
   const { userId } = useParams()
   const navigate = useNavigate()
@@ -21,6 +34,7 @@ function Perfil() {
   const [editandoTop3, setEditandoTop3] = useState(false)
   const [top3Selecionado, setTop3Selecionado] = useState([])
   const [buscaTop3, setBuscaTop3] = useState("")
+  const [verificado, setVerificado] = useState(false)
 
   const [seguindo, setSeguindo] = useState([])
   const [seguidores, setSeguidores] = useState([])
@@ -98,6 +112,7 @@ function Perfil() {
 
       if (usuarioDoc.exists()) {
         setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
+        setVerificado(usuarioDoc.data().verificado ?? false)
       }
 
       setCarregando(false)
@@ -174,7 +189,14 @@ function Perfil() {
     await setDoc(doc(db, "usuarios", userId), { avaliacoesPublicas: novo }, { merge: true })
   }
 
+  async function toggleVerificado() {
+    const novo = !verificado
+    setVerificado(novo)
+    await setDoc(doc(db, "usuarios", userId), { verificado: novo }, { merge: true })
+  }
+
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
+  const isAdmin = usuarioLogado && usuarioLogado.uid === ADMIN_UID
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
   const fotoPerfil = isProprioPerfil ? usuarioLogado.photoURL : fotoUsuario
 
@@ -235,8 +257,29 @@ function Perfil() {
         {fotoPerfil && (
           <img src={fotoPerfil} alt={nomePerfil} style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }} />
         )}
-        <h1 className="page-title">{nomePerfil || "Usuario"}</h1>
+
+        <h1 className="page-title" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
+          {nomePerfil || "Usuario"}
+          {verificado && <SeloVerificado />}
+        </h1>
+
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
+
+        {/* Botão de verificar — só aparece para o admin, no perfil de outro usuário */}
+        {isAdmin && !isProprioPerfil && (
+          <button
+            onClick={toggleVerificado}
+            style={{
+              marginTop: "8px", padding: "5px 14px", borderRadius: "20px", fontSize: "12px",
+              border: "1px solid #1D9BF0",
+              background: verificado ? "#1D9BF0" : "transparent",
+              color: verificado ? "#fff" : "#1D9BF0",
+              cursor: "pointer", fontFamily: "'DM Sans', sans-serif"
+            }}
+          >
+            {verificado ? "✓ Verificado — Remover selo" : "Verificar usuário"}
+          </button>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
           <button style={estiloContador} onClick={() => { setMostrarSeguidores(prev => !prev); setMostrarSeguindo(false) }}>
