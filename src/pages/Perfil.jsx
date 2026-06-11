@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, setDoc, deleteDoc } from "firebase/firestore"
+import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -14,11 +14,18 @@ function Perfil() {
   const [jaVi, setJaVi] = useState([])
   const [musicais, setMusicais] = useState({})
   const [nomeUsuario, setNomeUsuario] = useState("")
+  const [fotoUsuario, setFotoUsuario] = useState("")
   const [carregando, setCarregando] = useState(true)
   const [top3, setTop3] = useState([])
   const [editandoTop3, setEditandoTop3] = useState(false)
   const [top3Selecionado, setTop3Selecionado] = useState([])
   const [buscaTop3, setBuscaTop3] = useState("")
+
+  // estados do sistema de seguir
+  const [seguindo, setSeguindo] = useState([])
+  const [seguidores, setSeguidores] = useState([])
+  const [jaSigo, setJaSigo] = useState(false)
+  const [carregandoSeguir, setCarregandoSeguir] = useState(false)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
@@ -35,6 +42,7 @@ function Perfil() {
 
       const votosEncontrados = []
       const comentariosEncontrados = []
+      let nomeEncontrado = ""
 
       for (const musicalId of Object.keys(musicaisMap)) {
         const votosSnap = await getDocs(collection(db, "musicais", musicalId, "votos"))
@@ -48,11 +56,13 @@ function Perfil() {
         comentariosSnap.docs.forEach(d => {
           const dados = d.data()
           if (dados.userId === userId) {
-            if (!nomeUsuario && dados.nome) setNomeUsuario(dados.nome)
+            if (!nomeEncontrado && dados.nome) nomeEncontrado = dados.nome
             comentariosEncontrados.push({ id: d.id, musicalId, ...dados })
           }
         })
       }
+
+      if (nomeEncontrado) setNomeUsuario(nomeEncontrado)
 
       const queroVerSnap = await getDocs(collection(db, "usuarios", userId, "queroVer"))
       const queroVerLista = queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() }))
@@ -66,6 +76,12 @@ function Perfil() {
         .sort((a, b) => a.ordem - b.ordem)
       setTop3(top3Lista)
 
+      const seguindoSnap = await getDocs(collection(db, "usuarios", userId, "seguindo"))
+      setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+      const seguidoresSnap = await getDocs(collection(db, "usuarios", userId, "seguidores"))
+      setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
       setVotos(votosEncontrados)
       setComentarios(comentariosEncontrados)
       setQueroVer(queroVerLista)
@@ -75,6 +91,52 @@ function Perfil() {
 
     buscarDados()
   }, [userId])
+
+  useEffect(() => {
+    async function verificarSeguindo() {
+      if (!usuarioLogado || usuarioLogado.uid === userId) return
+      const ref = doc(db, "usuarios", usuarioLogado.uid, "seguindo", userId)
+      const snap = await getDoc(ref)
+      setJaSigo(snap.exists())
+    }
+    verificarSeguindo()
+  }, [usuarioLogado, userId])
+
+  async function toggleSeguir() {
+    if (!usuarioLogado) return alert("Voce precisa estar logado para seguir alguem.")
+    setCarregandoSeguir(true)
+
+    const refMeuSeguindo = doc(db, "usuarios", usuarioLogado.uid, "seguindo", userId)
+    const refSeguidorDele = doc(db, "usuarios", userId, "seguidores", usuarioLogado.uid)
+
+    if (jaSigo) {
+      await Promise.all([
+        deleteDoc(refMeuSeguindo),
+        deleteDoc(refSeguidorDele)
+      ])
+      setJaSigo(false)
+      setSeguidores(prev => prev.filter(s => s.id !== usuarioLogado.uid))
+    } else {
+      const dadosAlvo = {
+        userId,
+        nome: nomeUsuario || "Usuario",
+        foto: fotoUsuario || ""
+      }
+      const meusDados = {
+        userId: usuarioLogado.uid,
+        nome: usuarioLogado.displayName || "Usuario",
+        foto: usuarioLogado.photoURL || ""
+      }
+      await Promise.all([
+        setDoc(refMeuSeguindo, dadosAlvo),
+        setDoc(refSeguidorDele, meusDados)
+      ])
+      setJaSigo(true)
+      setSeguidores(prev => [...prev, { id: usuarioLogado.uid, ...meusDados }])
+    }
+
+    setCarregandoSeguir(false)
+  }
 
   async function salvarTop3() {
     const snap = await getDocs(collection(db, "usuarios", userId, "top3"))
@@ -105,13 +167,14 @@ function Perfil() {
     if (top3Selecionado.includes(musicalId)) {
       setTop3Selecionado(prev => prev.filter(id => id !== musicalId))
     } else {
-      if (top3Selecionado.length >= 3) return alert("Você já selecionou 3 musicais.")
+      if (top3Selecionado.length >= 3) return alert("Voce ja selecionou 3 musicais.")
       setTop3Selecionado(prev => [...prev, musicalId])
     }
   }
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
+  const fotoPerfil = isProprioPerfil ? usuarioLogado.photoURL : fotoUsuario
 
   const mediaVotos = votos.length > 0
     ? (votos.reduce((acc, v) => acc + v.estrelas, 0) / votos.length).toFixed(1)
@@ -143,36 +206,80 @@ function Perfil() {
     </a>
   )
 
+  const cardUsuario = (pessoa) => (
+    <a
+      key={pessoa.id}
+      href={"/perfil/" + pessoa.userId}
+      style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#f5f5f0" }}
+    >
+      {pessoa.foto
+        ? <img src={pessoa.foto} alt={pessoa.nome} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+        : <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "16px", flexShrink: 0 }}>👤</div>
+      }
+      <span style={{ fontSize: "14px", fontWeight: "500" }}>{pessoa.nome || "Usuario"}</span>
+    </a>
+  )
+
   return (
     <main>
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
 
       <div style={{ marginBottom: "32px" }}>
-        {isProprioPerfil && usuarioLogado.photoURL && (
+        {fotoPerfil && (
           <img
-            src={usuarioLogado.photoURL}
+            src={fotoPerfil}
             alt={nomePerfil}
             style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }}
           />
         )}
-        <h1 className="page-title">{nomePerfil || "Usuário"}</h1>
-        {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este é o seu perfil</p>}
+        <h1 className="page-title">{nomePerfil || "Usuario"}</h1>
+        {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
+
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "14px", color: "#555" }}>
+            <strong>{seguidores.length}</strong> {seguidores.length === 1 ? "seguidor" : "seguidores"}
+          </span>
+          <span style={{ fontSize: "14px", color: "#555" }}>
+            <strong>{seguindo.length}</strong> seguindo
+          </span>
+
+          {!isProprioPerfil && usuarioLogado && (
+            <button
+              onClick={toggleSeguir}
+              disabled={carregandoSeguir}
+              style={{
+                padding: "6px 18px",
+                borderRadius: "20px",
+                border: jaSigo ? "1px solid #ccc" : "none",
+                background: jaSigo ? "transparent" : "#F5C518",
+                color: jaSigo ? "#555" : "#1a1a1a",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "13px",
+                fontWeight: "600",
+                cursor: carregandoSeguir ? "not-allowed" : "pointer",
+                opacity: carregandoSeguir ? 0.6 : 1
+              }}
+            >
+              {carregandoSeguir ? "..." : jaSigo ? "Seguindo" : "Seguir"}
+            </button>
+          )}
+        </div>
 
         {votos.length > 0 && (
           <div style={{ display: "flex", gap: "16px", marginTop: "16px", flexWrap: "wrap" }}>
             <div style={{ background: "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", display: "inline-flex", alignItems: "baseline", gap: "8px" }}>
               <span style={{ fontSize: "22px", fontWeight: "700" }}>★ {mediaVotos}</span>
-              <span style={{ fontSize: "12px", color: "#888" }}>média pessoal</span>
+              <span style={{ fontSize: "12px", color: "#888" }}>media pessoal</span>
             </div>
             <div style={{ background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "10px 18px", display: "inline-flex", alignItems: "baseline", gap: "8px" }}>
               <span style={{ fontSize: "22px", fontWeight: "700" }}>{votos.length}</span>
-              <span style={{ fontSize: "12px", color: "#888" }}>{votos.length === 1 ? "avaliação" : "avaliações"}</span>
+              <span style={{ fontSize: "12px", color: "#888" }}>{votos.length === 1 ? "avaliacao" : "avaliacoes"}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* MEU TOP 3 */}
+      {/* TOP 3 */}
       <div style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
@@ -192,7 +299,7 @@ function Perfil() {
         {editandoTop3 ? (
           <div>
             <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>
-              Selecione até 3 musicais favoritos ({top3Selecionado.length}/3)
+              Selecione ate 3 musicais favoritos ({top3Selecionado.length}/3)
             </p>
             <input
               type="text"
@@ -238,7 +345,6 @@ function Perfil() {
           </p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
-   
             {top3.map((item, i) => (
               <a
                 key={item.id}
@@ -257,7 +363,7 @@ function Perfil() {
                 </div>
                 <div style={{ width: "100%" }}>
                   <p className="card-titulo">{item.titulo}</p>
-                  <p className="card-meta">Direção: {item.direcao || "—"}</p>
+                  <p className="card-meta">Direcao: {item.direcao || "—"}</p>
                 </div>
               </a>
             ))}
@@ -265,12 +371,12 @@ function Perfil() {
         )}
       </div>
 
+      {/* AVALIACOES */}
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Avaliações ({votos.length})
+        Avaliacoes ({votos.length})
       </h2>
-
       {votos.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhuma avaliação ainda.</p>
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhuma avaliacao ainda.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
           {votos.map(voto => {
@@ -284,36 +390,36 @@ function Perfil() {
         </div>
       )}
 
+      {/* JA VI */}
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Já vi ({jaVi.length})
+        Ja vi ({jaVi.length})
       </h2>
-
       {jaVi.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {jaVi.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
+          {jaVi.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
         </div>
       )}
 
+      {/* QUERO VER */}
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
         Quero ver ({queroVer.length})
       </h2>
-
       {queroVer.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {queroVer.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
+          {queroVer.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
         </div>
       )}
 
+      {/* COMENTARIOS */}
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Comentários ({comentarios.length})
+        Comentarios ({comentarios.length})
       </h2>
-
       {comentarios.length === 0 ? (
-        <p className="login-aviso">Nenhum comentário ainda.</p>
+        <p className="login-aviso">Nenhum comentario ainda.</p>
       ) : (
         comentarios.map(c => {
           const musical = musicais[c.musicalId]
@@ -332,6 +438,31 @@ function Perfil() {
           )
         })
       )}
+
+      {/* SEGUIDORES */}
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px", marginTop: "40px" }}>
+        Seguidores ({seguidores.length})
+      </h2>
+      {seguidores.length === 0 ? (
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum seguidor ainda.</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px", marginBottom: "40px" }}>
+          {seguidores.map(cardUsuario)}
+        </div>
+      )}
+
+      {/* SEGUINDO */}
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
+        Seguindo ({seguindo.length})
+      </h2>
+      {seguindo.length === 0 ? (
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nao esta seguindo ninguem ainda.</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px", marginBottom: "40px" }}>
+          {seguindo.map(cardUsuario)}
+        </div>
+      )}
+
     </main>
   )
 }
