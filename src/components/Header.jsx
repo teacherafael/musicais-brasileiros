@@ -18,7 +18,7 @@ function Header() {
     <header>
       <div className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer", display: "flex", alignItems: "baseline", gap: "10px" }}>
   <span style={{ color: "#F5C518" }}>MBD<span style={{ color: "#fff" }}>b</span></span>
-  <span style={{ fontSize: "18px", fontWeight: "400", color: "#aaa", letterSpacing: "0.1px", fontFamily: "'DM Sans', sans-serif" }}>
+  <span className="logo-subtitulo">
     Musicais Brasileiros Database
   </span>
 </div>
