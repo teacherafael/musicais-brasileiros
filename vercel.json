@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/og-musical.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/musical/:id",
