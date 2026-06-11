@@ -21,13 +21,11 @@ function Perfil() {
   const [top3Selecionado, setTop3Selecionado] = useState([])
   const [buscaTop3, setBuscaTop3] = useState("")
 
-  // estados do sistema de seguir
   const [seguindo, setSeguindo] = useState([])
   const [seguidores, setSeguidores] = useState([])
   const [jaSigo, setJaSigo] = useState(false)
   const [carregandoSeguir, setCarregandoSeguir] = useState(false)
 
-  // estados para abrir/fechar listas
   const [mostrarSeguidores, setMostrarSeguidores] = useState(false)
   const [mostrarSeguindo, setMostrarSeguindo] = useState(false)
 
@@ -37,59 +35,66 @@ function Perfil() {
 
   useEffect(() => {
     async function buscarDados() {
-      const musicaisSnap = await getDocs(collection(db, "musicais"))
+      // Busca musicais e dados do usuario em paralelo
+      const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap] = await Promise.all([
+        getDocs(collection(db, "musicais")),
+        getDocs(collection(db, "usuarios", userId, "queroVer")),
+        getDocs(collection(db, "usuarios", userId, "jaVi")),
+        getDocs(collection(db, "usuarios", userId, "top3")),
+        getDocs(collection(db, "usuarios", userId, "seguindo")),
+        getDocs(collection(db, "usuarios", userId, "seguidores"))
+      ])
+
       const musicaisMap = {}
       musicaisSnap.docs.forEach(d => {
         musicaisMap[d.id] = { id: d.id, ...d.data() }
       })
       setMusicais(musicaisMap)
 
+      // Busca votos e comentarios de todos os musicais em paralelo
+      const musicalIds = Object.keys(musicaisMap)
+      const [todosVotos, todosComentarios] = await Promise.all([
+        Promise.all(musicalIds.map(id => getDocs(collection(db, "musicais", id, "votos")))),
+        Promise.all(musicalIds.map(id => getDocs(query(collection(db, "musicais", id, "comentarios")))))
+      ])
+
       const votosEncontrados = []
       const comentariosEncontrados = []
       let nomeEncontrado = ""
 
-      for (const musicalId of Object.keys(musicaisMap)) {
-        const votosSnap = await getDocs(collection(db, "musicais", musicalId, "votos"))
-        votosSnap.docs.forEach(d => {
+      todosVotos.forEach((snap, i) => {
+        const musicalId = musicalIds[i]
+        snap.docs.forEach(d => {
           if (d.id === userId) {
             votosEncontrados.push({ musicalId, estrelas: d.data().estrelas })
           }
         })
+      })
 
-        const comentariosSnap = await getDocs(query(collection(db, "musicais", musicalId, "comentarios")))
-        comentariosSnap.docs.forEach(d => {
+      todosComentarios.forEach((snap, i) => {
+        const musicalId = musicalIds[i]
+        snap.docs.forEach(d => {
           const dados = d.data()
           if (dados.userId === userId) {
             if (!nomeEncontrado && dados.nome) nomeEncontrado = dados.nome
             comentariosEncontrados.push({ id: d.id, musicalId, ...dados })
           }
         })
-      }
+      })
 
       if (nomeEncontrado) setNomeUsuario(nomeEncontrado)
 
-      const queroVerSnap = await getDocs(collection(db, "usuarios", userId, "queroVer"))
-      const queroVerLista = queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-
-      const jaViSnap = await getDocs(collection(db, "usuarios", userId, "jaVi"))
-      const jaViLista = jaViSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-
-      const top3Snap = await getDocs(collection(db, "usuarios", userId, "top3"))
       const top3Lista = top3Snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => a.ordem - b.ordem)
+
       setTop3(top3Lista)
-
-      const seguindoSnap = await getDocs(collection(db, "usuarios", userId, "seguindo"))
-      setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-
-      const seguidoresSnap = await getDocs(collection(db, "usuarios", userId, "seguidores"))
-      setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-
       setVotos(votosEncontrados)
       setComentarios(comentariosEncontrados)
-      setQueroVer(queroVerLista)
-      setJaVi(jaViLista)
+      setQueroVer(queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setJaVi(jaViSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
       setCarregando(false)
     }
 
@@ -114,27 +119,13 @@ function Perfil() {
     const refSeguidorDele = doc(db, "usuarios", userId, "seguidores", usuarioLogado.uid)
 
     if (jaSigo) {
-      await Promise.all([
-        deleteDoc(refMeuSeguindo),
-        deleteDoc(refSeguidorDele)
-      ])
+      await Promise.all([deleteDoc(refMeuSeguindo), deleteDoc(refSeguidorDele)])
       setJaSigo(false)
       setSeguidores(prev => prev.filter(s => s.id !== usuarioLogado.uid))
     } else {
-      const dadosAlvo = {
-        userId,
-        nome: nomeUsuario || "Usuario",
-        foto: fotoUsuario || ""
-      }
-      const meusDados = {
-        userId: usuarioLogado.uid,
-        nome: usuarioLogado.displayName || "Usuario",
-        foto: usuarioLogado.photoURL || ""
-      }
-      await Promise.all([
-        setDoc(refMeuSeguindo, dadosAlvo),
-        setDoc(refSeguidorDele, meusDados)
-      ])
+      const dadosAlvo = { userId, nome: nomeUsuario || "Usuario", foto: fotoUsuario || "" }
+      const meusDados = { userId: usuarioLogado.uid, nome: usuarioLogado.displayName || "Usuario", foto: usuarioLogado.photoURL || "" }
+      await Promise.all([setDoc(refMeuSeguindo, dadosAlvo), setDoc(refSeguidorDele, meusDados)])
       setJaSigo(true)
       setSeguidores(prev => [...prev, { id: usuarioLogado.uid, ...meusDados }])
     }
@@ -150,11 +141,7 @@ function Perfil() {
       const m = musicais[top3Selecionado[i]]
       if (m) {
         await setDoc(doc(db, "usuarios", userId, "top3", m.id), {
-          musicalId: m.id,
-          titulo: m.titulo,
-          capa: m.capa || null,
-          direcao: m.direcao || "",
-          ordem: i
+          musicalId: m.id, titulo: m.titulo, capa: m.capa || null, direcao: m.direcao || "", ordem: i
         })
       }
     }
@@ -225,15 +212,8 @@ function Perfil() {
   )
 
   const estiloContador = {
-    background: "none",
-    border: "none",
-    padding: 0,
-    fontSize: "14px",
-    color: "#555",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-    textDecoration: "underline",
-    textDecorationColor: "#ccc"
+    background: "none", border: "none", padding: 0, fontSize: "14px", color: "#555",
+    cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", textDecorationColor: "#ccc"
   }
 
   return (
@@ -242,44 +222,28 @@ function Perfil() {
 
       <div style={{ marginBottom: "32px" }}>
         {fotoPerfil && (
-          <img
-            src={fotoPerfil}
-            alt={nomePerfil}
-            style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }}
-          />
+          <img src={fotoPerfil} alt={nomePerfil} style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }} />
         )}
         <h1 className="page-title">{nomePerfil || "Usuario"}</h1>
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
-
-          <button
-            style={estiloContador}
-            onClick={() => { setMostrarSeguidores(prev => !prev); setMostrarSeguindo(false) }}
-          >
+          <button style={estiloContador} onClick={() => { setMostrarSeguidores(prev => !prev); setMostrarSeguindo(false) }}>
             <strong>{seguidores.length}</strong> {seguidores.length === 1 ? "seguidor" : "seguidores"}
           </button>
-
-          <button
-            style={estiloContador}
-            onClick={() => { setMostrarSeguindo(prev => !prev); setMostrarSeguidores(false) }}
-          >
+          <button style={estiloContador} onClick={() => { setMostrarSeguindo(prev => !prev); setMostrarSeguidores(false) }}>
             <strong>{seguindo.length}</strong> seguindo
           </button>
-
           {!isProprioPerfil && usuarioLogado && (
             <button
               onClick={toggleSeguir}
               disabled={carregandoSeguir}
               style={{
-                padding: "6px 18px",
-                borderRadius: "20px",
+                padding: "6px 18px", borderRadius: "20px",
                 border: jaSigo ? "1px solid #ccc" : "none",
                 background: jaSigo ? "transparent" : "#F5C518",
                 color: jaSigo ? "#555" : "#1a1a1a",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "13px",
-                fontWeight: "600",
+                fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600",
                 cursor: carregandoSeguir ? "not-allowed" : "pointer",
                 opacity: carregandoSeguir ? 0.6 : 1
               }}
@@ -291,31 +255,21 @@ function Perfil() {
 
         {mostrarSeguidores && (
           <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fafafa" }}>
-            <p style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
-              Seguidores ({seguidores.length})
-            </p>
-            {seguidores.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#888" }}>Nenhum seguidor ainda.</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {seguidores.map(cardUsuario)}
-              </div>
-            )}
+            <p style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>Seguidores ({seguidores.length})</p>
+            {seguidores.length === 0
+              ? <p style={{ fontSize: "13px", color: "#888" }}>Nenhum seguidor ainda.</p>
+              : <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>{seguidores.map(cardUsuario)}</div>
+            }
           </div>
         )}
 
         {mostrarSeguindo && (
           <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fafafa" }}>
-            <p style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
-              Seguindo ({seguindo.length})
-            </p>
-            {seguindo.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#888" }}>Nao esta seguindo ninguem ainda.</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {seguindo.map(cardUsuario)}
-              </div>
-            )}
+            <p style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>Seguindo ({seguindo.length})</p>
+            {seguindo.length === 0
+              ? <p style={{ fontSize: "13px", color: "#888" }}>Nao esta seguindo ninguem ainda.</p>
+              : <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>{seguindo.map(cardUsuario)}</div>
+            }
           </div>
         )}
 
@@ -339,10 +293,7 @@ function Perfil() {
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
           {isProprioPerfil && !editandoTop3 && (
             <button
-              onClick={() => {
-                setTop3Selecionado(top3.map(t => t.musicalId))
-                setEditandoTop3(true)
-              }}
+              onClick={() => { setTop3Selecionado(top3.map(t => t.musicalId)); setEditandoTop3(true) }}
               style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}
             >
               ✏️ Editar
@@ -352,27 +303,17 @@ function Perfil() {
 
         {editandoTop3 ? (
           <div>
-            <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>
-              Selecione ate 3 musicais favoritos ({top3Selecionado.length}/3)
-            </p>
+            <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>Selecione ate 3 musicais favoritos ({top3Selecionado.length}/3)</p>
             <input
-              type="text"
-              placeholder="Buscar musical..."
-              value={buscaTop3}
+              type="text" placeholder="Buscar musical..." value={buscaTop3}
               onChange={e => setBuscaTop3(e.target.value)}
               style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "12px" }}
             />
             <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #333", borderRadius: "8px", marginBottom: "16px" }}>
               {musicaisFiltradosTop3.map(m => (
                 <div
-                  key={m.id}
-                  onClick={() => toggleTop3(m.id)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "12px",
-                    padding: "10px 14px", cursor: "pointer",
-                    background: top3Selecionado.includes(m.id) ? "#2a2a1a" : "#222",
-                    borderBottom: "1px solid #333"
-                  }}
+                  key={m.id} onClick={() => toggleTop3(m.id)}
+                  style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", cursor: "pointer", background: top3Selecionado.includes(m.id) ? "#2a2a1a" : "#222", borderBottom: "1px solid #333" }}
                 >
                   {m.capa
                     ? <img src={m.capa} alt={m.titulo} style={{ width: "32px", height: "44px", objectFit: "cover", borderRadius: "3px", flexShrink: 0 }} />
@@ -382,9 +323,7 @@ function Perfil() {
                     <p style={{ fontSize: "14px", fontWeight: "500", color: "#fff" }}>{m.titulo}</p>
                     <p style={{ fontSize: "12px", color: "#666" }}>{m.direcao || "—"}</p>
                   </div>
-                  {top3Selecionado.includes(m.id) && (
-                    <span style={{ color: "#F5C518", fontSize: "18px" }}>★</span>
-                  )}
+                  {top3Selecionado.includes(m.id) && <span style={{ color: "#F5C518", fontSize: "18px" }}>★</span>}
                 </div>
               ))}
             </div>
@@ -401,9 +340,7 @@ function Perfil() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
             {top3.map((item, i) => (
               <a
-                key={item.id}
-                href={"/musical/" + item.musicalId}
-                className="card-musical"
+                key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
                 style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518" }}
               >
                 <div style={{ position: "absolute", top: "8px", left: "8px", background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "700", zIndex: 1 }}>
@@ -426,9 +363,7 @@ function Perfil() {
       </div>
 
       {/* AVALIACOES */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Avaliacoes ({votos.length})
-      </h2>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Avaliacoes ({votos.length})</h2>
       {votos.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhuma avaliacao ainda.</p>
       ) : (
@@ -436,18 +371,13 @@ function Perfil() {
           {votos.map(voto => {
             const musical = musicais[voto.musicalId]
             if (!musical) return null
-            return cardMusical(
-              { id: voto.musicalId, musicalId: voto.musicalId, ...musical },
-              <div className="rating-badge">★ {voto.estrelas}</div>
-            )
+            return cardMusical({ id: voto.musicalId, musicalId: voto.musicalId, ...musical }, <div className="rating-badge">★ {voto.estrelas}</div>)
           })}
         </div>
       )}
 
       {/* JA VI */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Ja vi ({jaVi.length})
-      </h2>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Ja vi ({jaVi.length})</h2>
       {jaVi.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
@@ -457,9 +387,7 @@ function Perfil() {
       )}
 
       {/* QUERO VER */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Quero ver ({queroVer.length})
-      </h2>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>
       {queroVer.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
@@ -469,24 +397,17 @@ function Perfil() {
       )}
 
       {/* COMENTARIOS */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Comentarios ({comentarios.length})
-      </h2>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentarios ({comentarios.length})</h2>
       {comentarios.length === 0 ? (
         <p className="login-aviso">Nenhum comentario ainda.</p>
       ) : (
         comentarios.map(c => {
           const musical = musicais[c.musicalId]
           return (
-            <a
-              key={c.id}
-              href={"/musical/" + c.musicalId}
-              className="comentario-item"
+            <a key={c.id} href={"/musical/" + c.musicalId} className="comentario-item"
               style={{ display: "block", textDecoration: "none", color: "inherit", cursor: "pointer" }}
             >
-              <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "4px" }}>
-                {musical?.titulo}
-              </p>
+              <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "4px" }}>{musical?.titulo}</p>
               <p className="comentario-texto">{c.texto}</p>
             </a>
           )
