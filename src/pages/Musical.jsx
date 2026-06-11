@@ -497,12 +497,12 @@ function Musical() {
           ) : (
             comentarios.map(c => (
               <div key={c.id} className="comentario-item">
-                <p className="comentario-nome" onClick={() => navigate(`/perfil/${c.userId}`)} style={{ cursor: "pointer" }}>
-                  {c.nome || "Anônimo"}
-                  {c.estrelasComentario && (
-                    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
-                  )}
-                </p>
+                <a href={`/perfil/${c.userId}`} className="comentario-nome" style={{ cursor: "pointer", textDecoration: "none", color: "inherit" }}>
+  {c.nome || "Anônimo"}
+  {c.estrelasComentario && (
+    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
+  )}
+</a>
 
                 {editandoComentario === c.id ? (
                   <div>
