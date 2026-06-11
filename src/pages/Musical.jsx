@@ -6,6 +6,8 @@ import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import ReportarErro from "../components/ReportarErro"
 import html2canvas from "html2canvas"
+import { Link } from "react-router-dom";
+import { encontrarTeatroPorNome } from "../data/teatros";
 
 const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
 
@@ -413,7 +415,21 @@ function Musical() {
               {musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {nomesClicaveis(musical.direcaoMusical)}</p>}
               {musical.producao && <p className="musical-meta"><strong>Produção:</strong> {nomesClicaveis(musical.producao)}</p>}
               {musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
-              {musical.teatro && <p className="musical-meta"><strong>Teatro de estreia:</strong> {musical.teatro}</p>}
+              {musical.teatro && (() => {
+  const t = encontrarTeatroPorNome(musical.teatro);
+  return (
+    <p className="musical-meta">
+      <strong>Teatro de estreia:</strong>{" "}
+      {t ? (
+        <Link to={`/teatro/${t.id}`} style={{ color: "#F5C518", textDecoration: "none" }}>
+          {musical.teatro}
+        </Link>
+      ) : (
+        musical.teatro
+      )}
+    </p>
+  );
+})()}
               {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
               {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
               {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}

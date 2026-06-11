@@ -12,6 +12,7 @@ import Termos from "./pages/Termos"
 import Politica from "./pages/Politica"
 import Pessoa from "./pages/Pessoa"
 import { useState, useEffect } from "react"
+import Teatro from "./pages/Teatro";
 
 function VoltarAoTopo() {
   const [visivel, setVisivel] = useState(false)
@@ -55,6 +56,7 @@ function App() {
         <Route path="/politica" element={<Politica />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
+        <Route path="/teatro/:id" element={<Teatro />} />
         
       </Routes>
       <VoltarAoTopo />
