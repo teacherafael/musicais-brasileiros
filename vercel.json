@@ -1,12 +1,13 @@
 {
+  "functions": {
+    "api/og-musical.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/og-musical",
-      "destination": "/api/og-musical.cjs"
-    },
-    {
       "source": "/musical/:id",
-      "destination": "/api/og-musical.cjs?id=:id"
+      "destination": "/api/og-musical?id=:id"
     },
     {
       "source": "/(.*)",
