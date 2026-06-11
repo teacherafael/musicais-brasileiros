@@ -31,8 +31,21 @@ header {
   text-decoration: none;
 }
 
-.logo span {
+.logo > span:first-child {
   color: #ffffff;
+}
+.logo-subtitulo {
+  font-size: 14px;
+  font-weight: 400;
+  color: #aaa !important;
+  letter-spacing: 0.5px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+@media (max-width: 600px) {
+  .logo-subtitulo {
+    display: none;
+  }
 }
 
 .header-right {
