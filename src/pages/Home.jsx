@@ -244,10 +244,17 @@ function Home() {
   return (
     <main>
       <p className="section-label">Musicais Brasileiros Database</p>
-      <h1 className="page-title">Descubra musicais brasileiros</h1>
-      <p style={{ fontSize: "18px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
-        {musicais.length} {musicais.length === 1 ? "musical" : "musicais"} na database
-      </p>
+<div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
+  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>
+    {musicais.length}
+  </span>
+  <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>
+    musicais brasileiros<br />catalogados
+  </h1>
+</div>
+<p style={{ fontSize: "14px", color: "#888", marginBottom: "32px", marginTop: "8px" }}>
+  O maior arquivo colaborativo do teatro musical brasileiro.
+</p>
 
       {/* ── MUSICAL EM DESTAQUE ── */}
       {destaque && (() => {
