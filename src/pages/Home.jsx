@@ -109,13 +109,11 @@ function Home() {
 
   const destaquesIds = new Set(destaques.map(m => m.id))
 
-  // Recém adicionados: 10 mais recentes, excluindo destaques
   const recentesIds = [...musicais]
     .filter(m => !destaquesIds.has(m.id))
     .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
     .slice(0, 10)
 
-  // Grid principal: exclui destaques e recentes
   const idsExcluidos = new Set([
     ...destaquesIds,
     ...recentesIds.map(m => m.id)
@@ -247,9 +245,15 @@ function Home() {
           musicais brasileiros<br />catalogados
         </h1>
       </div>
-      <p style={{ fontSize: "14px", color: "#888", marginBottom: "32px", marginTop: "8px" }}>
+      <p style={{ fontSize: "14px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>
         O maior arquivo colaborativo do teatro musical brasileiro.
       </p>
+
+      <div style={{ marginBottom: "32px" }}>
+        <button className="btn-comentar" onClick={() => navigate("/sugestao")}>
+          + Sugerir um musical
+        </button>
+      </div>
 
       {/* ── EM CARTAZ ── */}
       {destaques.length > 0 && (
@@ -340,12 +344,6 @@ function Home() {
             {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
           </select>
         </div>
-      </div>
-
-      <div style={{ marginBottom: "16px" }}>
-        <button className="btn-comentar" onClick={() => navigate("/sugestao")}>
-          + Sugerir um musical
-        </button>
       </div>
 
       {/* ── GRID PRINCIPAL ── */}
