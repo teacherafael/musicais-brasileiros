@@ -17,6 +17,7 @@ function Perfil() {
   const [fotoUsuario, setFotoUsuario] = useState("")
   const [carregando, setCarregando] = useState(true)
   const [top3, setTop3] = useState([])
+  const [avaliacoesPublicas, setAvaliacoesPublicas] = useState(true)
   const [editandoTop3, setEditandoTop3] = useState(false)
   const [top3Selecionado, setTop3Selecionado] = useState([])
   const [buscaTop3, setBuscaTop3] = useState("")
@@ -35,14 +36,14 @@ function Perfil() {
 
   useEffect(() => {
     async function buscarDados() {
-      // Busca musicais e dados do usuario em paralelo
-      const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap] = await Promise.all([
+      const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc] = await Promise.all([
         getDocs(collection(db, "musicais")),
         getDocs(collection(db, "usuarios", userId, "queroVer")),
         getDocs(collection(db, "usuarios", userId, "jaVi")),
         getDocs(collection(db, "usuarios", userId, "top3")),
         getDocs(collection(db, "usuarios", userId, "seguindo")),
-        getDocs(collection(db, "usuarios", userId, "seguidores"))
+        getDocs(collection(db, "usuarios", userId, "seguidores")),
+        getDoc(doc(db, "usuarios", userId))
       ])
 
       const musicaisMap = {}
@@ -51,7 +52,6 @@ function Perfil() {
       })
       setMusicais(musicaisMap)
 
-      // Busca votos e comentarios de todos os musicais em paralelo
       const musicalIds = Object.keys(musicaisMap)
       const [todosVotos, todosComentarios] = await Promise.all([
         Promise.all(musicalIds.map(id => getDocs(collection(db, "musicais", id, "votos")))),
@@ -95,6 +95,11 @@ function Perfil() {
       setJaVi(jaViSnap.docs.map(d => ({ id: d.id, ...d.data() })))
       setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
       setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+      if (usuarioDoc.exists()) {
+        setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
+      }
+
       setCarregando(false)
     }
 
@@ -161,6 +166,12 @@ function Perfil() {
       if (top3Selecionado.length >= 3) return alert("Voce ja selecionou 3 musicais.")
       setTop3Selecionado(prev => [...prev, musicalId])
     }
+  }
+
+  async function toggleAvaliacoesPublicas() {
+    const novo = !avaliacoesPublicas
+    setAvaliacoesPublicas(novo)
+    await setDoc(doc(db, "usuarios", userId), { avaliacoesPublicas: novo }, { merge: true })
   }
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
@@ -363,17 +374,46 @@ function Perfil() {
       </div>
 
       {/* AVALIACOES */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Avaliacoes ({votos.length})</h2>
-      {votos.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhuma avaliacao ainda.</p>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", margin: 0 }}>Avaliacoes ({votos.length})</h2>
+        {isProprioPerfil && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "13px", color: "#888" }}>
+              {avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}
+            </span>
+            <div
+              onClick={toggleAvaliacoesPublicas}
+              style={{
+                width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer",
+                backgroundColor: avaliacoesPublicas ? "#F5C518" : "#555",
+                position: "relative", transition: "background 0.2s", flexShrink: 0
+              }}
+            >
+              <div style={{
+                width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff",
+                position: "absolute", top: "3px",
+                left: avaliacoesPublicas ? "23px" : "3px",
+                transition: "left 0.2s"
+              }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {(isProprioPerfil || avaliacoesPublicas) ? (
+        votos.length === 0 ? (
+          <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhuma avaliacao ainda.</p>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+            {votos.map(voto => {
+              const musical = musicais[voto.musicalId]
+              if (!musical) return null
+              return cardMusical({ id: voto.musicalId, musicalId: voto.musicalId, ...musical }, <div className="rating-badge">★ {voto.estrelas}</div>)
+            })}
+          </div>
+        )
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {votos.map(voto => {
-            const musical = musicais[voto.musicalId]
-            if (!musical) return null
-            return cardMusical({ id: voto.musicalId, musicalId: voto.musicalId, ...musical }, <div className="rating-badge">★ {voto.estrelas}</div>)
-          })}
-        </div>
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>Este usuário optou por manter suas avaliações privadas.</p>
       )}
 
       {/* JA VI */}
