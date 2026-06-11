@@ -27,6 +27,10 @@ function Perfil() {
   const [jaSigo, setJaSigo] = useState(false)
   const [carregandoSeguir, setCarregandoSeguir] = useState(false)
 
+  // estados para abrir/fechar listas
+  const [mostrarSeguidores, setMostrarSeguidores] = useState(false)
+  const [mostrarSeguindo, setMostrarSeguindo] = useState(false)
+
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
   }, [])
@@ -220,6 +224,18 @@ function Perfil() {
     </a>
   )
 
+  const estiloContador = {
+    background: "none",
+    border: "none",
+    padding: 0,
+    fontSize: "14px",
+    color: "#555",
+    cursor: "pointer",
+    fontFamily: "'DM Sans', sans-serif",
+    textDecoration: "underline",
+    textDecorationColor: "#ccc"
+  }
+
   return (
     <main>
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
@@ -236,12 +252,20 @@ function Perfil() {
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "14px", color: "#555" }}>
+
+          <button
+            style={estiloContador}
+            onClick={() => { setMostrarSeguidores(prev => !prev); setMostrarSeguindo(false) }}
+          >
             <strong>{seguidores.length}</strong> {seguidores.length === 1 ? "seguidor" : "seguidores"}
-          </span>
-          <span style={{ fontSize: "14px", color: "#555" }}>
+          </button>
+
+          <button
+            style={estiloContador}
+            onClick={() => { setMostrarSeguindo(prev => !prev); setMostrarSeguidores(false) }}
+          >
             <strong>{seguindo.length}</strong> seguindo
-          </span>
+          </button>
 
           {!isProprioPerfil && usuarioLogado && (
             <button
@@ -264,6 +288,36 @@ function Perfil() {
             </button>
           )}
         </div>
+
+        {mostrarSeguidores && (
+          <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fafafa" }}>
+            <p style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
+              Seguidores ({seguidores.length})
+            </p>
+            {seguidores.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "#888" }}>Nenhum seguidor ainda.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {seguidores.map(cardUsuario)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {mostrarSeguindo && (
+          <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fafafa" }}>
+            <p style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
+              Seguindo ({seguindo.length})
+            </p>
+            {seguindo.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "#888" }}>Nao esta seguindo ninguem ainda.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {seguindo.map(cardUsuario)}
+              </div>
+            )}
+          </div>
+        )}
 
         {votos.length > 0 && (
           <div style={{ display: "flex", gap: "16px", marginTop: "16px", flexWrap: "wrap" }}>
@@ -437,30 +491,6 @@ function Perfil() {
             </a>
           )
         })
-      )}
-
-      {/* SEGUIDORES */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px", marginTop: "40px" }}>
-        Seguidores ({seguidores.length})
-      </h2>
-      {seguidores.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum seguidor ainda.</p>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px", marginBottom: "40px" }}>
-          {seguidores.map(cardUsuario)}
-        </div>
-      )}
-
-      {/* SEGUINDO */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Seguindo ({seguindo.length})
-      </h2>
-      {seguindo.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nao esta seguindo ninguem ainda.</p>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px", marginBottom: "40px" }}>
-          {seguindo.map(cardUsuario)}
-        </div>
       )}
 
     </main>
