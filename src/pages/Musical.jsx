@@ -157,7 +157,12 @@ function Musical() {
     setMusical(prev => ({ ...prev, ...formEdicao }))
     setEditandoMusical(false)
   }
-
+async function toggleDestaque() {
+  const novoValor = !musical.destaque
+  await updateDoc(doc(db, "musicais", id), { destaque: novoValor })
+  setMusical(prev => ({ ...prev, destaque: novoValor }))
+  mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
+}
   async function votar(estrelas) {
     if (!usuario) return alert("Faça login para votar.")
     if (votoAtual) {
@@ -402,6 +407,11 @@ function Musical() {
                   ✏️ Editar musical
                 </button>
               )}
+              {usuario && usuario.uid === ADMIN_UID && (
+  <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
+    {musical.destaque ? "★ Em destaque" : "☆ Colocar em destaque"}
+  </button>
+)}
             </div>
           </div>
 
