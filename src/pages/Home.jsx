@@ -115,9 +115,8 @@ function Home() {
     .slice(0, 10)
 
   const idsExcluidos = new Set([
-    ...destaquesIds,
-    ...recentesIds.map(m => m.id)
-  ])
+  ...destaquesIds
+])
 
   const musicaisFiltrados = musicais
     .filter(m => !idsExcluidos.has(m.id))
