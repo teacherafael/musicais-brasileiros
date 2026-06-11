@@ -1,5 +1,16 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/og-musical",
+      "destination": "/api/og-musical.cjs"
+    },
+    {
+      "source": "/musical/:id",
+      "destination": "/api/og-musical.cjs?id=:id"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
