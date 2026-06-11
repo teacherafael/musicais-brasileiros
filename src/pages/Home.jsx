@@ -8,7 +8,7 @@ const POR_PAGINA = 12
 
 function Home() {
   const [musicais, setMusicais] = useState([])
-  const [destaque, setDestaque] = useState(null)
+  const [destaques, setDestaques] = useState([])
   const [busca, setBusca] = useState("")
   const [buscaInput, setBuscaInput] = useState("")
   const [ordenacao, setOrdenacao] = useState("az")
@@ -59,10 +59,7 @@ function Home() {
       const snapshot = await getDocs(collection(db, "musicais"))
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
-
-      // Musical em destaque: primeiro com destaque: true
-      const emDestaque = lista.find(m => m.destaque === true)
-      setDestaque(emDestaque || null)
+      setDestaques(lista.filter(m => m.destaque === true).slice(0, 5))
     }
     buscarMusicais()
   }, [])
@@ -110,15 +107,17 @@ function Home() {
 
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
 
-  // Recém adicionados: 6 mais recentes, excluindo o destaque
+  const destaquesIds = new Set(destaques.map(m => m.id))
+
+  // Recém adicionados: 10 mais recentes, excluindo destaques
   const recentesIds = [...musicais]
-    .filter(m => !destaque || m.id !== destaque.id)
+    .filter(m => !destaquesIds.has(m.id))
     .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
     .slice(0, 10)
 
-  // Grid principal: exclui destaque e recentes
+  // Grid principal: exclui destaques e recentes
   const idsExcluidos = new Set([
-    ...(destaque ? [destaque.id] : []),
+    ...destaquesIds,
     ...recentesIds.map(m => m.id)
   ])
 
@@ -161,7 +160,6 @@ function Home() {
   const totalPaginas = Math.ceil(musicaisFiltrados.length / POR_PAGINA)
   const musicaisPagina = musicaisFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
 
-  // Componente de card reutilizável
   function CardMusical({ musical, tamanho = "normal" }) {
     const media = musical.totalVotos > 0
       ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
@@ -188,10 +186,7 @@ function Home() {
           height: tamanho === "pequeno" ? "200px" : "0",
           marginBottom: "10px"
         }}>
-          <div style={{
-            position: "absolute", top: 0, left: 0,
-            width: "100%", height: "100%"
-          }}>
+          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
             {musical.capa
               ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
               : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", borderRadius: "6px", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
@@ -244,108 +239,59 @@ function Home() {
   return (
     <main>
       <p className="section-label">Musicais Brasileiros Database</p>
-<div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
-  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>
-    {musicais.length}
-  </span>
-  <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>
-    musicais brasileiros<br />catalogados
-  </h1>
-</div>
-<p style={{ fontSize: "14px", color: "#888", marginBottom: "32px", marginTop: "8px" }}>
-  O maior arquivo colaborativo do teatro musical brasileiro.
-</p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
+        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>
+          {musicais.length}
+        </span>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>
+          musicais brasileiros<br />catalogados
+        </h1>
+      </div>
+      <p style={{ fontSize: "14px", color: "#888", marginBottom: "32px", marginTop: "8px" }}>
+        O maior arquivo colaborativo do teatro musical brasileiro.
+      </p>
 
-      {/* ── MUSICAL EM DESTAQUE ── */}
-      {destaque && (() => {
-        const mediaDestaque = destaque.totalVotos > 0
-          ? (destaque.somaEstrelas / destaque.totalVotos).toFixed(1)
-          : "—"
-        return (
-          <div style={{ marginBottom: "40px" }}>
-            <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
-              Em destaque
-            </p>
-            <a
-              href={"/musical/" + destaque.id}
-              style={{
-                textDecoration: "none", color: "inherit",
-                display: "flex", gap: "24px", alignItems: "flex-start",
-                background: "#f9f9f7", borderRadius: "8px", padding: "20px",
-                border: "1px solid #e8e8e4"
-              }}
-            >
-              {destaque.capa && (
-                <img
-                  src={destaque.capa}
-                  alt={destaque.titulo}
-                  style={{ width: "120px", height: "170px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
-                />
-              )}
-              <div style={{ flex: 1 }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: "700", margin: "0 0 6px", lineHeight: "1.3" }}>
-                  {destaque.titulo}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", margin: "0 0 4px" }}>Direção: {destaque.direcao || "—"}</p>
-                {destaque.ano && (
-                  <p style={{ fontSize: "13px", color: "#999", margin: "0 0 12px" }}>{destaque.ano} · {destaque.teatro || ""}</p>
-                )}
-                {destaque.sinopse && (
-                  <p style={{ fontSize: "14px", color: "#444", margin: "0 0 14px", lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                    {destaque.sinopse}
-                  </p>
-                )}
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                  <div className="rating-badge" style={{ fontSize: "15px" }}>
-                    ★ {mediaDestaque}
-                    <span className="rating-votos">
-                      ({destaque.totalVotos} {destaque.totalVotos === 1 ? "voto" : "votos"})
-                    </span>
-                  </div>
-                  {usuario && (
-                    <>
-                      <button
-                        onClick={e => toggleJaVi(e, destaque)}
-                        style={{ background: "none", border: "none", padding: 0, fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer", color: jaViSet.has(destaque.id) ? "#1a1a1a" : "#aaa", fontWeight: jaViSet.has(destaque.id) ? "600" : "400" }}
-                      >
-                        {jaViSet.has(destaque.id) ? "✓ Já vi" : "Já vi"}
-                      </button>
-                      <span style={{ color: "#ddd" }}>·</span>
-                      <button
-                        onClick={e => toggleQueroVer(e, destaque)}
-                        style={{ background: "none", border: "none", padding: 0, fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer", color: queroVerSet.has(destaque.id) ? "#F5C518" : "#aaa", fontWeight: queroVerSet.has(destaque.id) ? "600" : "400" }}
-                      >
-                        {queroVerSet.has(destaque.id) ? "★ Quero ver" : "☆ Quero ver"}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </a>
+      {/* ── EM DESTAQUE ── */}
+      {destaques.length > 0 && (
+        <div style={{ marginBottom: "40px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
+            Em destaque
+          </p>
+          <div style={{
+            display: "flex",
+            gap: "16px",
+            overflowX: "auto",
+            paddingBottom: "8px",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none"
+          }}>
+            {destaques.map(musical => (
+              <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
+            ))}
           </div>
-        )
-      })()}
+        </div>
+      )}
 
       {/* ── RECÉM ADICIONADOS ── */}
       {recentesIds.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
-  <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
-    Recém adicionados
-  </p>
-  <div style={{
-  display: "flex",
-  gap: "16px",
-  overflowX: "auto",
-  paddingBottom: "8px",
-  scrollbarWidth: "none",
-  msOverflowStyle: "none"
-}}>
-    {recentesIds.map(musical => (
-      <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
-    ))}
-  </div>
-</div>
-)}
+          <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
+            Recém adicionados
+          </p>
+          <div style={{
+            display: "flex",
+            gap: "16px",
+            overflowX: "auto",
+            paddingBottom: "8px",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none"
+          }}>
+            {recentesIds.map(musical => (
+              <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
+            ))}
+          </div>
+        </div>
+      )}
 
       <hr className="divider" />
 
@@ -405,7 +351,7 @@ function Home() {
       {/* ── GRID PRINCIPAL ── */}
       <div
         className="grid-musicais"
-        style={{ display: "grid", gridTemplateColumns: "repeat(5, 140px)", gap: "16px" }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}
       >
         {musicaisPagina.length === 0 ? (
           <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
