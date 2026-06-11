@@ -41,6 +41,22 @@ export const teatros = [
     bairro: "Santo Amaro",
     cidade: "São Paulo – SP",
   },
+ {
+  id: "teatro-joao-caetano-sp",
+  nomeOficial: "Teatro João Caetano",
+  aliases: ["Teatro João Caetano SP"],
+  endereco: "Rua Borges Lagoa, 650",
+  bairro: "Vila Clementino",
+  cidade: "São Paulo – SP",
+},
+{
+  id: "teatro-joao-caetano-rj",
+  nomeOficial: "Teatro João Caetano",
+  aliases: ["Teatro João Caetano RJ"],
+  endereco: "Praça Tiradentes, s/n",
+  bairro: "Centro",
+  cidade: "Rio de Janeiro – RJ",
+},
   {
     id: "teatro-sergio-cardoso",
     nomeOficial: "Teatro Sérgio Cardoso",
