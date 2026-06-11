@@ -4,21 +4,32 @@ import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
+const POR_PAGINA = 12
+
 function Home() {
   const [musicais, setMusicais] = useState([])
-const [busca, setBusca] = useState("")
-const [buscaInput, setBuscaInput] = useState("")
-const [ordenacao, setOrdenacao] = useState("recentes")
-
-useEffect(() => {
-  const timer = setTimeout(() => setBusca(buscaInput), 300)
-  return () => clearTimeout(timer)
-}, [buscaInput])
+  const [destaque, setDestaque] = useState(null)
+  const [busca, setBusca] = useState("")
+  const [buscaInput, setBuscaInput] = useState("")
+  const [ordenacao, setOrdenacao] = useState("az")
   const [filtroAno, setFiltroAno] = useState("")
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
+  const [pagina, setPagina] = useState(1)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBusca(buscaInput)
+      setPagina(1)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [buscaInput])
+
+  useEffect(() => {
+    setPagina(1)
+  }, [ordenacao, filtroAno])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -46,11 +57,12 @@ useEffect(() => {
   useEffect(() => {
     async function buscarMusicais() {
       const snapshot = await getDocs(collection(db, "musicais"))
-      const lista = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+      const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
+
+      // Musical em destaque: primeiro com destaque: true
+      const emDestaque = lista.find(m => m.destaque === true)
+      setDestaque(emDestaque || null)
     }
     buscarMusicais()
   }, [])
@@ -98,7 +110,20 @@ useEffect(() => {
 
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
 
+  // Recém adicionados: 6 mais recentes, excluindo o destaque
+  const recentesIds = [...musicais]
+    .filter(m => !destaque || m.id !== destaque.id)
+    .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+    .slice(0, 10)
+
+  // Grid principal: exclui destaque e recentes
+  const idsExcluidos = new Set([
+    ...(destaque ? [destaque.id] : []),
+    ...recentesIds.map(m => m.id)
+  ])
+
   const musicaisFiltrados = musicais
+    .filter(m => !idsExcluidos.has(m.id))
     .filter(musical => {
       const termo = busca.toLowerCase()
       const campos = [
@@ -128,42 +153,203 @@ useEffect(() => {
       if (ordenacao === "menos-votados") return a.totalVotos - b.totalVotos
       if (ordenacao === "az") return a.titulo.localeCompare(b.titulo, "pt")
       if (ordenacao === "za") return b.titulo.localeCompare(a.titulo, "pt")
-      if (ordenacao === "recentes") {
-        const dataA = a.dataCriacao?.seconds || 0
-        const dataB = b.dataCriacao?.seconds || 0
-        return dataB - dataA
-      }
-      if (ordenacao === "antigos") {
-        const dataA = a.dataCriacao?.seconds || 0
-        const dataB = b.dataCriacao?.seconds || 0
-        return dataA - dataB
-      }
+      if (ordenacao === "recentes") return (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0)
+      if (ordenacao === "antigos") return (a.dataCriacao?.seconds || 0) - (b.dataCriacao?.seconds || 0)
       return 0
     })
+
+  const totalPaginas = Math.ceil(musicaisFiltrados.length / POR_PAGINA)
+  const musicaisPagina = musicaisFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+
+  // Componente de card reutilizável
+  function CardMusical({ musical, tamanho = "normal" }) {
+    const media = musical.totalVotos > 0
+      ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
+      : "—"
+    const largura = tamanho === "pequeno" ? "140px" : "100%"
+
+    return (
+      <a
+        href={"/musical/" + musical.id}
+        style={{
+          textDecoration: "none",
+          color: "inherit",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: tamanho === "pequeno" ? "140px" : "100%",
+          flexShrink: 0
+        }}
+      >
+        <div style={{
+          width: largura,
+          position: "relative",
+          paddingBottom: tamanho === "pequeno" ? "0" : "140%",
+          height: tamanho === "pequeno" ? "200px" : "0",
+          marginBottom: "10px"
+        }}>
+          <div style={{
+            position: "absolute", top: 0, left: 0,
+            width: "100%", height: "100%"
+          }}>
+            {musical.capa
+              ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", borderRadius: "6px", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
+            }
+          </div>
+        </div>
+        <div style={{ width: "100%" }}>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: "600", fontSize: tamanho === "pequeno" ? "13px" : "15px", margin: "0 0 4px", lineHeight: "1.3" }}>{musical.titulo}</p>
+          {tamanho !== "pequeno" && (
+            <p style={{ fontSize: "13px", color: "#888", margin: "0 0 6px" }}>Direção: {musical.direcao || "—"}</p>
+          )}
+          <div className="rating-badge">
+            ★ {media}
+            <span className="rating-votos">
+              ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
+            </span>
+          </div>
+          {usuario && (
+            <div style={{ display: "flex", gap: "8px", marginTop: "10px", justifyContent: "center" }}>
+              <button
+                onClick={e => toggleJaVi(e, musical)}
+                style={{
+                  background: "none", border: "none", padding: 0,
+                  fontFamily: "'DM Sans', sans-serif", fontSize: "12px", cursor: "pointer",
+                  color: jaViSet.has(musical.id) ? "#1a1a1a" : "#aaa",
+                  fontWeight: jaViSet.has(musical.id) ? "600" : "400"
+                }}
+              >
+                {jaViSet.has(musical.id) ? "✓ Já vi" : "Já vi"}
+              </button>
+              <span style={{ color: "#ddd", fontSize: "12px" }}>·</span>
+              <button
+                onClick={e => toggleQueroVer(e, musical)}
+                style={{
+                  background: "none", border: "none", padding: 0,
+                  fontFamily: "'DM Sans', sans-serif", fontSize: "12px", cursor: "pointer",
+                  color: queroVerSet.has(musical.id) ? "#F5C518" : "#aaa",
+                  fontWeight: queroVerSet.has(musical.id) ? "600" : "400"
+                }}
+              >
+                {queroVerSet.has(musical.id) ? "★ Quero ver" : "☆ Quero ver"}
+              </button>
+            </div>
+          )}
+        </div>
+      </a>
+    )
+  }
 
   return (
     <main>
       <p className="section-label">Musicais Brasileiros Database</p>
       <h1 className="page-title">Descubra musicais brasileiros</h1>
-      <p style={{ fontSize: "18px", color: "#888", marginBottom: "24px", marginTop: "-8px" }}>
+      <p style={{ fontSize: "18px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
         {musicais.length} {musicais.length === 1 ? "musical" : "musicais"} na database
       </p>
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+      {/* ── MUSICAL EM DESTAQUE ── */}
+      {destaque && (() => {
+        const mediaDestaque = destaque.totalVotos > 0
+          ? (destaque.somaEstrelas / destaque.totalVotos).toFixed(1)
+          : "—"
+        return (
+          <div style={{ marginBottom: "40px" }}>
+            <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
+              Em destaque
+            </p>
+            <a
+              href={"/musical/" + destaque.id}
+              style={{
+                textDecoration: "none", color: "inherit",
+                display: "flex", gap: "24px", alignItems: "flex-start",
+                background: "#f9f9f7", borderRadius: "8px", padding: "20px",
+                border: "1px solid #e8e8e4"
+              }}
+            >
+              {destaque.capa && (
+                <img
+                  src={destaque.capa}
+                  alt={destaque.titulo}
+                  style={{ width: "120px", height: "170px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
+                />
+              )}
+              <div style={{ flex: 1 }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: "700", margin: "0 0 6px", lineHeight: "1.3" }}>
+                  {destaque.titulo}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", margin: "0 0 4px" }}>Direção: {destaque.direcao || "—"}</p>
+                {destaque.ano && (
+                  <p style={{ fontSize: "13px", color: "#999", margin: "0 0 12px" }}>{destaque.ano} · {destaque.teatro || ""}</p>
+                )}
+                {destaque.sinopse && (
+                  <p style={{ fontSize: "14px", color: "#444", margin: "0 0 14px", lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {destaque.sinopse}
+                  </p>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                  <div className="rating-badge" style={{ fontSize: "15px" }}>
+                    ★ {mediaDestaque}
+                    <span className="rating-votos">
+                      ({destaque.totalVotos} {destaque.totalVotos === 1 ? "voto" : "votos"})
+                    </span>
+                  </div>
+                  {usuario && (
+                    <>
+                      <button
+                        onClick={e => toggleJaVi(e, destaque)}
+                        style={{ background: "none", border: "none", padding: 0, fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer", color: jaViSet.has(destaque.id) ? "#1a1a1a" : "#aaa", fontWeight: jaViSet.has(destaque.id) ? "600" : "400" }}
+                      >
+                        {jaViSet.has(destaque.id) ? "✓ Já vi" : "Já vi"}
+                      </button>
+                      <span style={{ color: "#ddd" }}>·</span>
+                      <button
+                        onClick={e => toggleQueroVer(e, destaque)}
+                        style={{ background: "none", border: "none", padding: 0, fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer", color: queroVerSet.has(destaque.id) ? "#F5C518" : "#aaa", fontWeight: queroVerSet.has(destaque.id) ? "600" : "400" }}
+                      >
+                        {queroVerSet.has(destaque.id) ? "★ Quero ver" : "☆ Quero ver"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </a>
+          </div>
+        )
+      })()}
+
+      {/* ── RECÉM ADICIONADOS ── */}
+      {recentesIds.length > 0 && (
+        <div style={{ marginBottom: "40px" }}>
+  <p style={{ fontSize: "11px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
+    Recém adicionados
+  </p>
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(5, 140px)",
+    gap: "16px",
+  }}>
+    {recentesIds.map(musical => (
+      <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
+    ))}
+  </div>
+</div>
+)}
+
+      <hr className="divider" />
+
+      {/* ── FILTROS ── */}
+      <div style={{ display: "flex", gap: "12px", margin: "24px 0", flexWrap: "wrap" }}>
         <input
           type="text"
           placeholder="Buscar musical ou pessoa..."
           value={buscaInput}
-onChange={e => setBuscaInput(e.target.value)}
+          onChange={e => setBuscaInput(e.target.value)}
           style={{
-            flex: 1,
-            minWidth: "200px",
-            padding: "12px 16px",
-            border: "1px solid #e8e8e4",
-            borderRadius: "8px",
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "15px",
-            outline: "none"
+            flex: 1, minWidth: "200px", padding: "12px 16px",
+            border: "1px solid #e8e8e4", borderRadius: "8px",
+            fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none"
           }}
         />
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -173,28 +359,18 @@ onChange={e => setBuscaInput(e.target.value)}
           <select
             value={ordenacao}
             onChange={e => setOrdenacao(e.target.value)}
-            style={{
-              padding: "12px 16px",
-              border: "1px solid #e8e8e4",
-              borderRadius: "8px",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "15px",
-              background: "#fff",
-              cursor: "pointer",
-              outline: "none"
-            }}
+            style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
           >
-            <option value="recentes">Adicionados recentemente</option>
-            <option value="antigos">Adicionados anteriormente</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
             <option value="melhor">Melhor avaliação</option>
             <option value="pior">Pior avaliação</option>
             <option value="mais-votados">Mais votados</option>
             <option value="menos-votados">Menos votados</option>
-            <option value="az">A → Z</option>
-            <option value="za">Z → A</option>
+            <option value="recentes">Adicionados recentemente</option>
+            <option value="antigos">Adicionados anteriormente</option>
           </select>
         </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
             Ano
@@ -202,21 +378,10 @@ onChange={e => setBuscaInput(e.target.value)}
           <select
             value={filtroAno}
             onChange={e => setFiltroAno(e.target.value)}
-            style={{
-              padding: "12px 16px",
-              border: "1px solid #e8e8e4",
-              borderRadius: "8px",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "15px",
-              background: "#fff",
-              cursor: "pointer",
-              outline: "none"
-            }}
+            style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
           >
             <option value="">Todos os anos</option>
-            {anos.map(ano => (
-              <option key={ano} value={ano}>{ano}</option>
-            ))}
+            {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
           </select>
         </div>
       </div>
@@ -226,80 +391,71 @@ onChange={e => setBuscaInput(e.target.value)}
           + Sugerir um musical
         </button>
       </div>
-      <hr className="divider" />
 
-      <div className="grid-musicais" style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-        gap: "16px"
-      }}>
-        {musicaisFiltrados.length === 0 ? (
+      {/* ── GRID PRINCIPAL ── */}
+      <div
+        className="grid-musicais"
+        style={{ display: "grid", gridTemplateColumns: "repeat(5, 140px)", gap: "16px" }}
+      >
+        {musicaisPagina.length === 0 ? (
           <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
         ) : (
-          musicaisFiltrados.map(musical => (
-            
-              <a key={musical.id}
-              href={"/musical/" + musical.id}
-              className="card-musical"
-              style={{ position: "relative", textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
-            >
-             <div className="card-poster card-poster-home" style={{ width: "100%", position: "relative", paddingBottom: "140%", marginBottom: "12px" }}>
-  <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
-    {musical.capa
-      ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-      : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", borderRadius: "6px", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
-    }
-  </div>
-</div>
-              <div className="card-info" style={{ width: "100%" }}>
-                <p className="card-titulo">{musical.titulo}</p>
-                <p className="card-meta">Direção: {musical.direcao || "—"}</p>
-                <div className="rating-badge">
-                  ★ {musical.totalVotos > 0 ? musical.media.toFixed(1) : "—"}
-                  <span className="rating-votos">
-                    ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
-                  </span>
-                </div>
-                {usuario && (
-                  <div style={{ display: "flex", gap: "8px", marginTop: "10px", justifyContent: "center" }}>
-                    <button
-                      onClick={e => toggleJaVi(e, musical)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        color: jaViSet.has(musical.id) ? "#1a1a1a" : "#aaa",
-                        fontWeight: jaViSet.has(musical.id) ? "600" : "400"
-                      }}
-                    >
-                      {jaViSet.has(musical.id) ? "✓ Já vi" : "Já vi"}
-                    </button>
-                    <span style={{ color: "#ddd", fontSize: "12px" }}>·</span>
-                    <button
-                      onClick={e => toggleQueroVer(e, musical)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        color: queroVerSet.has(musical.id) ? "#F5C518" : "#aaa",
-                        fontWeight: queroVerSet.has(musical.id) ? "600" : "400"
-                      }}
-                    >
-                      {queroVerSet.has(musical.id) ? "★ Quero ver" : "☆ Quero ver"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </a>
+          musicaisPagina.map(musical => (
+            <CardMusical key={musical.id} musical={musical} />
           ))
         )}
       </div>
+
+      {/* ── PAGINAÇÃO ── */}
+      {totalPaginas > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "40px", flexWrap: "wrap" }}>
+          <button
+            onClick={() => { setPagina(p => p - 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+            disabled={pagina === 1}
+            style={{
+              padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
+              background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+              cursor: pagina === 1 ? "not-allowed" : "pointer", color: pagina === 1 ? "#ccc" : "#1a1a1a"
+            }}
+          >
+            ← Anterior
+          </button>
+
+          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
+            <button
+              key={n}
+              onClick={() => { setPagina(n); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+              style={{
+                padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "8px",
+                background: n === pagina ? "#F5C518" : "#fff",
+                fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+                fontWeight: n === pagina ? "700" : "400",
+                cursor: "pointer", color: "#1a1a1a"
+              }}
+            >
+              {n}
+            </button>
+          ))}
+
+          <button
+            onClick={() => { setPagina(p => p + 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+            disabled={pagina === totalPaginas}
+            style={{
+              padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
+              background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+              cursor: pagina === totalPaginas ? "not-allowed" : "pointer", color: pagina === totalPaginas ? "#ccc" : "#1a1a1a"
+            }}
+          >
+            Próximo →
+          </button>
+        </div>
+      )}
+
+      {totalPaginas > 1 && (
+        <p style={{ textAlign: "center", fontSize: "13px", color: "#999", marginTop: "12px" }}>
+          Página {pagina} de {totalPaginas} · {musicaisFiltrados.length} musicais
+        </p>
+      )}
     </main>
   )
 }
