@@ -111,9 +111,11 @@ function Perfil() {
       setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
       if (usuarioDoc.exists()) {
-        setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
-        setVerificado(usuarioDoc.data().verificado ?? false)
-      }
+  setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
+  setVerificado(usuarioDoc.data().verificado ?? false)
+  if (usuarioDoc.data().nome) setNomeUsuario(usuarioDoc.data().nome)
+  if (usuarioDoc.data().foto) setFotoUsuario(usuarioDoc.data().foto)
+}
 
       setCarregando(false)
     }
