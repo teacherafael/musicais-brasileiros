@@ -131,7 +131,7 @@ export const teatros = [
   },
   {
     id: "teatro-villa-lobos-rj",
-    nomeOficial: "Teatro Villa-Lobos",
+    nomeOficial: "Teatro Villa-Lobos (RJ)",
     aliases: ["Teatro Villa-Lobos RJ"],
     endereco: "Av. Princesa Isabel, 451",
     bairro: "Copacabana",
@@ -179,10 +179,10 @@ export const teatros = [
   },
  {
     id: "teatro-villa-lobos-sp",
-    nomeOficial: "Teatro Villa-Lobos SP",
+    nomeOficial: "Teatro Villa-Lobos (SP)",
     aliases: ["Teatro Villa-Lobos", "Teatro Opus"],
-    endereco: "Av. Queiroz Filho, 1096",
-    bairro: "Vila Hamburguesa",
+    endereco: "Av. Dra. Ruth Cardoso, 4777",
+    bairro: "Jardim Universidade",
     cidade: "São Paulo – SP",
   },
   {
