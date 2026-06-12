@@ -20,6 +20,7 @@ function Home() {
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
   const [pagina, setPagina] = useState(1)
+  const [carregando, setCarregando] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -63,6 +64,7 @@ function Home() {
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
       setDestaques(lista.filter(m => m.destaque === true).slice(0, 5))
+      setCarregando(false)
     }
     buscarMusicais()
   }, [])
@@ -353,13 +355,23 @@ function Home() {
         className="grid-musicais"
         style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}
       >
-        {musicaisPagina.length === 0 ? (
-          <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
-        ) : (
-          musicaisPagina.map(musical => (
-            <CardMusical key={musical.id} musical={musical} />
-          ))
-        )}
+        {carregando ? (
+  Array.from({ length: 12 }).map((_, i) => (
+    <div key={i} style={{
+      borderRadius: "6px",
+      background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
+      backgroundSize: "200% 100%",
+      animation: "shimmer 1.2s infinite",
+      aspectRatio: "3/4"
+    }} />
+  ))
+) : musicaisPagina.length === 0 ? (
+  <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
+) : (
+  musicaisPagina.map(musical => (
+    <CardMusical key={musical.id} musical={musical} />
+  ))
+)}
       </div>
 
       {/* ── PAGINAÇÃO ── */}
