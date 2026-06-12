@@ -186,6 +186,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
+    id: "ccbb-sp",
+    nomeOficial: "Centro Cultural Banco do Brasil (CCBB-SP)",
+    aliases: [],
+    endereco: "Rua Álvares Penteado, 112",
+    bairro: "Centro Histórico de São Paulo",
+    cidade: "São Paulo – SP",
+  },
+  {
     id: "teatro-casa-grande-rj",
     nomeOficial: "Teatro Casa Grande",
     aliases: ["Teatro Oi Casa Grande"],
