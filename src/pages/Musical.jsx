@@ -492,7 +492,7 @@ async function reagir(comentarioId, emoji) {
     <p className="musical-meta">
       <strong>Teatro de estreia:</strong>{" "}
       {t ? (
-        <Link to={`/teatro/${t.id}`} style={{ color: "#F5C518", textDecoration: "none" }}>
+        <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>
           {musical.teatro}
         </Link>
       ) : (
@@ -633,7 +633,7 @@ async function reagir(comentarioId, emoji) {
                   {c.nome || "Anônimo"}
                   {usuariosVerificados[c.userId] && <SeloVerificado />}
                   {c.estrelasComentario && (
-                    <span style={{ marginLeft: "8px", color: "#F5C518", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
+                    <span style={{ marginLeft: "8px", color: "#b8960a", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
                   )}
                 </a>
 

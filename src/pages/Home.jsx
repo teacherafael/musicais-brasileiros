@@ -225,7 +225,7 @@ function Home() {
                 style={{
                   background: "none", border: "none", padding: 0,
                   fontFamily: "'DM Sans', sans-serif", fontSize: "12px", cursor: "pointer",
-                  color: queroVerSet.has(musical.id) ? "#F5C518" : "#aaa",
+                  color: queroVerSet.has(musical.id) ? "#b8960a" : "#aaa",
                   fontWeight: queroVerSet.has(musical.id) ? "600" : "400"
                 }}
               >
