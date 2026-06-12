@@ -184,19 +184,29 @@ function Musical() {
   }
 
   async function votar(estrelas) {
-    if (!usuario) return alert("Faça login para votar.")
-    if (votoAtual) {
-      await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
-      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      setMusical(prev => ({ ...prev, somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual) }))
-    } else {
-      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      await updateDoc(doc(db, "musicais", id), { totalVotos: increment(1), somaEstrelas: increment(estrelas) })
-      setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
-    }
-    setVotoAtual(estrelas)
-    mostrarToast("Avaliação salva!")
+  if (!usuario) return alert("Faça login para votar.")
+  
+  if (votoAtual) {
+    await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
+    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+    setMusical(prev => ({ ...prev, somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual) }))
+  } else {
+    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+    await updateDoc(doc(db, "musicais", id), { totalVotos: increment(1), somaEstrelas: increment(estrelas) })
+    setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
   }
+
+  // Marca "Já vi" e remove "Quero ver"
+  await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
+    musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
+  })
+  await deleteDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
+
+  setVotoAtual(estrelas)
+  setJaVi(true)
+  setQueroVer(false)
+  mostrarToast("Avaliação salva!")
+}
 
   async function removerVoto() {
     if (!window.confirm("Remover sua avaliação deste musical?")) return
@@ -215,16 +225,19 @@ function Musical() {
   }
 
   async function toggleQueroVer() {
-    if (!usuario) return alert("Faça login para usar esta função.")
-    const ref = doc(db, "usuarios", usuario.uid, "queroVer", id)
-    if (queroVer) {
-      await deleteDoc(ref)
-      setQueroVer(false)
-    } else {
-      await setDoc(ref, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
-      setQueroVer(true)
-    }
+  if (!usuario) return alert("Faça login para usar esta função.")
+  const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
+  const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
+  if (queroVer) {
+    await deleteDoc(refQueroVer)
+    setQueroVer(false)
+  } else {
+    await setDoc(refQueroVer, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
+    await deleteDoc(refJaVi)
+    setQueroVer(true)
+    setJaVi(false)
   }
+}
 
   async function toggleJaVi() {
     if (!usuario) return alert("Faça login para usar esta função.")
