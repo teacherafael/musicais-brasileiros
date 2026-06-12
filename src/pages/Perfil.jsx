@@ -343,8 +343,41 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
         )}
       </div>
 
+      {/* NAVEGAÇÃO INTERNA */}
+<div style={{
+  display: 'flex',
+  gap: '10px',
+  flexWrap: 'wrap',
+  margin: '0 0 32px 0',
+}}>
+  {[
+    { href: '#top3', label: '✦ Top 3' },
+    { href: '#avaliacoes', label: 'Avaliações' },
+    { href: '#ja-vi', label: 'Já vi' },
+    { href: '#quero-ver', label: 'Quero ver' },
+    { href: '#comentarios', label: 'Comentários' },
+  ].map(({ href, label }) => (
+    
+      <a key={href}
+      href={href}
+      style={{
+        color: '#1a1a1a',
+        textDecoration: 'none',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '13px',
+        fontWeight: '600',
+        padding: '6px 14px',
+        background: '#F5C518',
+        borderRadius: '20px',
+      }}
+    >
+      {label}
+    </a>
+  ))}
+</div>
+
       {/* TOP 3 */}
-      <div style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
+      <div id="top3" style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
           {isProprioPerfil && !editandoTop3 && (
@@ -418,10 +451,10 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
         )}
       </div>
 
+    
+
       {/* AVALIACOES */}
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", margin: 0 }}>Avaliacoes ({votos.length})</h2>
-        {isProprioPerfil && (
+<div id="avaliacoes" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>        {isProprioPerfil && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "13px", color: "#888" }}>
               {avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}
@@ -462,8 +495,7 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       )}
 
       {/* JA VI */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Ja vi ({jaVi.length})</h2>
-      {jaVi.length === 0 ? (
+<h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Ja vi ({jaVi.length})</h2>      {jaVi.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
@@ -485,8 +517,7 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
   </>
 )}
       {/* QUERO VER */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>
-      {queroVer.length === 0 ? (
+<h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>      {queroVer.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
@@ -495,8 +526,7 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       )}
 
       {/* COMENTARIOS */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentarios ({comentarios.length})</h2>
-      {comentarios.length === 0 ? (
+<h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentarios ({comentarios.length})</h2>      {comentarios.length === 0 ? (
         <p className="login-aviso">Nenhum comentario ainda.</p>
       ) : (
         comentarios.map(c => {
