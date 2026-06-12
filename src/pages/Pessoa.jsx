@@ -8,6 +8,7 @@ import { useParams, useNavigate } from "react-router-dom"
 const ALIASES = {
   "frederico silveira": "Fred Silveira",
   "luci salutes": "Luci Saluzzi",
+  "fabiane bang": "Fabi Bang",
   "nome antigo": "Nome Atual",
   "outro nome antigo": "Nome Atual",
   
