@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { collection, getDocs } from "firebase/firestore"
 import { db } from "../firebase"
+import { useNavigate } from "react-router-dom"
 
 function Stats() {
   const [stats, setStats] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     async function calcular() {
@@ -14,11 +16,36 @@ function Stats() {
       const totalVotos = lista.reduce((acc, m) => acc + (m.totalVotos || 0), 0)
       const comVotos = lista.filter(m => m.totalVotos > 0)
 
-      const maisVotado = comVotos.sort((a, b) => b.totalVotos - a.totalVotos)[0]
-      const melhorAvaliado = comVotos.sort((a, b) =>
-        (b.somaEstrelas / b.totalVotos) - (a.somaEstrelas / a.totalVotos)
-      )[0]
+      const mediaNota = comVotos.length > 0
+        ? comVotos.reduce((acc, m) => acc + m.somaEstrelas / m.totalVotos, 0) / comVotos.length
+        : 0
 
+      const top3Votados = [...comVotos]
+        .sort((a, b) => b.totalVotos - a.totalVotos)
+        .slice(0, 3)
+
+      const top3Avaliados = [...comVotos]
+        .sort((a, b) => (b.somaEstrelas / b.totalVotos) - (a.somaEstrelas / a.totalVotos))
+        .slice(0, 3)
+
+      const notaMaisAlta = top3Avaliados[0]
+
+      // Comentários
+      let totalComentarios = 0
+      const comentariosPorMusical = {}
+      await Promise.all(
+        lista.map(async m => {
+          const subSnap = await getDocs(collection(db, "musicais", m.id, "comentarios"))
+          comentariosPorMusical[m.id] = subSnap.size
+          totalComentarios += subSnap.size
+        })
+      )
+      const top3Comentados = [...lista]
+        .sort((a, b) => (comentariosPorMusical[b.id] || 0) - (comentariosPorMusical[a.id] || 0))
+        .filter(m => (comentariosPorMusical[m.id] || 0) > 0)
+        .slice(0, 3)
+
+      // Diretor
       const direcaoCount = {}
       lista.forEach(m => {
         if (!m.direcao) return
@@ -27,17 +54,31 @@ function Stats() {
           if (n) direcaoCount[n] = (direcaoCount[n] || 0) + 1
         })
       })
-      const dirMaisFrequente = Object.entries(direcaoCount)
-        .sort((a, b) => b[1] - a[1])[0]
+      const dirMaisFrequente = Object.entries(direcaoCount).sort((a, b) => b[1] - a[1])[0]
 
+      // Teatro
+      const teatroCount = {}
+      lista.forEach(m => {
+        if (!m.teatro) return
+        const t = m.teatro.trim()
+        if (t) teatroCount[t] = (teatroCount[t] || 0) + 1
+      })
+      const teatroMaisFrequente = Object.entries(teatroCount).sort((a, b) => b[1] - a[1])[0]
+
+      // Por ano
       const anoCount = {}
       lista.forEach(m => {
         if (m.ano) anoCount[m.ano] = (anoCount[m.ano] || 0) + 1
       })
-      const anoMaisAtivo = Object.entries(anoCount)
-        .sort((a, b) => b[1] - a[1])[0]
+      const anosSorted = Object.entries(anoCount).sort((a, b) => a[0].localeCompare(b[0]))
+      const maxPorAno = Math.max(...anosSorted.map(([, v]) => v))
 
-      setStats({ totalMusicais, totalVotos, maisVotado, melhorAvaliado, dirMaisFrequente, anoMaisAtivo })
+      setStats({
+        totalMusicais, totalVotos, totalComentarios, mediaNota,
+        top3Votados, top3Avaliados, top3Comentados,
+        notaMaisAlta, dirMaisFrequente, teatroMaisFrequente,
+        anosSorted, maxPorAno, comentariosPorMusical
+      })
     }
     calcular()
   }, [])
@@ -55,6 +96,40 @@ function Stats() {
     </div>
   )
 
+  const medalha = (i) => ["🥇", "🥈", "🥉"][i]
+
+  const blocoTop3 = (label, lista, getSub) => (
+    <div style={{
+      background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px",
+      padding: "20px 24px"
+    }}>
+      <p style={{ fontSize: "12px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px" }}>{label}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {lista.map((m, i) => (
+          <div
+            key={m.id}
+            onClick={() => navigate(`/musical/${m.id}`)}
+            style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+          >
+            <span style={{ fontSize: "22px", width: "28px", flexShrink: 0 }}>{medalha(i)}</span>
+            <img
+              src={m.capa}
+              alt={m.titulo}
+              style={{ width: "36px", height: "52px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
+            />
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                margin: 0, fontWeight: "600", fontSize: "14px",
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+              }}>{m.titulo}</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#888" }}>{getSub(m)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
   return (
     <main>
       <p className="section-label">MBDb</p>
@@ -62,30 +137,81 @@ function Stats() {
         Estatísticas
       </h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+      {/* Números gerais */}
+      <h2 style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 12px" }}>Números gerais</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px", marginBottom: "40px" }}>
         {bloco("Total de musicais", stats.totalMusicais)}
         {bloco("Total de avaliações", stats.totalVotos)}
-        {stats.maisVotado && bloco(
-          "Musical mais votado",
-          stats.maisVotado.titulo,
-          `${stats.maisVotado.totalVotos} votos`
-        )}
-        {stats.melhorAvaliado && bloco(
-          "Melhor avaliado",
-          stats.melhorAvaliado.titulo,
-          `★ ${(stats.melhorAvaliado.somaEstrelas / stats.melhorAvaliado.totalVotos).toFixed(1)}`
+        {bloco("Total de comentários", stats.totalComentarios)}
+        {bloco("Nota média geral", `★ ${stats.mediaNota.toFixed(2)}`)}
+        {stats.notaMaisAlta && bloco(
+          "Nota mais alta",
+          stats.notaMaisAlta.titulo,
+          `★ ${(stats.notaMaisAlta.somaEstrelas / stats.notaMaisAlta.totalVotos).toFixed(2)}`
         )}
         {stats.dirMaisFrequente && bloco(
-          "Diretor mais presente",
+          "Diretor(a) mais presente",
           stats.dirMaisFrequente[0],
           `${stats.dirMaisFrequente[1]} musicais`
         )}
-        {stats.anoMaisAtivo && bloco(
-          "Ano mais ativo",
-          stats.anoMaisAtivo[0],
-          `${stats.anoMaisAtivo[1]} musicais`
+        {stats.teatroMaisFrequente && bloco(
+          "Teatro mais presente",
+          stats.teatroMaisFrequente[0],
+          `${stats.teatroMaisFrequente[1]} musicais`
         )}
       </div>
+
+      {/* Top 3s */}
+      <h2 style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 12px" }}>Rankings</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+        {blocoTop3(
+          "Mais votados",
+          stats.top3Votados,
+          m => `${m.totalVotos} avaliações`
+        )}
+        {blocoTop3(
+          "Melhor avaliados",
+          stats.top3Avaliados,
+          m => `★ ${(m.somaEstrelas / m.totalVotos).toFixed(2)}`
+        )}
+        {stats.top3Comentados.length > 0 && blocoTop3(
+          "Mais comentados",
+          stats.top3Comentados,
+          m => `${stats.comentariosPorMusical[m.id]} comentários`
+        )}
+      </div>
+
+      {/* Por ano */}
+      {stats.anosSorted.length > 0 && (
+        <>
+          <h2 style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 12px" }}>Musicais por ano</h2>
+          <div style={{
+            background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px",
+            padding: "24px", marginBottom: "40px"
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", height: "120px" }}>
+              {stats.anosSorted.map(([ano, qtd]) => (
+                <div key={ano} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", height: "100%" }}>
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: "#555" }}>{qtd}</span>
+                  <div style={{ width: "100%", display: "flex", alignItems: "flex-end", flex: 1 }}>
+                    <div style={{
+                      width: "100%",
+                      height: `${(qtd / stats.maxPorAno) * 100}%`,
+                      background: "#F5C518",
+                      borderRadius: "4px 4px 0 0",
+                      minHeight: "4px"
+                    }} />
+                  </div>
+                  <span style={{
+                    fontSize: "10px", color: "#888", writingMode: "vertical-rl",
+                    transform: "rotate(180deg)", whiteSpace: "nowrap"
+                  }}>{ano}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </main>
   )
 }
