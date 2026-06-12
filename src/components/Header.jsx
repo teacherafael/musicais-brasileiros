@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
+import { setDoc, doc } from "firebase/firestore"
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth"
-import { auth, provider } from "../firebase"
+import { auth, provider, db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
 function Header() {
@@ -11,7 +12,14 @@ function Header() {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
 
-  const entrar = () => signInWithPopup(auth, provider)
+  const entrar = async () => {
+  const resultado = await signInWithPopup(auth, provider)
+  const user = resultado.user
+  await setDoc(doc(db, "usuarios", user.uid), {
+    nome: user.displayName,
+    foto: user.photoURL,
+  }, { merge: true })
+}
   const sair = () => signOut(auth)
 
   return (
