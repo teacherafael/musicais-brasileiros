@@ -106,7 +106,7 @@ header {
 }
 
 main {
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 40px 24px;
 }
@@ -435,4 +435,28 @@ main {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+/* ── LAYOUT DUAS COLUNAS DA HOME ── */
+.home-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.home-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-comentarios {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 88px;
+}
+
+@media (max-width: 768px) {
+  .sidebar-comentarios {
+    display: none;
+  }
 }

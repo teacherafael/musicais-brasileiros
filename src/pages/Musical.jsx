@@ -97,20 +97,22 @@ function Musical() {
   const [toast, setToast] = useState(null)
   const [usuariosVerificados, setUsuariosVerificados] = useState({})
   const [reacoes, setReacoes] = useState({})
-const [minhaReacao, setMinhaReacao] = useState({})
+  const [minhaReacao, setMinhaReacao] = useState({})
   const cartaoRef = useRef(null)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
-useEffect(() => {
-  if (!musical) return
-  const media = musical.totalVotos > 0
-    ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
-    : null
-  document.title = `${musical.titulo}${media ? ` — ★ ${media}` : ""} | MBDb`
-  return () => { document.title = "MBDb" }
-}, [musical])
+
+  useEffect(() => {
+    if (!musical) return
+    const media = musical.totalVotos > 0
+      ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
+      : null
+    document.title = `${musical.titulo}${media ? ` — ★ ${media}` : ""} | MBDb`
+    return () => { document.title = "MBDb" }
+  }, [musical])
+
   useEffect(() => {
     async function buscarMusical() {
       const docSnap = await getDoc(doc(db, "musicais", id))
@@ -129,7 +131,6 @@ useEffect(() => {
       }))
       setComentarios(lista)
 
-      // Buscar quais usuários dos comentários são verificados
       const userIds = [...new Set(lista.map(c => c.userId).filter(Boolean))]
       const verificados = {}
       await Promise.all(userIds.map(async uid => {
@@ -138,7 +139,6 @@ useEffect(() => {
       }))
       setUsuariosVerificados(verificados)
 
-      // Buscar reações de cada comentário
       const reacoesPorComentario = {}
       const minhaReacaoPorComentario = {}
       await Promise.all(lista.map(async c => {
@@ -212,29 +212,28 @@ useEffect(() => {
   }
 
   async function votar(estrelas) {
-  if (!usuario) return alert("Faça login para votar.")
-  
-  if (votoAtual) {
-    await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
-    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-    setMusical(prev => ({ ...prev, somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual) }))
-  } else {
-    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-    await updateDoc(doc(db, "musicais", id), { totalVotos: increment(1), somaEstrelas: increment(estrelas) })
-    setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
+    if (!usuario) return alert("Faça login para votar.")
+
+    if (votoAtual) {
+      await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
+      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+      setMusical(prev => ({ ...prev, somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual) }))
+    } else {
+      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+      await updateDoc(doc(db, "musicais", id), { totalVotos: increment(1), somaEstrelas: increment(estrelas) })
+      setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
+    }
+
+    await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
+      musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
+    })
+    await deleteDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
+
+    setVotoAtual(estrelas)
+    setJaVi(true)
+    setQueroVer(false)
+    mostrarToast("Avaliação salva!")
   }
-
-  // Marca "Já vi" e remove "Quero ver"
-  await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
-    musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
-  })
-  await deleteDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
-
-  setVotoAtual(estrelas)
-  setJaVi(true)
-  setQueroVer(false)
-  mostrarToast("Avaliação salva!")
-}
 
   async function removerVoto() {
     if (!window.confirm("Remover sua avaliação deste musical?")) return
@@ -253,19 +252,19 @@ useEffect(() => {
   }
 
   async function toggleQueroVer() {
-  if (!usuario) return alert("Faça login para usar esta função.")
-  const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
-  const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
-  if (queroVer) {
-    await deleteDoc(refQueroVer)
-    setQueroVer(false)
-  } else {
-    await setDoc(refQueroVer, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
-    await deleteDoc(refJaVi)
-    setQueroVer(true)
-    setJaVi(false)
+    if (!usuario) return alert("Faça login para usar esta função.")
+    const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
+    const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
+    if (queroVer) {
+      await deleteDoc(refQueroVer)
+      setQueroVer(false)
+    } else {
+      await setDoc(refQueroVer, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
+      await deleteDoc(refJaVi)
+      setQueroVer(true)
+      setJaVi(false)
+    }
   }
-}
 
   async function toggleJaVi() {
     if (!usuario) return alert("Faça login para usar esta função.")
@@ -302,17 +301,29 @@ useEffect(() => {
     if (!textoComentario.trim()) return
     const confirmado = window.confirm("Lembre-se de manter sua crítica respeitosa e sem ataques à produção. Deseja publicar o comentário?")
     if (!confirmado) return
+
     const novoComentario = {
       nome: usuario.displayName || "Anônimo",
       userId: usuario.uid,
       texto: textoComentario,
       data: new Date()
     }
+
+    // Salva na subcoleção do musical (como antes)
     const docRef = await addDoc(collection(db, "musicais", id, "comentarios"), novoComentario)
+
+    // Salva também na coleção raiz para a sidebar da Home
+    await setDoc(doc(db, "comentarios", docRef.id), {
+      ...novoComentario,
+      musicalId: id,
+      musicalTitulo: musical.titulo,
+      musicalCapa: musical.capa || null,
+      data: serverTimestamp()
+    })
+
     const votoSnap = await getDoc(doc(db, "musicais", id, "votos", usuario.uid))
     const estrelasComentario = votoSnap.exists() ? votoSnap.data().estrelas : null
 
-    // Verificar se o usuário que comentou é verificado
     const userSnap = await getDoc(doc(db, "usuarios", usuario.uid))
     const eVerificado = userSnap.exists() ? (userSnap.data().verificado ?? false) : false
     setUsuariosVerificados(prev => ({ ...prev, [usuario.uid]: eVerificado }))
@@ -324,46 +335,52 @@ useEffect(() => {
   async function deletarComentario(comentarioId) {
     if (!window.confirm("Apagar este comentário?")) return
     await deleteDoc(doc(db, "musicais", id, "comentarios", comentarioId))
+    // Remove também da coleção raiz
+    await deleteDoc(doc(db, "comentarios", comentarioId))
     setComentarios(prev => prev.filter(c => c.id !== comentarioId))
   }
 
   async function salvarEdicao(comentarioId) {
     if (!textoEdicao.trim()) return
     await updateDoc(doc(db, "musicais", id, "comentarios", comentarioId), { texto: textoEdicao })
+    // Atualiza também na coleção raiz
+    await updateDoc(doc(db, "comentarios", comentarioId), { texto: textoEdicao })
     setComentarios(prev => prev.map(c => c.id === comentarioId ? { ...c, texto: textoEdicao } : c))
     setEditandoComentario(null)
     setTextoEdicao("")
   }
-async function reagir(comentarioId, emoji) {
-  if (!usuario) return alert("Faça login para reagir.")
-  const ref = doc(db, "musicais", id, "comentarios", comentarioId, "reacoes", usuario.uid)
-  const jaReagiu = minhaReacao[comentarioId]
 
-  if (jaReagiu === emoji) {
-    await deleteDoc(ref)
-    setMinhaReacao(prev => { const next = { ...prev }; delete next[comentarioId]; return next })
-    setReacoes(prev => {
-      const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
-      next[comentarioId][emoji] = Math.max((next[comentarioId][emoji] || 1) - 1, 0)
-      return next
-    })
-  } else {
-    if (jaReagiu) {
+  async function reagir(comentarioId, emoji) {
+    if (!usuario) return alert("Faça login para reagir.")
+    const ref = doc(db, "musicais", id, "comentarios", comentarioId, "reacoes", usuario.uid)
+    const jaReagiu = minhaReacao[comentarioId]
+
+    if (jaReagiu === emoji) {
+      await deleteDoc(ref)
+      setMinhaReacao(prev => { const next = { ...prev }; delete next[comentarioId]; return next })
       setReacoes(prev => {
         const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
-        next[comentarioId][jaReagiu] = Math.max((next[comentarioId][jaReagiu] || 1) - 1, 0)
+        next[comentarioId][emoji] = Math.max((next[comentarioId][emoji] || 1) - 1, 0)
+        return next
+      })
+    } else {
+      if (jaReagiu) {
+        setReacoes(prev => {
+          const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
+          next[comentarioId][jaReagiu] = Math.max((next[comentarioId][jaReagiu] || 1) - 1, 0)
+          return next
+        })
+      }
+      await setDoc(ref, { emoji })
+      setMinhaReacao(prev => ({ ...prev, [comentarioId]: emoji }))
+      setReacoes(prev => {
+        const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
+        next[comentarioId][emoji] = (next[comentarioId][emoji] || 0) + 1
         return next
       })
     }
-    await setDoc(ref, { emoji })
-    setMinhaReacao(prev => ({ ...prev, [comentarioId]: emoji }))
-    setReacoes(prev => {
-      const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
-      next[comentarioId][emoji] = (next[comentarioId][emoji] || 0) + 1
-      return next
-    })
   }
-}
+
   async function enviarDenuncia(comentario) {
     if (!textoDenuncia.trim()) return
     await addDoc(collection(db, "relatorios"), {
@@ -385,7 +402,6 @@ async function reagir(comentarioId, emoji) {
   }
 
   if (!musical) return <main><p>Carregando...</p></main>
-  
 
   const media = musical.totalVotos > 0
     ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
@@ -487,20 +503,20 @@ async function reagir(comentarioId, emoji) {
               {musical.producao && <p className="musical-meta"><strong>Produção:</strong> {nomesClicaveis(musical.producao)}</p>}
               {musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
               {musical.teatro && (() => {
-  const t = encontrarTeatroPorNome(musical.teatro);
-  return (
-    <p className="musical-meta">
-      <strong>Teatro de estreia:</strong>{" "}
-      {t ? (
-        <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>
-          {musical.teatro}
-        </Link>
-      ) : (
-        musical.teatro
-      )}
-    </p>
-  );
-})()}
+                const t = encontrarTeatroPorNome(musical.teatro);
+                return (
+                  <p className="musical-meta">
+                    <strong>Teatro de estreia:</strong>{" "}
+                    {t ? (
+                      <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>
+                        {musical.teatro}
+                      </Link>
+                    ) : (
+                      musical.teatro
+                    )}
+                  </p>
+                );
+              })()}
               {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
               {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
               {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
@@ -653,32 +669,32 @@ async function reagir(comentarioId, emoji) {
                   <>
                     <p className="comentario-texto">{c.texto}</p>
                     <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
-  {["👍", "❤️", "😂", "😢"].map(emoji => {
-    const count = reacoes[c.id]?.[emoji] || 0
-    const ativo = minhaReacao[c.id] === emoji
-    return (
-      <button
-        key={emoji}
-        onClick={() => reagir(c.id, emoji)}
-        style={{
-          background: ativo ? "#F5C518" : "#e0e0e0",
-          border: ativo ? "1px solid #F5C518" : "1px solid #e8e8e4",
-          borderRadius: "99px",
-          padding: "3px 10px",
-          fontSize: "13px",
-          cursor: "pointer",
-          color: "#1a1a1a",
-          fontFamily: "'DM Sans', sans-serif",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "4px"
-        }}
-      >
-        {emoji} {count > 0 && <span>{count}</span>}
-      </button>
-    )
-  })}
-</div>
+                      {["👍", "❤️", "😂", "😢"].map(emoji => {
+                        const count = reacoes[c.id]?.[emoji] || 0
+                        const ativo = minhaReacao[c.id] === emoji
+                        return (
+                          <button
+                            key={emoji}
+                            onClick={() => reagir(c.id, emoji)}
+                            style={{
+                              background: ativo ? "#F5C518" : "#e0e0e0",
+                              border: ativo ? "1px solid #F5C518" : "1px solid #e8e8e4",
+                              borderRadius: "99px",
+                              padding: "3px 10px",
+                              fontSize: "13px",
+                              cursor: "pointer",
+                              color: "#1a1a1a",
+                              fontFamily: "'DM Sans', sans-serif",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                          >
+                            {emoji} {count > 0 && <span>{count}</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
                     <div style={{ display: "flex", gap: "12px", marginTop: "8px", flexWrap: "wrap" }}>
                       {usuario && usuario.uid === c.userId && (
                         <>

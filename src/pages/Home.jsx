@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore"
+import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -12,16 +12,17 @@ const normalizar = (texto) =>
 function Home() {
   const [musicais, setMusicais] = useState([])
   const [destaques, setDestaques] = useState([])
- const [searchParams, setSearchParams] = useSearchParams()
-const [buscaInput, setBuscaInput] = useState(searchParams.get("q") || "")
-const [busca, setBusca] = useState(searchParams.get("q") || "")
-const [ordenacao, setOrdenacao] = useState(searchParams.get("ordem") || "az")
-const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [buscaInput, setBuscaInput] = useState(searchParams.get("q") || "")
+  const [busca, setBusca] = useState(searchParams.get("q") || "")
+  const [ordenacao, setOrdenacao] = useState(searchParams.get("ordem") || "az")
+  const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
   const [pagina, setPagina] = useState(1)
   const [carregando, setCarregando] = useState(true)
+  const [ultimosComentarios, setUltimosComentarios] = useState([])
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -37,12 +38,12 @@ const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
   }, [ordenacao, filtroAno])
 
   useEffect(() => {
-  const params = {}
-  if (busca) params.q = busca
-  if (ordenacao !== "az") params.ordem = ordenacao
-  if (filtroAno) params.ano = filtroAno
-  setSearchParams(params, { replace: true })
-}, [busca, ordenacao, filtroAno])
+    const params = {}
+    if (busca) params.q = busca
+    if (ordenacao !== "az") params.ordem = ordenacao
+    if (filtroAno) params.ano = filtroAno
+    setSearchParams(params, { replace: true })
+  }, [busca, ordenacao, filtroAno])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -76,6 +77,20 @@ const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
       setCarregando(false)
     }
     buscarMusicais()
+  }, [])
+
+  useEffect(() => {
+    async function buscarComentarios() {
+      try {
+        const q = query(collection(db, "comentarios"), orderBy("data", "desc"), limit(8))
+        const snap = await getDocs(q)
+        setUltimosComentarios(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } catch (e) {
+        // Coleção ainda vazia ou índice não criado — sidebar fica em branco
+        setUltimosComentarios([])
+      }
+    }
+    buscarComentarios()
   }, [])
 
   async function toggleQueroVer(e, musical) {
@@ -128,9 +143,7 @@ const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
     .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
     .slice(0, 10)
 
-  const idsExcluidos = new Set([
-  ...destaquesIds
-])
+  const idsExcluidos = new Set([...destaquesIds])
 
   const musicaisFiltrados = musicais
     .filter(m => !idsExcluidos.has(m.id))
@@ -312,127 +325,183 @@ const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
 
       <hr className="divider" />
 
-      {/* ── FILTROS ── */}
-      <div style={{ display: "flex", gap: "12px", margin: "24px 0", flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="Buscar musical ou pessoa..."
-          value={buscaInput}
-          onChange={e => setBuscaInput(e.target.value)}
-          style={{
-            flex: 1, minWidth: "200px", padding: "12px 16px",
-            border: "1px solid #e8e8e4", borderRadius: "8px",
-            fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none"
-          }}
-        />
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
-            Organizar por
-          </label>
-          <select
-            value={ordenacao}
-            onChange={e => setOrdenacao(e.target.value)}
-            style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
-          >
-            <option value="az">A → Z</option>
-            <option value="za">Z → A</option>
-            <option value="melhor">Melhor avaliação</option>
-            <option value="pior">Pior avaliação</option>
-            <option value="mais-votados">Mais votados</option>
-            <option value="menos-votados">Menos votados</option>
-            <option value="recentes">Adicionados recentemente</option>
-            <option value="antigos">Adicionados anteriormente</option>
-          </select>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
-            Ano
-          </label>
-          <select
-            value={filtroAno}
-            onChange={e => setFiltroAno(e.target.value)}
-            style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
-          >
-            <option value="">Todos os anos</option>
-            {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
-          </select>
-        </div>
-      </div>
+      {/* ── LAYOUT DUAS COLUNAS (desktop) ── */}
+      <div className="home-layout">
 
-      {/* ── GRID PRINCIPAL ── */}
-      <div
-        className="grid-musicais"
-        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}
-      >
-        {carregando ? (
-  Array.from({ length: 12 }).map((_, i) => (
-    <div key={i} style={{
-      borderRadius: "6px",
-      background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-      backgroundSize: "200% 100%",
-      animation: "shimmer 1.2s infinite",
-      aspectRatio: "3/4"
-    }} />
-  ))
-) : musicaisPagina.length === 0 ? (
-  <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
-) : (
-  musicaisPagina.map(musical => (
-    <CardMusical key={musical.id} musical={musical} />
-  ))
-)}
-      </div>
+        {/* ── COLUNA ESQUERDA: filtros + grid ── */}
+        <div className="home-conteudo">
 
-      {/* ── PAGINAÇÃO ── */}
-      {totalPaginas > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "40px", flexWrap: "wrap" }}>
-          <button
-            onClick={() => { setPagina(p => p - 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
-            disabled={pagina === 1}
-            style={{
-              padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
-              background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-              cursor: pagina === 1 ? "not-allowed" : "pointer", color: pagina === 1 ? "#ccc" : "#1a1a1a"
-            }}
-          >
-            ← Anterior
-          </button>
-
-          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
-            <button
-              key={n}
-              onClick={() => { setPagina(n); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+          {/* ── FILTROS ── */}
+          <div style={{ display: "flex", gap: "12px", margin: "24px 0", flexWrap: "wrap" }}>
+            <input
+              type="text"
+              placeholder="Buscar musical ou pessoa..."
+              value={buscaInput}
+              onChange={e => setBuscaInput(e.target.value)}
               style={{
-                padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "8px",
-                background: n === pagina ? "#F5C518" : "#fff",
-                fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-                fontWeight: n === pagina ? "700" : "400",
-                cursor: "pointer", color: "#1a1a1a"
+                flex: 1, minWidth: "200px", padding: "12px 16px",
+                border: "1px solid #e8e8e4", borderRadius: "8px",
+                fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none"
               }}
-            >
-              {n}
-            </button>
-          ))}
+            />
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Organizar por
+              </label>
+              <select
+                value={ordenacao}
+                onChange={e => setOrdenacao(e.target.value)}
+                style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
+              >
+                <option value="az">A → Z</option>
+                <option value="za">Z → A</option>
+                <option value="melhor">Melhor avaliação</option>
+                <option value="pior">Pior avaliação</option>
+                <option value="mais-votados">Mais votados</option>
+                <option value="menos-votados">Menos votados</option>
+                <option value="recentes">Adicionados recentemente</option>
+                <option value="antigos">Adicionados anteriormente</option>
+              </select>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Ano
+              </label>
+              <select
+                value={filtroAno}
+                onChange={e => setFiltroAno(e.target.value)}
+                style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
+              >
+                <option value="">Todos os anos</option>
+                {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
+              </select>
+            </div>
+          </div>
 
-          <button
-            onClick={() => { setPagina(p => p + 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
-            disabled={pagina === totalPaginas}
-            style={{
-              padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
-              background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-              cursor: pagina === totalPaginas ? "not-allowed" : "pointer", color: pagina === totalPaginas ? "#ccc" : "#1a1a1a"
-            }}
+          {/* ── GRID PRINCIPAL ── */}
+          <div
+            className="grid-musicais"
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}
           >
-            Próximo →
-          </button>
-        </div>
-      )}
+            {carregando ? (
+              Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} style={{
+                  borderRadius: "6px",
+                  background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 1.2s infinite",
+                  aspectRatio: "3/4"
+                }} />
+              ))
+            ) : musicaisPagina.length === 0 ? (
+              <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
+            ) : (
+              musicaisPagina.map(musical => (
+                <CardMusical key={musical.id} musical={musical} />
+              ))
+            )}
+          </div>
 
-      {totalPaginas > 1 && (
-        <p style={{ textAlign: "center", fontSize: "13px", color: "#999", marginTop: "12px" }}>
-          Página {pagina} de {totalPaginas} · {musicaisFiltrados.length} musicais
-        </p>
-      )}
+          {/* ── PAGINAÇÃO ── */}
+          {totalPaginas > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "40px", flexWrap: "wrap" }}>
+              <button
+                onClick={() => { setPagina(p => p - 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+                disabled={pagina === 1}
+                style={{
+                  padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
+                  background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+                  cursor: pagina === 1 ? "not-allowed" : "pointer", color: pagina === 1 ? "#ccc" : "#1a1a1a"
+                }}
+              >
+                ← Anterior
+              </button>
+
+              {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
+                <button
+                  key={n}
+                  onClick={() => { setPagina(n); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+                  style={{
+                    padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "8px",
+                    background: n === pagina ? "#F5C518" : "#fff",
+                    fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+                    fontWeight: n === pagina ? "700" : "400",
+                    cursor: "pointer", color: "#1a1a1a"
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+
+              <button
+                onClick={() => { setPagina(p => p + 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+                disabled={pagina === totalPaginas}
+                style={{
+                  padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
+                  background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+                  cursor: pagina === totalPaginas ? "not-allowed" : "pointer", color: pagina === totalPaginas ? "#ccc" : "#1a1a1a"
+                }}
+              >
+                Próximo →
+              </button>
+            </div>
+          )}
+
+          {totalPaginas > 1 && (
+            <p style={{ textAlign: "center", fontSize: "13px", color: "#999", marginTop: "12px" }}>
+              Página {pagina} de {totalPaginas} · {musicaisFiltrados.length} musicais
+            </p>
+          )}
+
+        </div>
+
+        {/* ── SIDEBAR: últimos comentários (só desktop) ── */}
+        <aside className="sidebar-comentarios">
+          <p style={{ fontSize: "12px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "16px", marginTop: "24px" }}>
+            Últimos comentários
+          </p>
+          {ultimosComentarios.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "#bbb" }}>Nenhum comentário ainda.</p>
+          ) : (
+            ultimosComentarios.map(c => (
+              <div key={c.id} style={{ marginBottom: "16px", paddingBottom: "16px", borderBottom: "1px solid #e8e8e4" }}>
+                <a href={`/musical/${c.musicalId}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                    {c.musicalCapa ? (
+                      <img
+                        src={c.musicalCapa}
+                        alt={c.musicalTitulo}
+                        style={{ width: "36px", height: "50px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
+                      />
+                    ) : (
+                      <div style={{ width: "36px", height: "50px", background: "#1a1a1a", borderRadius: "4px", flexShrink: 0 }} />
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: "12px", fontWeight: "700", margin: "0 0 2px", color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {c.musicalTitulo}
+                      </p>
+                      <a
+                        href={`/perfil/${c.userId}`}
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontSize: "12px", color: "#888", textDecoration: "none" }}
+                      >
+                        {c.nome}
+                      </a>
+                      <p style={{
+                        fontSize: "13px", color: "#444", margin: "4px 0 0", lineHeight: "1.4",
+                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden"
+                      }}>
+                        {c.texto}
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            ))
+          )}
+        </aside>
+
+      </div>
     </main>
   )
 }
