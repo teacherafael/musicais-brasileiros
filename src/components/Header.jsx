@@ -24,11 +24,17 @@ function Header() {
 </div>
       <div className="header-right">
         <span
-          onClick={() => navigate("/ranking")}
-          style={{ fontSize: "14px", color: "#aaa", cursor: "pointer" }}
-        >
-          Top 15
-        </span>
+  onClick={() => navigate("/ranking")}
+  style={{ fontSize: "14px", color: "#aaa", cursor: "pointer" }}
+>
+  Top 15
+</span>
+<span
+  onClick={() => navigate("/stats")}
+  style={{ fontSize: "14px", color: "#aaa", cursor: "pointer" }}
+>
+  Estatísticas
+</span>
         {usuario ? (
           <>
             {usuario.photoURL && (

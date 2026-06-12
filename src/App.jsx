@@ -11,6 +11,7 @@ import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
 import Politica from "./pages/Politica"
 import Pessoa from "./pages/Pessoa"
+import Stats from "./pages/Stats"
 import { useState, useEffect } from "react"
 import Teatro from "./pages/Teatro";
 
@@ -56,6 +57,7 @@ function App() {
         <Route path="/politica" element={<Politica />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
+        <Route path="/stats" element={<Stats />} />
         <Route path="/teatro/:id" element={<Teatro />} />
         
       </Routes>
