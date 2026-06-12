@@ -203,8 +203,10 @@ function Perfil() {
   const mediaVotos = votos.length > 0
     ? (votos.reduce((acc, v) => acc + v.estrelas, 0) / votos.length).toFixed(1)
     : null
-
+const votosIds = votos.map(v => v.musicalId)
+const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
   if (carregando) return <main><p>Carregando...</p></main>
+  
 
   const musicaisFiltradosTop3 = Object.values(musicais).filter(m =>
     m.titulo.toLowerCase().includes(buscaTop3.toLowerCase())
@@ -468,7 +470,20 @@ function Perfil() {
           {jaVi.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
         </div>
       )}
-
+{/* JA VI SEM AVALIACAO */}
+{isProprioPerfil && jaViSemAvaliacao.length > 0 && (
+  <>
+    <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>
+      Já vi, mas não avaliei ({jaViSemAvaliacao.length})
+    </h2>
+    <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+      Musicais que você marcou como "Já vi" mas ainda não deu uma nota.
+    </p>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+      {jaViSemAvaliacao.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
+    </div>
+  </>
+)}
       {/* QUERO VER */}
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>
       {queroVer.length === 0 ? (
