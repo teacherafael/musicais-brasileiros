@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore"
 import { db, auth } from "../firebase"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
 const POR_PAGINA = 12
@@ -12,10 +12,11 @@ const normalizar = (texto) =>
 function Home() {
   const [musicais, setMusicais] = useState([])
   const [destaques, setDestaques] = useState([])
-  const [busca, setBusca] = useState("")
-  const [buscaInput, setBuscaInput] = useState("")
-  const [ordenacao, setOrdenacao] = useState("az")
-  const [filtroAno, setFiltroAno] = useState("")
+ const [searchParams, setSearchParams] = useSearchParams()
+const [buscaInput, setBuscaInput] = useState(searchParams.get("q") || "")
+const [busca, setBusca] = useState(searchParams.get("q") || "")
+const [ordenacao, setOrdenacao] = useState(searchParams.get("ordem") || "az")
+const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
@@ -34,6 +35,14 @@ function Home() {
   useEffect(() => {
     setPagina(1)
   }, [ordenacao, filtroAno])
+
+  useEffect(() => {
+  const params = {}
+  if (busca) params.q = busca
+  if (ordenacao !== "az") params.ordem = ordenacao
+  if (filtroAno) params.ano = filtroAno
+  setSearchParams(params, { replace: true })
+}, [busca, ordenacao, filtroAno])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
