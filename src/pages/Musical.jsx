@@ -101,7 +101,14 @@ function Musical() {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
-
+useEffect(() => {
+  if (!musical) return
+  const media = musical.totalVotos > 0
+    ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
+    : null
+  document.title = `${musical.titulo}${media ? ` — ★ ${media}` : ""} | MBDb`
+  return () => { document.title = "MBDb" }
+}, [musical])
   useEffect(() => {
     async function buscarMusical() {
       const docSnap = await getDoc(doc(db, "musicais", id))
@@ -328,6 +335,7 @@ function Musical() {
   }
 
   if (!musical) return <main><p>Carregando...</p></main>
+  
 
   const media = musical.totalVotos > 0
     ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
@@ -367,7 +375,7 @@ function Musical() {
   return (
     <main>
       <Helmet>
-        <title>{musical.titulo}{media ? ` — ★ ${media}` : ""} | MBDb</title>
+        <title>{musical.titulo} — MBDb</title>
         <meta name="description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
         <meta property="og:title" content={musical.titulo} />
         <meta property="og:description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
