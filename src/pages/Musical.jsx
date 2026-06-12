@@ -96,6 +96,8 @@ function Musical() {
   const [denunciaEnviada, setDenunciaEnviada] = useState(null)
   const [toast, setToast] = useState(null)
   const [usuariosVerificados, setUsuariosVerificados] = useState({})
+  const [reacoes, setReacoes] = useState({})
+const [minhaReacao, setMinhaReacao] = useState({})
   const cartaoRef = useRef(null)
 
   useEffect(() => {
@@ -135,6 +137,25 @@ useEffect(() => {
         if (userSnap.exists()) verificados[uid] = userSnap.data().verificado ?? false
       }))
       setUsuariosVerificados(verificados)
+
+      // Buscar reações de cada comentário
+      const reacoesPorComentario = {}
+      const minhaReacaoPorComentario = {}
+      await Promise.all(lista.map(async c => {
+        const reacoesSnap = await getDocs(collection(db, "musicais", id, "comentarios", c.id, "reacoes"))
+        const contagem = {}
+        reacoesSnap.docs.forEach(r => {
+          const emoji = r.data().emoji
+          contagem[emoji] = (contagem[emoji] || 0) + 1
+        })
+        reacoesPorComentario[c.id] = contagem
+        if (usuario) {
+          const minhaSnap = reacoesSnap.docs.find(r => r.id === usuario?.uid)
+          if (minhaSnap) minhaReacaoPorComentario[c.id] = minhaSnap.data().emoji
+        }
+      }))
+      setReacoes(reacoesPorComentario)
+      setMinhaReacao(minhaReacaoPorComentario)
     }
     buscarMusical()
     buscarComentarios()
@@ -313,7 +334,36 @@ useEffect(() => {
     setEditandoComentario(null)
     setTextoEdicao("")
   }
+async function reagir(comentarioId, emoji) {
+  if (!usuario) return alert("Faça login para reagir.")
+  const ref = doc(db, "musicais", id, "comentarios", comentarioId, "reacoes", usuario.uid)
+  const jaReagiu = minhaReacao[comentarioId]
 
+  if (jaReagiu === emoji) {
+    await deleteDoc(ref)
+    setMinhaReacao(prev => { const next = { ...prev }; delete next[comentarioId]; return next })
+    setReacoes(prev => {
+      const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
+      next[comentarioId][emoji] = Math.max((next[comentarioId][emoji] || 1) - 1, 0)
+      return next
+    })
+  } else {
+    if (jaReagiu) {
+      setReacoes(prev => {
+        const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
+        next[comentarioId][jaReagiu] = Math.max((next[comentarioId][jaReagiu] || 1) - 1, 0)
+        return next
+      })
+    }
+    await setDoc(ref, { emoji })
+    setMinhaReacao(prev => ({ ...prev, [comentarioId]: emoji }))
+    setReacoes(prev => {
+      const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
+      next[comentarioId][emoji] = (next[comentarioId][emoji] || 0) + 1
+      return next
+    })
+  }
+}
   async function enviarDenuncia(comentario) {
     if (!textoDenuncia.trim()) return
     await addDoc(collection(db, "relatorios"), {
@@ -587,7 +637,7 @@ useEffect(() => {
                   )}
                 </a>
 
-                {editandoComentario === c.id ? (
+                {editandoComentario !== null && editandoComentario === c.id ? (
                   <div>
                     <textarea
                       value={textoEdicao}
@@ -602,6 +652,33 @@ useEffect(() => {
                 ) : (
                   <>
                     <p className="comentario-texto">{c.texto}</p>
+                    <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
+  {["👍", "❤️", "😂", "😢"].map(emoji => {
+    const count = reacoes[c.id]?.[emoji] || 0
+    const ativo = minhaReacao[c.id] === emoji
+    return (
+      <button
+        key={emoji}
+        onClick={() => reagir(c.id, emoji)}
+        style={{
+          background: ativo ? "#F5C518" : "#e0e0e0",
+          border: ativo ? "1px solid #F5C518" : "1px solid #e8e8e4",
+          borderRadius: "99px",
+          padding: "3px 10px",
+          fontSize: "13px",
+          cursor: "pointer",
+          color: "#1a1a1a",
+          fontFamily: "'DM Sans', sans-serif",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px"
+        }}
+      >
+        {emoji} {count > 0 && <span>{count}</span>}
+      </button>
+    )
+  })}
+</div>
                     <div style={{ display: "flex", gap: "12px", marginTop: "8px", flexWrap: "wrap" }}>
                       {usuario && usuario.uid === c.userId && (
                         <>
