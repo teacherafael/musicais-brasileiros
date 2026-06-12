@@ -73,7 +73,7 @@ function Home() {
       const snapshot = await getDocs(collection(db, "musicais"))
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
-      setDestaques(lista.filter(m => m.destaque === true).slice(0, 5))
+      setDestaques(lista.filter(m => m.destaque === true).slice(0, 10))
       setCarregando(false)
     }
     buscarMusicais()
