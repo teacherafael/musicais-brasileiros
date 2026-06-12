@@ -3,15 +3,45 @@ import { collection, getDocs } from "firebase/firestore"
 import { db } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 
+// Mapeamento de aliases para nome canônico
+// Chave: nome antigo (lowercase), Valor: nome atual (como aparece nos créditos)
+const ALIASES = {
+  "frederico silveira": "Fred Silveira",
+  "luci salutes": "Luci Saluzzi",
+  "nome antigo": "Nome Atual",
+  "outro nome antigo": "Nome Atual",
+  
+}
+
 function Pessoa() {
   const { nome } = useParams()
   const navigate = useNavigate()
   const [musicais, setMusicais] = useState([])
   const [carregando, setCarregando] = useState(true)
 
-  const nomeBusca = decodeURIComponent(nome).trim().toLowerCase()
+  const nomeDecodificado = decodeURIComponent(nome).trim()
+  const nomeLower = nomeDecodificado.toLowerCase()
+
+  // Se o nome da URL é um alias, redireciona para o nome canônico
+  const nomeCanonicoDoAlias = ALIASES[nomeLower]
+  useEffect(() => {
+    if (nomeCanonicoDoAlias) {
+      navigate("/pessoa/" + encodeURIComponent(nomeCanonicoDoAlias), { replace: true })
+    }
+  }, [nomeCanonicoDoAlias])
+
+  // Descobre todos os aliases que apontam para este nome canônico
+  const todosOsNomes = [
+  nomeLower,
+  ...Object.entries(ALIASES)
+    .filter(([alias, canonical]) => canonical.toLowerCase() === nomeLower)
+    .map(([alias]) => alias)
+]
+
+  const nomeBusca = nomeDecodificado.toLowerCase()
 
   useEffect(() => {
+    if (nomeCanonicoDoAlias) return // aguarda o redirect
     async function buscar() {
       const snap = await getDocs(collection(db, "musicais"))
       const lista = snap.docs
@@ -22,7 +52,10 @@ function Pessoa() {
             m.elenco, m.elencoAdicional, m.versionista,
             m.textoOriginal, m.musicaOriginal
           ]
-          return campos.some(c => c && c.toLowerCase().includes(nomeBusca))
+          // Busca pelo nome atual E por todos os aliases
+          return campos.some(c =>
+            c && todosOsNomes.some(n => c.toLowerCase().includes(n))
+          )
         })
       setMusicais(lista)
       setCarregando(false)
@@ -34,7 +67,7 @@ function Pessoa() {
     <main>
       <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
       <p className="section-label">Musicais Brasileiros Database</p>
-      <h1 className="page-title">{decodeURIComponent(nome)}</h1>
+      <h1 className="page-title">{nomeDecodificado}</h1>
       <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
         {carregando ? "Buscando..." : `${musicais.length} ${musicais.length === 1 ? "musical encontrado" : "musicais encontrados"}`}
       </p>
@@ -44,8 +77,7 @@ function Pessoa() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
           {musicais.map(m => (
-            
-             <a key={m.id}
+            <a key={m.id}
               href={"/musical/" + m.id}
               className="card-musical"
               style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
