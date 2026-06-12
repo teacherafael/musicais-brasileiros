@@ -367,7 +367,7 @@ function Musical() {
   return (
     <main>
       <Helmet>
-        <title>{musical.titulo} — MBDb</title>
+        <title>{musical.titulo}{media ? ` — ★ ${media}` : ""} | MBDb</title>
         <meta name="description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
         <meta property="og:title" content={musical.titulo} />
         <meta property="og:description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
