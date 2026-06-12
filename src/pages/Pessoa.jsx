@@ -10,7 +10,7 @@ const ALIASES = {
   "luci salutes": "Luci Saluzzi",
   "fabiane bang": "Fabi Bang",
   "janaina zuba": "Zuba Janaina",
-"paula flaiban": "Paulão do Vrah",
+"paula flaibann": "Paulão do Vrah",
 "luciana bolina": "Lubo",
   "nome antigo": "Nome Atual",
   "outro nome antigo": "Nome Atual",
