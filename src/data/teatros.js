@@ -177,12 +177,12 @@ export const teatros = [
     bairro: "Campos Elísios",
     cidade: "São Paulo – SP",
   },
-  {
+ {
     id: "teatro-villa-lobos-sp",
-    nomeOficial: "Teatro Villa-Lobos",
-    aliases: ["Teatro Opus"],
-    endereco: "Av. Dra. Ruth Cardoso, 4777",
-    bairro: "Jardim Universidade",
+    nomeOficial: "Teatro Villa-Lobos SP",
+    aliases: ["Teatro Villa-Lobos", "Teatro Opus"],
+    endereco: "Av. Queiroz Filho, 1096",
+    bairro: "Vila Hamburguesa",
     cidade: "São Paulo – SP",
   },
   {
