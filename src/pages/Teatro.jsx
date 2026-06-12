@@ -77,7 +77,7 @@ export default function Teatro() {
         </h1>
 
         {/* Info do teatro */}
-        <div style={{ color: "#aaa", fontSize: 15, lineHeight: 1.7 }}>
+        <div style={{ color: "##1a1a1a", fontSize: 17, lineHeight: 1.7 }}>
           {teatro.endereco && <div>📍 {teatro.endereco}</div>}
           {teatro.bairro && teatro.cidade && (
             <div>
@@ -85,7 +85,7 @@ export default function Teatro() {
             </div>
           )}
           {teatro.aliases.length > 0 && (
-            <div style={{ marginTop: 6, fontSize: 13, color: "#666" }}>
+            <div style={{ marginTop: 6, fontSize: 13, color: "#1a1a1a" }}>
               Também conhecido como:{" "}
               {teatro.aliases.join(", ")}
             </div>
@@ -97,8 +97,8 @@ export default function Teatro() {
       <h2
         style={{
           fontFamily: "Playfair Display, serif",
-          fontSize: 20,
-          color: "#e8e8e4",
+          fontSize: 24,
+          color: "#1a1a1a",
           borderBottom: "1px solid #333",
           paddingBottom: 10,
           marginBottom: 20,
@@ -170,7 +170,7 @@ export default function Teatro() {
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#555",
-                        fontSize: 12,
+                        fontSize: 12,f
                       }}
                     >
                       sem capa
