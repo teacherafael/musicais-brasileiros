@@ -61,7 +61,7 @@ export default function Teatro() {
       <div style={{ marginBottom: 32 }}>
         <Link
           to="/"
-          style={{ color: "#F5C518", fontSize: 14, textDecoration: "none" }}
+          style={{ color: "#1a1a1a", fontSize: 14, textDecoration: "none" }}
         >
           ← Voltar para a Home
         </Link>
