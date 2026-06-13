@@ -4,8 +4,6 @@ import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
-const POR_PAGINA = 12
-
 const normalizar = (texto) =>
   texto?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ?? ""
 
@@ -20,7 +18,7 @@ function Home() {
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
-  const [pagina, setPagina] = useState(1)
+  const [visiveis, setVisiveis] = useState(24)
   const [carregando, setCarregando] = useState(true)
   const [ultimosComentarios, setUltimosComentarios] = useState([])
   const navigate = useNavigate()
@@ -32,16 +30,13 @@ function mostrarToast(msg) {
 }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setBusca(buscaInput)
-      setPagina(1)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [buscaInput])
+  const timer = setTimeout(() => {
+    setBusca(buscaInput)
+    setVisiveis(24)
+  }, 300)
+  return () => clearTimeout(timer)
+}, [buscaInput])
 
-  useEffect(() => {
-    setPagina(1)
-  }, [ordenacao, filtroAno])
 
   useEffect(() => {
     const params = {}
@@ -187,8 +182,8 @@ function mostrarToast(msg) {
       return 0
     })
 
-  const totalPaginas = Math.ceil(musicaisFiltrados.length / POR_PAGINA)
-  const musicaisPagina = musicaisFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+  const musicaisVisiveis = musicaisFiltrados.slice(0, visiveis)
+const temMais = visiveis < musicaisFiltrados.length
 
   function CardMusical({ musical, tamanho = "normal" }) {
     const media = musical.totalVotos > 0
@@ -367,7 +362,7 @@ function mostrarToast(msg) {
               </label>
               <select
                 value={ordenacao}
-                onChange={e => setOrdenacao(e.target.value)}
+                onChange={e => { setOrdenacao(e.target.value); setVisiveis(24) }}
                 style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
               >
                 <option value="az">A → Z</option>
@@ -386,7 +381,7 @@ function mostrarToast(msg) {
               </label>
               <select
                 value={filtroAno}
-                onChange={e => setFiltroAno(e.target.value)}
+                onChange={e => { setFiltroAno(e.target.value); setVisiveis(24) }}
                 style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
               >
                 <option value="">Todos os anos</option>
@@ -410,7 +405,7 @@ function mostrarToast(msg) {
                   aspectRatio: "3/4"
                 }} />
               ))
-            ) : musicaisPagina.length === 0 ? (
+            ) : musicaisVisiveis.length === 0 ? (
               <div style={{ gridColumn: "1 / -1", padding: "40px 0", textAlign: "center" }}>
   <p style={{ fontSize: "32px", marginBottom: "8px" }}>🎭</p>
   <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>
@@ -421,62 +416,26 @@ function mostrarToast(msg) {
   </p>
 </div>
             ) : (
-              musicaisPagina.map(musical => (
+              musicaisVisiveis.map(musical => (
                 <CardMusical key={musical.id} musical={musical} />
               ))
             )}
           </div>
 
-          {/* ── PAGINAÇÃO ── */}
-          {totalPaginas > 1 && (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "40px", flexWrap: "wrap" }}>
-              <button
-                onClick={() => { setPagina(p => p - 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
-                disabled={pagina === 1}
-                style={{
-                  padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
-                  background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-                  cursor: pagina === 1 ? "not-allowed" : "pointer", color: pagina === 1 ? "#ccc" : "#1a1a1a"
-                }}
-              >
-                ← Anterior
-              </button>
-
-              {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
-                <button
-                  key={n}
-                  onClick={() => { setPagina(n); window.scrollTo({ top: 0, behavior: "smooth" }) }}
-                  style={{
-                    padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "8px",
-                    background: n === pagina ? "#F5C518" : "#fff",
-                    fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-                    fontWeight: n === pagina ? "700" : "400",
-                    cursor: "pointer", color: "#1a1a1a"
-                  }}
-                >
-                  {n}
-                </button>
-              ))}
-
-              <button
-                onClick={() => { setPagina(p => p + 1); window.scrollTo({ top: 0, behavior: "smooth" }) }}
-                disabled={pagina === totalPaginas}
-                style={{
-                  padding: "8px 16px", border: "1px solid #e8e8e4", borderRadius: "8px",
-                  background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
-                  cursor: pagina === totalPaginas ? "not-allowed" : "pointer", color: pagina === totalPaginas ? "#ccc" : "#1a1a1a"
-                }}
-              >
-                Próximo →
-              </button>
-            </div>
-          )}
-
-          {totalPaginas > 1 && (
-            <p style={{ textAlign: "center", fontSize: "13px", color: "#999", marginTop: "12px" }}>
-              Página {pagina} de {totalPaginas} · {musicaisFiltrados.length} musicais
-            </p>
-          )}
+{temMais && (
+  <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
+    <button
+      onClick={() => setVisiveis(v => v + 24)}
+      style={{
+        padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px",
+        background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px",
+        cursor: "pointer", color: "#1a1a1a", fontWeight: "500"
+      }}
+    >
+      Carregar mais ({musicaisFiltrados.length - visiveis} restantes)
+    </button>
+  </div>
+)}
 
         </div>
 
