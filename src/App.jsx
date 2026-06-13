@@ -14,6 +14,9 @@ import Pessoa from "./pages/Pessoa"
 import Stats from "./pages/Stats"
 import { useState, useEffect } from "react"
 import Teatro from "./pages/Teatro";
+import NProgress from "nprogress"
+import "nprogress/nprogress.css"
+import { useLocation } from "react-router-dom"
 
 function VoltarAoTopo() {
   const [visivel, setVisivel] = useState(false)
@@ -41,11 +44,24 @@ function VoltarAoTopo() {
     </button>
   )
 }
+function BarraProgresso() {
+  const location = useLocation()
+
+  useEffect(() => {
+    NProgress.configure({ color: "#F5C518", showSpinner: false })
+    NProgress.start()
+    const timer = setTimeout(() => NProgress.done(), 300)
+    return () => clearTimeout(timer)
+  }, [location])
+
+  return null
+}
 
 function App() {
   return (
-    <BrowserRouter>
+     <BrowserRouter>
       <Header />
+      <BarraProgresso />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/musical/:id" element={<Musical />} />

@@ -460,3 +460,7 @@ main {
     display: none;
   }
 }
+#nprogress .bar {
+  background: #F5C518 !important;
+  height: 3px !important;
+}
