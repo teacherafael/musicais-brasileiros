@@ -83,7 +83,7 @@ function mostrarToast(msg) {
   useEffect(() => {
     async function buscarComentarios() {
       try {
-        const q = query(collection(db, "comentarios"), orderBy("data", "desc"), limit(8))
+        const q = query(collection(db, "comentarios"), orderBy("data", "desc"), limit(15))
         const snap = await getDocs(q)
         setUltimosComentarios(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       } catch (e) {

@@ -410,6 +410,8 @@ main {
   flex-shrink: 0;
   position: sticky;
   top: 88px;
+  max-height: calc(100vh - 108px);
+  overflow-y: auto;
 }
 
 /* No mobile a sidebar some e o main volta ao tamanho original */
