@@ -37,6 +37,12 @@ function nomesClicaveis(texto) {
   ))
 }
 
+const LABELS = {
+  0.5: "Horrível", 1: "Muito ruim", 1.5: "Ruim", 2: "Regular",
+  2.5: "Razoável", 3: "Bom", 3.5: "Muito bom", 4: "Ótimo",
+  4.5: "Excelente", 5: "Obra-prima"
+}
+
 function Estrelas({ votoAtual, onVotar }) {
   const [hover, setHover] = useState(0)
 
@@ -49,29 +55,34 @@ function Estrelas({ votoAtual, onVotar }) {
   const valorAtivo = hover || votoAtual || 0
 
   return (
-    <div style={{ display: "flex", gap: "4px", fontSize: "36px", cursor: "pointer", marginBottom: "8px" }}>
-      {[1, 2, 3, 4, 5].map(estrela => {
-        const cheia = valorAtivo >= estrela
-        const meia = valorAtivo >= estrela - 0.5 && valorAtivo < estrela
-        return (
-          <span
-            key={estrela}
-            onClick={e => onVotar(calcularValor(e, estrela))}
-            onMouseMove={e => setHover(calcularValor(e, estrela))}
-            onMouseLeave={() => setHover(0)}
-            style={{ position: "relative", display: "inline-block", userSelect: "none", lineHeight: 1 }}
-          >
-            {meia ? (
-              <>
-                <span style={{ color: "#ddd" }}>★</span>
-                <span style={{ position: "absolute", left: 0, top: 0, width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
-              </>
-            ) : (
-              <span style={{ color: cheia ? "#F5C518" : "#ddd" }}>★</span>
-            )}
-          </span>
-        )
-      })}
+    <div>
+      <div style={{ display: "flex", gap: "4px", fontSize: "36px", cursor: "pointer", marginBottom: "4px" }}>
+        {[1, 2, 3, 4, 5].map(estrela => {
+          const cheia = valorAtivo >= estrela
+          const meia = valorAtivo >= estrela - 0.5 && valorAtivo < estrela
+          return (
+            <span
+              key={estrela}
+              onClick={e => onVotar(calcularValor(e, estrela))}
+              onMouseMove={e => setHover(calcularValor(e, estrela))}
+              onMouseLeave={() => setHover(0)}
+              style={{ position: "relative", display: "inline-block", userSelect: "none", lineHeight: 1 }}
+            >
+              {meia ? (
+                <>
+                  <span style={{ color: "#ddd" }}>★</span>
+                  <span style={{ position: "absolute", left: 0, top: 0, width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
+                </>
+              ) : (
+                <span style={{ color: cheia ? "#F5C518" : "#ddd" }}>★</span>
+              )}
+            </span>
+          )
+        })}
+      </div>
+      <p style={{ fontSize: "13px", color: "#888", height: "18px", marginBottom: "8px" }}>
+        {hover ? LABELS[hover] : ""}
+      </p>
     </div>
   )
 }
