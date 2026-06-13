@@ -423,7 +423,7 @@ function Musical() {
     return [1, 2, 3, 4, 5].map(i => {
       const cheia = nota >= i
       const meia = nota >= i - 0.5 && nota < i
-      const cor = (cheia || meia) ? "#1a1a1a" : "rgba(0,0,0,0.2)"
+      const cor = (cheia || meia) ? "#F5C518" : "rgba(255,255,255,0.15)"
       return <span key={i} style={{ color: cor, fontSize: "24px" }}>★</span>
     })
   }
@@ -619,20 +619,21 @@ function Musical() {
 
           {votoAtual && (
             <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "#F5C518", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", width: "270px", minHeight: "420px", justifyContent: "flex-start", paddingTop: "48px" }}>
-                {musical.capa ? (
-                  <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }} />
-                ) : (
-                  <div style={{ width: "160px", height: "220px", background: "#1a1a1a", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-                    <span style={{ color: "#F5C518", fontSize: "12px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
-                  </div>
-                )}
-                <p style={{ fontFamily: "Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#1a1a1a", textAlign: "center", marginBottom: "6px", lineHeight: 1.3 }}>{musical.titulo}</p>
-                <p style={{ fontSize: "12px", color: "#1a1a1a", opacity: 0.6, textAlign: "center", marginBottom: "16px" }}>Dir. {musical.direcao || "—"}</p>
-                <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>{estrelasSVG(votoAtual)}</div>
-                <div style={{ width: "40px", height: "1px", background: "#1a1a1a", opacity: 0.2, marginBottom: "12px" }} />
-                <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "400", color: "#1a1a1a", opacity: 0.5, letterSpacing: "2px", textTransform: "uppercase", textAlign: "center" }}>Musicais Brasileiros Database</p>
-              </div>
+              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "#2b2b2b", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", width: "270px", minHeight: "420px", justifyContent: "flex-start", paddingTop: "48px" }}>
+  {musical.capa ? (
+    <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }} />
+  ) : (
+    <div style={{ width: "160px", height: "220px", background: "#1a1a1a", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
+      <span style={{ color: "#F5C518", fontSize: "12px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
+    </div>
+  )}
+  <p style={{ fontFamily: "Georgia, serif", fontSize: "15px", fontWeight: "700", color: "#ffffff", textAlign: "center", marginBottom: "6px", lineHeight: 1.3 }}>{musical.titulo}</p>
+  <p style={{ fontSize: "10px", color: "#aaaaaa", textAlign: "center", marginBottom: "16px" }}>Dir. {musical.direcao || "—"}</p>
+  <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>{estrelasSVG(votoAtual)}</div>
+  <div style={{ width: "40px", height: "1px", background: "#ffffff", opacity: 0.15, marginBottom: "12px" }} />
+  <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "700", color: "#F5C518", letterSpacing: "2px", textTransform: "uppercase", textAlign: "center", marginBottom: "4px" }}>Musicais Brasileiros Database</p>
+  <p style={{ fontSize: "11px", color: "#aaaaaa", textAlign: "center", letterSpacing: "1px" }}>mbdb.com.br</p>
+</div>
               <div style={{ marginTop: "12px" }}>
                 <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
                   {gerando ? "Gerando..." : "⬇ Baixar imagem para compartilhar"}
