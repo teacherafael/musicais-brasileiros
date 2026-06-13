@@ -482,7 +482,12 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
 
       {(isProprioPerfil || avaliacoesPublicas) ? (
         votos.length === 0 ? (
-          <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhuma avaliacao ainda.</p>
+          <p className="login-aviso" style={{ marginBottom: "32px" }}>
+  {isProprioPerfil
+    ? <>Você ainda não avaliou nenhum musical. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+    : "Este usuário ainda não fez nenhuma avaliação."
+  }
+</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
             {votos.map(voto => {
@@ -498,7 +503,12 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
 
       {/* JA VI */}
 <h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Ja vi ({jaVi.length})</h2>      {jaVi.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>
+  {isProprioPerfil
+    ? <>Você ainda não marcou nenhum musical como visto. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+    : "Este usuário ainda não marcou nenhum musical como visto."
+  }
+</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
           {jaVi.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
@@ -520,7 +530,12 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
 )}
       {/* QUERO VER */}
 <h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>      {queroVer.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Nenhum musical marcado ainda.</p>
+        <p className="login-aviso" style={{ marginBottom: "32px" }}>
+  {isProprioPerfil
+    ? <>Você ainda não adicionou nenhum musical à sua lista. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+    : "Este usuário ainda não tem musicais na lista."
+  }
+</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
           {queroVer.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
@@ -529,7 +544,12 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
 
       {/* COMENTARIOS */}
 <h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentarios ({comentarios.length})</h2>      {comentarios.length === 0 ? (
-        <p className="login-aviso">Nenhum comentario ainda.</p>
+        <p className="login-aviso">
+  {isProprioPerfil
+    ? <>Você ainda não fez nenhum comentário. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+    : "Este usuário ainda não fez nenhum comentário."
+  }
+</p>
       ) : (
         comentarios.map(c => {
           const musical = musicais[c.musicalId]

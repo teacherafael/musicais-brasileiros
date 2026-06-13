@@ -629,8 +629,8 @@ function Musical() {
                 onChange={e => setTextoComentario(e.target.value)}
                 placeholder="Escreva um comentário..."
               />
-              <p style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
-                Lembre-se de manter sua crítica respeitosa e sem ataques a produção.
+              <p style={{ fontSize: "16px", color: "#8d6e01", marginBottom: "8px" }}>
+                Lembre-se de manter sua crítica respeitosa e sem ataques gratuitos ao espetáculo.
               </p>
               <button className="btn-comentar" onClick={enviarComentario}>Enviar comentário</button>
             </div>
