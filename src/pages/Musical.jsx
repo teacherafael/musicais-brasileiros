@@ -98,6 +98,7 @@ function Musical() {
   const [usuariosVerificados, setUsuariosVerificados] = useState({})
   const [reacoes, setReacoes] = useState({})
   const [minhaReacao, setMinhaReacao] = useState({})
+  const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
   const cartaoRef = useRef(null)
 
   useEffect(() => {
@@ -212,7 +213,7 @@ function Musical() {
   }
 
   async function votar(estrelas) {
-    if (!usuario) return alert("Faça login para votar.")
+    if (!usuario) return mostrarToast("Faça login para votar.")
 
     if (votoAtual) {
       await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
@@ -236,23 +237,23 @@ function Musical() {
   }
 
   async function removerVoto() {
-    if (!window.confirm("Remover sua avaliação deste musical?")) return
-    await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
-    await updateDoc(doc(db, "musicais", id), {
-      totalVotos: increment(-1),
-      somaEstrelas: increment(-votoAtual)
-    })
-    setMusical(prev => ({
-      ...prev,
-      totalVotos: prev.totalVotos - 1,
-      somaEstrelas: prev.somaEstrelas - votoAtual
-    }))
-    setVotoAtual(null)
-    mostrarToast("Avaliação removida.")
-  }
+  await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
+  await updateDoc(doc(db, "musicais", id), {
+    totalVotos: increment(-1),
+    somaEstrelas: increment(-votoAtual)
+  })
+  setMusical(prev => ({
+    ...prev,
+    totalVotos: prev.totalVotos - 1,
+    somaEstrelas: prev.somaEstrelas - votoAtual
+  }))
+  setVotoAtual(null)
+  setConfirmandoRemocao(false)
+  mostrarToast("Avaliação removida.")
+}
 
   async function toggleQueroVer() {
-    if (!usuario) return alert("Faça login para usar esta função.")
+    if (!usuario) return mostrarToast("Faça login para usar esta função.")
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
     if (queroVer) {
@@ -267,7 +268,7 @@ function Musical() {
   }
 
   async function toggleJaVi() {
-    if (!usuario) return alert("Faça login para usar esta função.")
+    if (!usuario) return mostrarToast("Faça login para usar esta função.")
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
     if (jaVi) {
@@ -583,13 +584,27 @@ function Musical() {
           <Estrelas votoAtual={votoAtual} onVotar={votar} />
 
           {votoAtual && (
-            <button
-              onClick={removerVoto}
-              style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, marginBottom: "8px", textDecoration: "underline" }}
-            >
-              Remover avaliação
-            </button>
-          )}
+  <div style={{ marginBottom: "8px" }}>
+    {confirmandoRemocao ? (
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <span style={{ fontSize: "13px", color: "#888" }}>Remover sua avaliação?</span>
+        <button onClick={removerVoto} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0, fontWeight: "600" }}>
+          Sim, remover
+        </button>
+        <button onClick={() => setConfirmandoRemocao(false)} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>
+          Cancelar
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => setConfirmandoRemocao(true)}
+        style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, textDecoration: "underline" }}
+      >
+        Remover avaliação
+      </button>
+    )}
+  </div>
+)}
 
           {votoAtual && (
             <div style={{ marginTop: "8px", marginBottom: "8px" }}>

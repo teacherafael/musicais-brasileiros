@@ -24,6 +24,12 @@ function Home() {
   const [carregando, setCarregando] = useState(true)
   const [ultimosComentarios, setUltimosComentarios] = useState([])
   const navigate = useNavigate()
+  const [toast, setToast] = useState(null)
+
+function mostrarToast(msg) {
+  setToast(msg)
+  setTimeout(() => setToast(null), 2500)
+}
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -96,7 +102,7 @@ function Home() {
   async function toggleQueroVer(e, musical) {
     e.preventDefault()
     e.stopPropagation()
-    if (!usuario) return alert("Faça login para usar esta função.")
+    if (!usuario) return mostrarToast("Faça login para usar esta função.")
     const ref = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
     if (queroVerSet.has(musical.id)) {
       await deleteDoc(ref)
@@ -261,7 +267,18 @@ function Home() {
   }
 
   return (
+    
     <main>
+      {toast && (
+      <div style={{
+        position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
+        background: "#1a1a1a", color: "#F5C518", padding: "12px 24px",
+        borderRadius: "8px", fontSize: "14px", fontWeight: "500",
+        zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+      }}>
+        {toast}
+      </div>
+    )}
       <p className="section-label">Musicais Brasileiros Database</p>
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>
@@ -394,7 +411,15 @@ function Home() {
                 }} />
               ))
             ) : musicaisPagina.length === 0 ? (
-              <p style={{ color: "#888", fontSize: "15px" }}>Nenhum musical encontrado.</p>
+              <div style={{ gridColumn: "1 / -1", padding: "40px 0", textAlign: "center" }}>
+  <p style={{ fontSize: "32px", marginBottom: "8px" }}>🎭</p>
+  <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>
+    Nenhum resultado para "{busca}"
+  </p>
+  <p style={{ fontSize: "14px", color: "#888" }}>
+    Tente outro nome, diretor ou membro do elenco.
+  </p>
+</div>
             ) : (
               musicaisPagina.map(musical => (
                 <CardMusical key={musical.id} musical={musical} />
