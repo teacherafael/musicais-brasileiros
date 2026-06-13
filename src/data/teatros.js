@@ -28,10 +28,18 @@ export const teatros = [
   {
     id: "teatro-claro-mais-sp",
     nomeOficial: "Teatro Claro Mais SP",
-    aliases: ["Teatro Net SP"],
+    aliases: ["Theatro Net SP"],
     endereco: "Rua Olimpíadas, 360",
     bairro: "Vila Olímpia",
     cidade: "São Paulo – SP",
+  },
+   {
+    id: "teatro-claro-mais-rj",
+    nomeOficial: "Teatro Claro Mais RJ",
+    aliases: ["Theatro Net RJ", "Teatro Tereza Rachel"],
+    endereco: "Rua Siqueira Campos, 143",
+    bairro: "Copacabana",
+    cidade: "Rio de Janeiro – RJ",
   },
   {
     id: "teatro-btg-pactual-hall",
