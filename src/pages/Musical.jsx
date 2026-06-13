@@ -226,14 +226,41 @@ function Musical() {
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
 
+    const chaveNova = String(estrelas)
+
     if (votoAtual) {
-      await updateDoc(doc(db, "musicais", id), { somaEstrelas: increment(estrelas - votoAtual) })
+      const chaveAntiga = String(votoAtual)
+      await updateDoc(doc(db, "musicais", id), {
+        somaEstrelas: increment(estrelas - votoAtual),
+        [`distribuicao.${chaveAntiga}`]: increment(-1),
+        [`distribuicao.${chaveNova}`]: increment(1),
+      })
       await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      setMusical(prev => ({ ...prev, somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual) }))
+      setMusical(prev => ({
+        ...prev,
+        somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual),
+        distribuicao: {
+          ...prev.distribuicao,
+          [chaveAntiga]: Math.max((prev.distribuicao?.[chaveAntiga] || 1) - 1, 0),
+          [chaveNova]: (prev.distribuicao?.[chaveNova] || 0) + 1,
+        }
+      }))
     } else {
       await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      await updateDoc(doc(db, "musicais", id), { totalVotos: increment(1), somaEstrelas: increment(estrelas) })
-      setMusical(prev => ({ ...prev, totalVotos: prev.totalVotos + 1, somaEstrelas: prev.somaEstrelas + estrelas }))
+      await updateDoc(doc(db, "musicais", id), {
+        totalVotos: increment(1),
+        somaEstrelas: increment(estrelas),
+        [`distribuicao.${chaveNova}`]: increment(1),
+      })
+      setMusical(prev => ({
+        ...prev,
+        totalVotos: prev.totalVotos + 1,
+        somaEstrelas: prev.somaEstrelas + estrelas,
+        distribuicao: {
+          ...prev.distribuicao,
+          [chaveNova]: (prev.distribuicao?.[chaveNova] || 0) + 1,
+        }
+      }))
     }
 
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
@@ -248,15 +275,21 @@ function Musical() {
   }
 
   async function removerVoto() {
+  const chave = String(votoAtual)
   await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
   await updateDoc(doc(db, "musicais", id), {
     totalVotos: increment(-1),
-    somaEstrelas: increment(-votoAtual)
+    somaEstrelas: increment(-votoAtual),
+    [`distribuicao.${chave}`]: increment(-1),
   })
   setMusical(prev => ({
     ...prev,
     totalVotos: prev.totalVotos - 1,
-    somaEstrelas: prev.somaEstrelas - votoAtual
+    somaEstrelas: prev.somaEstrelas - votoAtual,
+    distribuicao: {
+      ...prev.distribuicao,
+      [chave]: Math.max((prev.distribuicao?.[chave] || 1) - 1, 0),
+    }
   }))
   setVotoAtual(null)
   setConfirmandoRemocao(false)
@@ -587,6 +620,37 @@ function Musical() {
           )}
 
           <hr className="divider" />
+
+          {musical.totalVotos > 0 && musical.distribuicao && (
+            <div style={{ marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <span style={{ fontSize: "11px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.08em", color: "#888" }}>Avaliações</span>
+                <span style={{ fontSize: "11px", color: "#888" }}>{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "3px", height: "48px", marginBottom: "6px" }}>
+                {["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map(chave => {
+                  const val = musical.distribuicao?.[chave] || 0
+                  const maxVal = Math.max(...["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map(k => musical.distribuicao?.[k] || 0))
+                  const altura = maxVal > 0 ? Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0) : 0
+                  return (
+                    <div key={chave} style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end" }}>
+                      <div style={{
+                        width: "100%",
+                        height: altura + "%",
+                        background: Number(chave) % 1 !== 0 ? "#b8960a" : "#F5C518",
+                        borderRadius: "2px 2px 0 0",
+                        minHeight: val > 0 ? "2px" : "0"
+                      }} title={`${chave}★: ${val} voto${val !== 1 ? "s" : ""}`} />
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#888" }}>
+                <span>★</span>
+                <span>★★★★★</span>
+              </div>
+            </div>
+          )}
 
           <p className="avaliacao-titulo">
             {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
