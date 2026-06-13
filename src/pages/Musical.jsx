@@ -462,7 +462,7 @@ function Musical() {
         </div>
       )}
 
-      <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
+      <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
 
       {editandoMusical ? (
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "24px", marginBottom: "32px" }}>
