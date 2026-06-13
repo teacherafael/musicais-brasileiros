@@ -110,6 +110,7 @@ function Musical() {
   const [reacoes, setReacoes] = useState({})
   const [minhaReacao, setMinhaReacao] = useState({})
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
+  const [tooltipHistograma, setTooltipHistograma] = useState(null)
   const cartaoRef = useRef(null)
 
   useEffect(() => {
@@ -622,35 +623,56 @@ function Musical() {
           <hr className="divider" />
 
           {musical.totalVotos > 0 && musical.distribuicao && (
-            <div style={{ marginBottom: "24px" }}>
+            <div style={{ marginBottom: "24px", background: "#1a1a1a", borderRadius: "8px", padding: "16px 20px", display: "inline-block", minWidth: "280px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <span style={{ fontSize: "11px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.08em", color: "#888" }}>Avaliações</span>
                 <span style={{ fontSize: "11px", color: "#888" }}>{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
               </div>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "3px", height: "48px", marginBottom: "6px" }}>
-                {["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map(chave => {
-                  const val = musical.distribuicao?.[chave] || 0
-                  const maxVal = Math.max(...["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map(k => musical.distribuicao?.[k] || 0))
-                  const altura = maxVal > 0 ? Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0) : 0
-                  return (
-                    <div key={chave} style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end" }}>
-                      <div style={{
-                        width: "100%",
-                        height: altura + "%",
-                        background: Number(chave) % 1 !== 0 ? "#b8960a" : "#F5C518",
-                        borderRadius: "2px 2px 0 0",
-                        minHeight: val > 0 ? "2px" : "0"
-                      }} title={`${chave}★: ${val} voto${val !== 1 ? "s" : ""}`} />
-                    </div>
-                  )
-                })}
+              <div style={{ position: "relative" }}>
+                {tooltipHistograma && (
+                  <div style={{
+                    position: "absolute", bottom: "calc(100% + 6px)", left: tooltipHistograma.x,
+                    transform: "translateX(-50%)", background: "#1a1a1a", color: "#fff",
+                    padding: "5px 10px", borderRadius: "6px", fontSize: "12px", whiteSpace: "nowrap",
+                    pointerEvents: "none", zIndex: 10, border: "1px solid #333"
+                  }}>
+                    <span style={{ color: "#F5C518" }}>{tooltipHistograma.chave}★</span>
+                    {" — "}
+                    {tooltipHistograma.val} {tooltipHistograma.val === 1 ? "voto" : "votos"}
+                    {" (" + tooltipHistograma.pct + "%)"}
+                  </div>
+                )}
+                <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "32px", marginBottom: "6px" }}>
+                  {["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map((chave, i, arr) => {
+                    const d = musical.distribuicao || {}
+                    const val = d[chave] || 0
+                    const maxVal = Math.max(...arr.map(k => d[k] || 0))
+                    const altura = maxVal > 0 ? Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0) : 0
+                    const pct = musical.totalVotos > 0 ? Math.round((val / musical.totalVotos) * 100) : 0
+                    const posX = `${(arr.indexOf(chave) / (arr.length - 1)) * 100}%`
+                    return (
+                      <div key={chave} style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", cursor: "pointer" }}
+                        onMouseEnter={() => setTooltipHistograma({ chave, val, pct, x: posX })}
+                        onMouseLeave={() => setTooltipHistograma(null)}
+                      >
+                        <div style={{
+                          width: "100%",
+                          height: altura + "%",
+                          background: Number(chave) % 1 !== 0 ? "#b8960a" : "#F5C518",
+                          borderRadius: "2px 2px 0 0",
+                          minHeight: val > 0 ? "2px" : "0"
+                        }} />
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#888" }}>
                 <span>★</span>
                 <span>★★★★★</span>
               </div>
             </div>
-          )}
+            )}
 
           <p className="avaliacao-titulo">
             {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
