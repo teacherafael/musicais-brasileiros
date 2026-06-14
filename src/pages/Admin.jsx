@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
 const ADMINS = ["LFDNXIXywqQrLsDLobaGzOOmok03", "ddN3y50zE5X56aQPQzhL17hw8m83"];
-const isAdmin = ADMINS.includes(user?.uid);
 
 function Admin() {
   const navigate = useNavigate()
@@ -72,7 +71,7 @@ function Admin() {
   .replace(/[\u0300-\u036f]/g, "")
   .replace(/\s+/g, "-")
   .replace(/[^a-z0-9-]/g, "")
-  .replace(/^-+|-+$/g, "") // remove hífens no início e fim
+  .replace(/^-+|-+$/g, "")
 ) || "musical-" + Date.now()
 
 await setDoc(doc(db, "musicais", slug), {
@@ -137,7 +136,7 @@ await setDoc(doc(db, "musicais", slug), {
   )
 
   if (!usuario) return <main><p>Carregando...</p></main>
-  if (usuario.uid !== ADMIN_UID) return <main><p>Acesso negado.</p></main>
+  if (!ADMINS.includes(usuario.uid)) return <main><p>Acesso negado.</p></main>
 
   return (
     <main>
