@@ -44,20 +44,25 @@ function Perfil() {
   const [mostrarSeguidores, setMostrarSeguidores] = useState(false)
   const [mostrarSeguindo, setMostrarSeguindo] = useState(false)
 
+  // Sessões: { [musicalId]: [{ id, data, assento, publico }, ...] }
+  const [sessoesPorMusical, setSessoesPorMusical] = useState({})
+  const [sessoesExpandidas, setSessoesExpandidas] = useState({})
+
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
   }, [])
 
   useEffect(() => {
     async function buscarDados() {
-      const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc] = await Promise.all([
+      const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
         getDocs(collection(db, "musicais")),
         getDocs(collection(db, "usuarios", userId, "queroVer")),
         getDocs(collection(db, "usuarios", userId, "jaVi")),
         getDocs(collection(db, "usuarios", userId, "top3")),
         getDocs(collection(db, "usuarios", userId, "seguindo")),
         getDocs(collection(db, "usuarios", userId, "seguidores")),
-        getDoc(doc(db, "usuarios", userId))
+        getDoc(doc(db, "usuarios", userId)),
+        getDocs(collection(db, "usuarios", userId, "sessoesAssistidas"))
       ])
 
       const musicaisMap = {}
@@ -111,11 +116,24 @@ function Perfil() {
       setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
       if (usuarioDoc.exists()) {
-  setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
-  setVerificado(usuarioDoc.data().verificado ?? false)
-  if (usuarioDoc.data().nome) setNomeUsuario(usuarioDoc.data().nome)
-  if (usuarioDoc.data().foto) setFotoUsuario(usuarioDoc.data().foto)
-}
+        setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
+        setVerificado(usuarioDoc.data().verificado ?? false)
+        if (usuarioDoc.data().nome) setNomeUsuario(usuarioDoc.data().nome)
+        if (usuarioDoc.data().foto) setFotoUsuario(usuarioDoc.data().foto)
+      }
+
+      // Organizar sessões por musicalId
+      const sessoesPorId = {}
+      sessoesSnap.docs.forEach(d => {
+        const s = { id: d.id, ...d.data() }
+        if (!sessoesPorId[s.musicalId]) sessoesPorId[s.musicalId] = []
+        sessoesPorId[s.musicalId].push(s)
+      })
+      // Ordenar cada lista por data decrescente
+      Object.keys(sessoesPorId).forEach(mid => {
+        sessoesPorId[mid].sort((a, b) => (a.data > b.data ? -1 : 1))
+      })
+      setSessoesPorMusical(sessoesPorId)
 
       setCarregando(false)
     }
@@ -197,6 +215,16 @@ function Perfil() {
     await setDoc(doc(db, "usuarios", userId), { verificado: novo }, { merge: true })
   }
 
+  function toggleSessoes(musicalId) {
+    setSessoesExpandidas(prev => ({ ...prev, [musicalId]: !prev[musicalId] }))
+  }
+
+  function formatarData(dataStr) {
+    if (!dataStr) return ""
+    const [ano, mes, dia] = dataStr.split("-")
+    return `${dia}/${mes}/${ano}`
+  }
+
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = usuarioLogado && usuarioLogado.uid === ADMIN_UID
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
@@ -205,10 +233,11 @@ function Perfil() {
   const mediaVotos = votos.length > 0
     ? (votos.reduce((acc, v) => acc + v.estrelas, 0) / votos.length).toFixed(1)
     : null
-const votosIds = votos.map(v => v.musicalId)
-const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
+
+  const votosIds = votos.map(v => v.musicalId)
+  const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
+
   if (carregando) return <main><p>Carregando...</p></main>
-  
 
   const musicaisFiltradosTop3 = Object.values(musicais).filter(m =>
     m.titulo.toLowerCase().includes(buscaTop3.toLowerCase())
@@ -233,6 +262,73 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       </div>
     </a>
   )
+
+  // Card do "Já vi" com sessões expandíveis
+  const cardJaVi = (item) => {
+    const sessoes = sessoesPorMusical[item.musicalId] || []
+    // Visitantes só veem sessões públicas; dono vê todas
+    const sessoesVisiveis = isProprioPerfil ? sessoes : sessoes.filter(s => s.publico)
+    const expandido = sessoesExpandidas[item.musicalId]
+    const temSessoes = sessoesVisiveis.length > 0
+
+    return (
+      <div key={item.id} style={{ display: "flex", flexDirection: "column" }}>
+        <a
+          href={"/musical/" + item.musicalId}
+          className="card-musical"
+          style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+            {item.capa
+              ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+              : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
+            }
+          </div>
+          <div style={{ width: "100%" }}>
+            <p className="card-titulo">{item.titulo}</p>
+            <p className="card-meta">Direção: {item.direcao || "—"}</p>
+          </div>
+        </a>
+
+        {/* Botão de sessões — fora do <a> para não navegar */}
+        {temSessoes && (
+          <button
+            onClick={e => { e.preventDefault(); toggleSessoes(item.musicalId) }}
+            style={{
+              marginTop: "6px", background: "none", border: "1px solid #e8e8e4",
+              borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif",
+              fontSize: "12px", color: "#888", cursor: "pointer", textAlign: "left"
+            }}
+          >
+            📅 {sessoesVisiveis.length} {sessoesVisiveis.length === 1 ? "sessão" : "sessões"} {expandido ? "▲" : "▼"}
+          </button>
+        )}
+
+        {/* Lista de sessões expandida */}
+        {temSessoes && expandido && (
+          <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "4px" }}>
+            {sessoesVisiveis.map(s => (
+              <div key={s.id} style={{ background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "7px 10px" }}>
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a1a" }}>
+                  {formatarData(s.data)}
+                </span>
+                {s.assento && (
+                  <span style={{ fontSize: "12px", color: "#666", marginLeft: "8px" }}>
+                    🪑 {s.assento}
+                  </span>
+                )}
+                {isProprioPerfil && (
+                  <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa", marginLeft: "6px" }}>
+                    {s.publico ? "🌐" : "🔒"}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const cardUsuario = (pessoa) => (
     <a
@@ -269,7 +365,6 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
 
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
 
-        {/* Botão de verificar — só aparece para o admin, no perfil de outro usuário */}
         {isAdmin && !isProprioPerfil && (
           <button
             onClick={toggleVerificado}
@@ -346,37 +441,23 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       </div>
 
       {/* NAVEGAÇÃO INTERNA */}
-<div style={{
-  display: 'flex',
-  gap: '10px',
-  flexWrap: 'wrap',
-  margin: '0 0 32px 0',
-}}>
-  {[
-    { href: '#top3', label: '✦ Top 3' },
-    { href: '#avaliacoes', label: 'Avaliações' },
-    { href: '#ja-vi', label: 'Já vi' },
-    { href: '#quero-ver', label: 'Quero ver' },
-    { href: '#comentarios', label: 'Comentários' },
-  ].map(({ href, label }) => (
-    
-      <a key={href}
-      href={href}
-      style={{
-        color: '#1a1a1a',
-        textDecoration: 'none',
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '13px',
-        fontWeight: '600',
-        padding: '6px 14px',
-        background: '#F5C518',
-        borderRadius: '20px',
-      }}
-    >
-      {label}
-    </a>
-  ))}
-</div>
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '0 0 32px 0' }}>
+        {[
+          { href: '#top3', label: '✦ Top 3' },
+          { href: '#avaliacoes', label: 'Avaliações' },
+          { href: '#ja-vi', label: 'Já vi' },
+          { href: '#quero-ver', label: 'Quero ver' },
+          { href: '#comentarios', label: 'Comentários' },
+        ].map(({ href, label }) => (
+          <a key={href} href={href} style={{
+            color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+            fontSize: '13px', fontWeight: '600', padding: '6px 14px',
+            background: '#F5C518', borderRadius: '20px',
+          }}>
+            {label}
+          </a>
+        ))}
+      </div>
 
       {/* TOP 3 */}
       <div id="top3" style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
@@ -453,10 +534,9 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
         )}
       </div>
 
-    
-
       {/* AVALIACOES */}
-<div id="avaliacoes" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>        {isProprioPerfil && (
+      <div id="avaliacoes" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
+        {isProprioPerfil && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "13px", color: "#888" }}>
               {avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}
@@ -483,11 +563,11 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       {(isProprioPerfil || avaliacoesPublicas) ? (
         votos.length === 0 ? (
           <p className="login-aviso" style={{ marginBottom: "32px" }}>
-  {isProprioPerfil
-    ? <>Você ainda não avaliou nenhum musical. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-    : "Este usuário ainda não fez nenhuma avaliação."
-  }
-</p>
+            {isProprioPerfil
+              ? <></>
+              : "Este usuário ainda não fez nenhuma avaliação."
+            }
+          </p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
             {votos.map(voto => {
@@ -502,40 +582,48 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       )}
 
       {/* JA VI */}
-<h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Ja vi ({jaVi.length})</h2>      {jaVi.length === 0 ? (
+      <h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
+        Já vi ({jaVi.length})
+      </h2>
+      {jaVi.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>
-  {isProprioPerfil
-    ? <>Você ainda não marcou nenhum musical como visto. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-    : "Este usuário ainda não marcou nenhum musical como visto."
-  }
-</p>
+          {isProprioPerfil
+            ? <>Você ainda não marcou nenhum musical como visto. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+            : "Este usuário ainda não marcou nenhum musical como visto."
+          }
+        </p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {jaVi.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
+          {jaVi.map(item => cardJaVi(item))}
         </div>
       )}
-{/* JA VI SEM AVALIACAO */}
-{isProprioPerfil && jaViSemAvaliacao.length > 0 && (
-  <>
-    <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>
-      Já vi, mas não avaliei ({jaViSemAvaliacao.length})
-    </h2>
-    <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-      Musicais que você marcou como "Já vi" mas ainda não deu uma nota.
-    </p>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-      {jaViSemAvaliacao.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
-    </div>
-  </>
-)}
+
+      {/* JA VI SEM AVALIACAO */}
+      {isProprioPerfil && jaViSemAvaliacao.length > 0 && (
+        <>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>
+            Já vi, mas não avaliei ({jaViSemAvaliacao.length})
+          </h2>
+          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+            Musicais que você marcou como "Já vi" mas ainda não deu uma nota.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+            {jaViSemAvaliacao.map(item => cardJaVi(item))}
+          </div>
+        </>
+      )}
+
       {/* QUERO VER */}
-<h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>      {queroVer.length === 0 ? (
+      <h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
+        Quero ver ({queroVer.length})
+      </h2>
+      {queroVer.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>
-  {isProprioPerfil
-    ? <>Você ainda não adicionou nenhum musical à sua lista. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-    : "Este usuário ainda não tem musicais na lista."
-  }
-</p>
+          {isProprioPerfil
+            ? <>Você ainda não adicionou nenhum musical à sua lista. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+            : "Este usuário ainda não tem musicais na lista."
+          }
+        </p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
           {queroVer.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
@@ -543,13 +631,16 @@ const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
       )}
 
       {/* COMENTARIOS */}
-<h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentarios ({comentarios.length})</h2>      {comentarios.length === 0 ? (
+      <h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
+        Comentários ({comentarios.length})
+      </h2>
+      {comentarios.length === 0 ? (
         <p className="login-aviso">
-  {isProprioPerfil
-    ? <>Você ainda não fez nenhum comentário. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-    : "Este usuário ainda não fez nenhum comentário."
-  }
-</p>
+          {isProprioPerfil
+            ? <>Você ainda não fez nenhum comentário. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+            : "Este usuário ainda não fez nenhum comentário."
+          }
+        </p>
       ) : (
         comentarios.map(c => {
           const musical = musicais[c.musicalId]
