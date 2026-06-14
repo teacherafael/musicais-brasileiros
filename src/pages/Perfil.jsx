@@ -310,8 +310,8 @@ function Perfil() {
             {sessoesVisiveis.map(s => (
               <div key={s.id} style={{ background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "7px 10px" }}>
                 <span style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a1a" }}>
-                  {formatarData(s.data)}
-                </span>
+  {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}
+</span>
                 {s.assento && (
                   <span style={{ fontSize: "12px", color: "#666", marginLeft: "8px" }}>
                     🪑 {s.assento}

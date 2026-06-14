@@ -120,6 +120,7 @@ function Musical() {
   const [novoAssento, setNovoAssento] = useState("")
   const [novaSessaoPublica, setNovaSessaoPublica] = useState(true)
   const [salvandoSessao, setSalvandoSessao] = useState(false)
+  const [novoHorario, setNovoHorario] = useState("")
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -358,20 +359,22 @@ function Musical() {
     if (!novaData) return mostrarToast("Informe a data da sessão.")
     setSalvandoSessao(true)
     const novaSessao = {
-      musicalId: id,
-      titulo: musical.titulo,
-      capa: musical.capa || null,
-      direcao: musical.direcao || "",
-      data: novaData,
-      assento: novoAssento.trim(),
-      publico: novaSessaoPublica,
-    }
+  musicalId: id,
+  titulo: musical.titulo,
+  capa: musical.capa || null,
+  direcao: musical.direcao || "",
+  data: novaData,
+  horario: novoHorario.trim(),
+  assento: novoAssento.trim(),
+  publico: novaSessaoPublica,
+}
     const docRef = await addDoc(
       collection(db, "usuarios", usuario.uid, "sessoesAssistidas"),
       novaSessao
     )
     setSessoes(prev => [{ id: docRef.id, ...novaSessao }, ...prev].sort((a, b) => (a.data > b.data ? -1 : 1)))
     setNovaData("")
+    setNovoHorario("")
     setNovoAssento("")
     setNovaSessaoPublica(true)
     setMostrarFormSessao(false)
@@ -674,8 +677,8 @@ function Musical() {
                     <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "10px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                         <span style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a1a" }}>
-                          {formatarData(s.data)}
-                        </span>
+  {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}
+</span>
                         {s.assento && (
                           <span style={{ fontSize: "13px", color: "#666" }}>
                             🪑 {s.assento}
@@ -701,26 +704,35 @@ function Musical() {
               {mostrarFormSessao ? (
                 <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "14px 16px" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "12px" }}>
-                    <div style={{ flex: "1 1 140px" }}>
-                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Data</label>
-                      <input
-                        type="date"
-                        value={novaData}
-                        onChange={e => setNovaData(e.target.value)}
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                      />
-                    </div>
-                    <div style={{ flex: "2 1 200px" }}>
-                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
-                      <input
-                        type="text"
-                        value={novoAssento}
-                        onChange={e => setNovoAssento(e.target.value)}
-                        placeholder="ex: Plateia A, fileira 10, cadeira 5"
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                      />
-                    </div>
-                  </div>
+  <div style={{ flex: "1 1 140px" }}>
+    <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Data</label>
+    <input
+      type="date"
+      value={novaData}
+      onChange={e => setNovaData(e.target.value)}
+      style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+    />
+  </div>
+  <div style={{ flex: "1 1 100px" }}>
+    <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Horário (opcional)</label>
+    <input
+      type="time"
+      value={novoHorario}
+      onChange={e => setNovoHorario(e.target.value)}
+      style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+    />
+  </div>
+  <div style={{ flex: "2 1 200px" }}>
+    <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
+    <input
+      type="text"
+      value={novoAssento}
+      onChange={e => setNovoAssento(e.target.value)}
+      placeholder="ex: Plateia A, fileira 10, cadeira 5"
+      style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+    />
+  </div>
+</div>
 
                   {/* Toggle público/privado */}
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
