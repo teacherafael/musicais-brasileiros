@@ -638,13 +638,13 @@ function Musical() {
               ) : (
                 <div className="rating-grande">— <span className="rating-grande-label">sem votos ainda</span></div>
               )}
-              {usuario && usuario.uid === ADMIN_UID && (
-                <button onClick={abrirEdicao} style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              {usuario && ADMIN_UID.includes(usuario.uid) && (
+  <button onClick={abrirEdicao} style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                   ✏️ Editar musical
                 </button>
               )}
-              {usuario && usuario.uid === ADMIN_UID && (
-                <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
+              {usuario && ADMIN_UID.includes(usuario.uid) && (
+  <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
                   {musical.destaque ? "★ Em destaque" : "☆ Colocar em destaque"}
                 </button>
               )}
