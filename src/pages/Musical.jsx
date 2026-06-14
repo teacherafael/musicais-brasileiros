@@ -9,7 +9,7 @@ import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 
-const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
+const ADMIN_UID = ["LFDNXIXywqQrLsDLobaGzOOmok03", "ddN3y50zE5X56aQPQzhL17hw8m83"];
 
 function SeloVerificado() {
   return (

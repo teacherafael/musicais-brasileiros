@@ -4,7 +4,8 @@ import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
-const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
+const ADMINS = ["LFDNXIXywqQrLsDLobaGzOOmok03", "ddN3y50zE5X56aQPQzhL17hw8m83"];
+const isAdmin = ADMINS.includes(user?.uid);
 
 function Admin() {
   const navigate = useNavigate()
