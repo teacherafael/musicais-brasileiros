@@ -58,6 +58,20 @@ function Sugestao() {
     </div>
   )
 
+  const campoTexto = (label, chave) => (
+    <div style={{ marginBottom: "16px" }}>
+      <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+        {label}
+      </label>
+      <textarea
+        value={form[chave]}
+        onChange={e => atualizar(chave, e.target.value)}
+        rows={4}
+        style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical" }}
+      />
+    </div>
+  )
+
   if (enviado) return (
     <main>
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
@@ -92,8 +106,8 @@ function Sugestao() {
       {campo("Direção", "direcao")}
       {campo("Direção musical", "direcaoMusical")}
       {campo("Produção", "producao")}
-      {campo("Elenco (nomes separados por vírgula)", "elenco")}
-      {campo("Elenco adicional (nomes separados por vírgula)", "elencoAdicional")}
+      {campoTexto("Elenco (nomes separados por vírgula)", "elenco")}
+      {campoTexto("Elenco adicional (nomes separados por vírgula)", "elencoAdicional")}
       {campo("Versionista", "versionista")}
       {campo("Texto original", "textoOriginal")}
       {campo("Música original", "musicaOriginal")}
