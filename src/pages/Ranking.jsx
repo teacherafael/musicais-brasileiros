@@ -13,7 +13,7 @@ function Ranking() {
       const snapshot = await getDocs(collection(db, "musicais"))
       const lista = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(m => m.totalVotos > 0)
+        .filter(m => m.totalVotos > 10)
         .map(m => ({ ...m, media: m.somaEstrelas / m.totalVotos }))
         .sort((a, b) => b.media - a.media)
         .slice(0, 15)
