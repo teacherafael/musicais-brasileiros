@@ -832,7 +832,7 @@ function Musical() {
               <div style={{ position: "relative" }}>
                 {tooltipHistograma && (
                   <div style={{
-                    position: "absolute", bottom: "calc(100% + 6px)", left: tooltipHistograma.x,
+                    position: "absolute", bottom: "calc(100% + 6px)", left: "50%",
                     transform: "translateX(-50%)", background: "#1a1a1a", color: "#fff",
                     padding: "5px 10px", borderRadius: "6px", fontSize: "12px", whiteSpace: "nowrap",
                     pointerEvents: "none", zIndex: 10, border: "1px solid #333"
