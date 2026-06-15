@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -25,19 +25,38 @@ function Home() {
   const navigate = useNavigate()
   const [toast, setToast] = useState(null)
 
-function mostrarToast(msg) {
-  setToast(msg)
-  setTimeout(() => setToast(null), 2500)
-}
+  // refs do carrossel
+  const carrosselRef = useRef(null)
+  const [podePrev, setPodePrev] = useState(false)
+  const [podeNext, setPodeNext] = useState(true)
+
+  function mostrarToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
+
+  function atualizarBotoes() {
+    const el = carrosselRef.current
+    if (!el) return
+    setPodePrev(el.scrollLeft > 4)
+    setPodeNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+
+  function scrollCarrossel(direcao) {
+    const el = carrosselRef.current
+    if (!el) return
+    const larguraCard = 156 // 140px card + 16px gap
+    el.scrollBy({ left: direcao * larguraCard * 3, behavior: "smooth" })
+    setTimeout(atualizarBotoes, 350)
+  }
 
   useEffect(() => {
-  const timer = setTimeout(() => {
-    setBusca(buscaInput)
-    setVisiveis(24)
-  }, 300)
-  return () => clearTimeout(timer)
-}, [buscaInput])
-
+    const timer = setTimeout(() => {
+      setBusca(buscaInput)
+      setVisiveis(24)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [buscaInput])
 
   useEffect(() => {
     const params = {}
@@ -95,6 +114,11 @@ function mostrarToast(msg) {
     buscarComentarios()
   }, [])
 
+  // atualiza botões quando a lista de recentes carrega
+  useEffect(() => {
+    atualizarBotoes()
+  }, [musicais])
+
   async function toggleQueroVer(e, musical) {
     e.preventDefault()
     e.stopPropagation()
@@ -143,7 +167,6 @@ function mostrarToast(msg) {
   const recentesIds = [...musicais]
     .filter(m => !destaquesIds.has(m.id))
     .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
-    .slice(0, 10)
 
   const idsExcluidos = new Set([...destaquesIds])
 
@@ -185,7 +208,7 @@ function mostrarToast(msg) {
     })
 
   const musicaisVisiveis = musicaisFiltrados.slice(0, visiveis)
-const temMais = visiveis < musicaisFiltrados.length
+  const temMais = visiveis < musicaisFiltrados.length
 
   function CardMusical({ musical, tamanho = "normal" }) {
     const media = musical.totalVotos > 0
@@ -264,18 +287,17 @@ const temMais = visiveis < musicaisFiltrados.length
   }
 
   return (
-    
     <main>
       {toast && (
-      <div style={{
-        position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
-        background: "#1a1a1a", color: "#F5C518", padding: "12px 24px",
-        borderRadius: "8px", fontSize: "14px", fontWeight: "500",
-        zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
-      }}>
-        {toast}
-      </div>
-    )}
+        <div style={{
+          position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
+          background: "#1a1a1a", color: "#F5C518", padding: "12px 24px",
+          borderRadius: "8px", fontSize: "14px", fontWeight: "500",
+          zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+        }}>
+          {toast}
+        </div>
+      )}
       <p className="section-label">Musicais Brasileiros Database</p>
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>
@@ -316,22 +338,74 @@ const temMais = visiveis < musicaisFiltrados.length
         </div>
       )}
 
-      {/* ── RECÉM ADICIONADOS ── */}
+      {/* ── RECÉM ADICIONADOS (carrossel) ── */}
       {recentesIds.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
-          <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>
-            Recém adicionados
-          </p>
-          <div style={{
-            display: "flex",
-            gap: "16px",
-            overflowX: "auto",
-            paddingBottom: "8px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none"
-          }}>
+          {/* cabeçalho com setas */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+            <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", margin: 0 }}>
+              Recém adicionados
+            </p>
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                onClick={() => scrollCarrossel(-1)}
+                disabled={!podePrev}
+                style={{
+                  width: "32px", height: "32px",
+                  borderRadius: "50%",
+                  border: "1px solid #e8e8e4",
+                  background: podePrev ? "#1a1a1a" : "#f5f5f5",
+                  color: podePrev ? "#F5C518" : "#ccc",
+                  fontSize: "14px", fontWeight: "700",
+                  cursor: podePrev ? "pointer" : "default",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "background 0.15s, color 0.15s",
+                  lineHeight: 1
+                }}
+                aria-label="Anterior"
+              >
+                ‹
+              </button>
+              <button
+                onClick={() => scrollCarrossel(1)}
+                disabled={!podeNext}
+                style={{
+                  width: "32px", height: "32px",
+                  borderRadius: "50%",
+                  border: "1px solid #e8e8e4",
+                  background: podeNext ? "#1a1a1a" : "#f5f5f5",
+                  color: podeNext ? "#F5C518" : "#ccc",
+                  fontSize: "14px", fontWeight: "700",
+                  cursor: podeNext ? "pointer" : "default",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "background 0.15s, color 0.15s",
+                  lineHeight: 1
+                }}
+                aria-label="Próximo"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+
+          {/* trilho do carrossel */}
+          <div
+            ref={carrosselRef}
+            onScroll={atualizarBotoes}
+            style={{
+              display: "flex",
+              gap: "16px",
+              overflowX: "auto",
+              paddingBottom: "8px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              scrollSnapType: "x mandatory"
+            }}
+          >
             {recentesIds.map(musical => (
-              <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
+              <div key={musical.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}>
+                <CardMusical musical={musical} tamanho="pequeno" />
+              </div>
             ))}
           </div>
         </div>
@@ -453,20 +527,20 @@ const temMais = visiveis < musicaisFiltrados.length
             )}
           </div>
 
-{temMais && (
-  <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
-    <button
-      onClick={() => setVisiveis(v => v + 24)}
-      style={{
-        padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px",
-        background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px",
-        cursor: "pointer", color: "#1a1a1a", fontWeight: "500"
-      }}
-    >
-      Carregar mais ({musicaisFiltrados.length - visiveis} restantes)
-    </button>
-  </div>
-)}
+          {temMais && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
+              <button
+                onClick={() => setVisiveis(v => v + 24)}
+                style={{
+                  padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px",
+                  background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px",
+                  cursor: "pointer", color: "#1a1a1a", fontWeight: "500"
+                }}
+              >
+                Carregar mais ({musicaisFiltrados.length - visiveis} restantes)
+              </button>
+            </div>
+          )}
 
         </div>
 
