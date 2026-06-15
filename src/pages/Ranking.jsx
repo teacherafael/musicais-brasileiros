@@ -65,8 +65,8 @@ function Ranking() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "16px",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "15px",
               fontWeight: "700",
               flexShrink: 0
             }}>
@@ -86,7 +86,7 @@ function Ranking() {
             )}
 
             <div style={{ flex: 1 }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "700", marginBottom: "4px" }}>{musical.titulo}</p>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "19px", fontWeight: "700", marginBottom: "4px" }}>{musical.titulo}</p>
               <p style={{ fontSize: "13px", color: "#888" }}>Direção: {musical.direcao || "—"}</p>
             </div>
 
