@@ -55,8 +55,8 @@ function Estrelas({ votoAtual, onVotar }) {
   const valorAtivo = hover || votoAtual || 0
 
   return (
-    <div>
-      <div style={{ display: "flex", gap: "4px", fontSize: "36px", cursor: "pointer", marginBottom: "4px" }}>
+    <div style={{ marginBottom: "16px" }}>
+      <div style={{ display: "flex", gap: "2px", marginBottom: "8px" }}>
         {[1, 2, 3, 4, 5].map(estrela => {
           const cheia = valorAtivo >= estrela
           const meia = valorAtivo >= estrela - 0.5 && valorAtivo < estrela
@@ -66,23 +66,49 @@ function Estrelas({ votoAtual, onVotar }) {
               onClick={e => onVotar(calcularValor(e, estrela))}
               onMouseMove={e => setHover(calcularValor(e, estrela))}
               onMouseLeave={() => setHover(0)}
-              style={{ position: "relative", display: "inline-block", userSelect: "none", lineHeight: 1 }}
+              style={{
+                position: "relative",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "48px",
+                height: "48px",
+                fontSize: "40px",
+                userSelect: "none",
+                lineHeight: 1,
+                cursor: "pointer",
+                transition: "transform 0.1s ease",
+                transform: hover === estrela || hover === estrela - 0.5 ? "scale(1.15)" : "scale(1)"
+              }}
             >
               {meia ? (
                 <>
                   <span style={{ color: "#ddd" }}>★</span>
-                  <span style={{ position: "absolute", left: 0, top: 0, width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
+                  <span style={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-100%)", width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
                 </>
               ) : (
-                <span style={{ color: cheia ? "#F5C518" : "#ddd" }}>★</span>
+                <span style={{ color: cheia ? "#F5C518" : "#ddd", transition: "color 0.1s ease" }}>★</span>
               )}
             </span>
           )
         })}
       </div>
-      <p style={{ fontSize: "13px", color: "#888", height: "18px", marginBottom: "8px" }}>
-        {hover ? LABELS[hover] : ""}
-      </p>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", minHeight: "28px" }}>
+        {hover ? (
+          <>
+            <span style={{ fontSize: "22px", fontWeight: "700", color: "#F5C518", lineHeight: 1 }}>{hover}</span>
+            <span style={{ fontSize: "15px", color: "#444", fontWeight: "500" }}>{LABELS[hover]}</span>
+          </>
+        ) : votoAtual ? (
+          <>
+            <span style={{ fontSize: "22px", fontWeight: "700", color: "#F5C518", lineHeight: 1 }}>{votoAtual}</span>
+            <span style={{ fontSize: "15px", color: "#888" }}>{LABELS[votoAtual]}</span>
+          </>
+        ) : (
+          <span style={{ fontSize: "14px", color: "#bbb" }}>Passe o mouse para avaliar</span>
+        )}
+      </div>
     </div>
   )
 }
