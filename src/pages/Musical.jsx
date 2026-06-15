@@ -526,6 +526,7 @@ function Musical() {
     const jaReagiu = minhaReacao[comentarioId]
 
     if (jaReagiu === emoji) {
+      // Remove reação existente — sem notificação
       await deleteDoc(ref)
       setMinhaReacao(prev => { const next = { ...prev }; delete next[comentarioId]; return next })
       setReacoes(prev => {
@@ -534,6 +535,7 @@ function Musical() {
         return next
       })
     } else {
+      // Troca ou adiciona reação
       if (jaReagiu) {
         setReacoes(prev => {
           const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
@@ -548,6 +550,24 @@ function Musical() {
         next[comentarioId][emoji] = (next[comentarioId][emoji] || 0) + 1
         return next
       })
+
+      // Notifica o dono do comentário (só se não for a própria pessoa)
+      const comentario = comentarios.find(c => c.id === comentarioId)
+      if (comentario && comentario.userId && comentario.userId !== usuario.uid) {
+        try {
+          await addDoc(collection(db, "notificacoes", comentario.userId, "itens"), {
+            tipo: "reacao",
+            emoji,
+            de: usuario.displayName || "Alguém",
+            texto: `${usuario.displayName || "Alguém"} reagiu ${emoji} ao seu comentário em ${musical.titulo}`,
+            link: `/musical/${id}`,
+            lida: false,
+            data: serverTimestamp(),
+          })
+        } catch (e) {
+          // Notificação é silenciosa — falha não bloqueia a reação
+        }
+      }
     }
   }
 
@@ -669,7 +689,6 @@ function Musical() {
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
 
-              {/* Metadados principais — maior destaque */}
               <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
                 <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
                 {nomesClicaveis(musical.direcao) || "—"}
@@ -687,7 +706,6 @@ function Musical() {
                 </p>
               )}
 
-              {/* Metadados secundários — menor destaque */}
               <div style={{ marginTop: "4px", marginBottom: "4px" }}>
                 {musical.ano && (
                   <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>
@@ -712,7 +730,6 @@ function Musical() {
                 {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
               </div>
 
-              {/* Nota em destaque */}
               <div style={{ margin: "16px 0 12px" }}>
                 {media ? (
                   <div style={{ display: "inline-flex", alignItems: "baseline", gap: "10px", background: "#1a1a1a", borderRadius: "10px", padding: "10px 20px" }}>
@@ -727,7 +744,6 @@ function Musical() {
                 )}
               </div>
 
-              {/* Botões admin separados e discretos */}
               {usuario && usuario.uid === ADMIN_UID && (
                 <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
                   <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>
@@ -864,36 +880,36 @@ function Musical() {
           )}
 
           {musical.elenco && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-      {musical.elenco.split(",").map((nome) => {
-        const n = nome.trim()
-        return (
-          <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
-            {n}
-          </a>
-        )
-      })}
-    </div>
-  </div>
-)}
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {musical.elenco.split(",").map((nome) => {
+                  const n = nome.trim()
+                  return (
+                    <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
+                      {n}
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {musical.elencoAdicional && (
-  <div style={{ marginBottom: "24px" }}>
-    <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-      {musical.elencoAdicional.split(",").map((nome) => {
-        const n = nome.trim()
-        return (
-          <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
-            {n}
-          </a>
-        )
-      })}
-    </div>
-  </div>
-)}
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {musical.elencoAdicional.split(",").map((nome) => {
+                  const n = nome.trim()
+                  return (
+                    <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
+                      {n}
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <hr className="divider" />
 

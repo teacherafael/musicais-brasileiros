@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore"
+import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -166,6 +166,20 @@ function Perfil() {
       await Promise.all([setDoc(refMeuSeguindo, dadosAlvo), setDoc(refSeguidorDele, meusDados)])
       setJaSigo(true)
       setSeguidores(prev => [...prev, { id: usuarioLogado.uid, ...meusDados }])
+
+      // Notifica o usuário que ganhou um novo seguidor
+      try {
+        await addDoc(collection(db, "notificacoes", userId, "itens"), {
+          tipo: "seguidor",
+          de: usuarioLogado.displayName || "Alguém",
+          texto: `${usuarioLogado.displayName || "Alguém"} começou a seguir você`,
+          link: `/perfil/${usuarioLogado.uid}`,
+          lida: false,
+          data: serverTimestamp(),
+        })
+      } catch (e) {
+        // Notificação é silenciosa — falha não bloqueia o follow
+      }
     }
     setCarregandoSeguir(false)
   }
