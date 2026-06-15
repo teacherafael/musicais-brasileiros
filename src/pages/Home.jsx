@@ -25,7 +25,6 @@ function Home() {
   const navigate = useNavigate()
   const [toast, setToast] = useState(null)
 
-  // refs do carrossel
   const carrosselRef = useRef(null)
   const [podePrev, setPodePrev] = useState(false)
   const [podeNext, setPodeNext] = useState(true)
@@ -45,7 +44,7 @@ function Home() {
   function scrollCarrossel(direcao) {
     const el = carrosselRef.current
     if (!el) return
-    const larguraCard = 156 // 140px card + 16px gap
+    const larguraCard = 156
     el.scrollBy({ left: direcao * larguraCard * 3, behavior: "smooth" })
     setTimeout(atualizarBotoes, 350)
   }
@@ -114,7 +113,6 @@ function Home() {
     buscarComentarios()
   }, [])
 
-  // atualiza botões quando a lista de recentes carrega
   useEffect(() => {
     atualizarBotoes()
   }, [musicais])
@@ -161,13 +159,10 @@ function Home() {
   }
 
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
-
   const destaquesIds = new Set(destaques.map(m => m.id))
-
   const recentesIds = [...musicais]
     .filter(m => !destaquesIds.has(m.id))
     .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
-
   const idsExcluidos = new Set([...destaquesIds])
 
   const musicaisFiltrados = musicais
@@ -175,15 +170,9 @@ function Home() {
     .filter(musical => {
       const termo = normalizar(busca)
       const campos = [
-        musical.titulo,
-        musical.elenco,
-        musical.elencoAdicional,
-        musical.direcao,
-        musical.direcaoMusical,
-        musical.producao,
-        musical.versionista,
-        musical.textoOriginal,
-        musical.musicaOriginal
+        musical.titulo, musical.elenco, musical.elencoAdicional,
+        musical.direcao, musical.direcaoMusical, musical.producao,
+        musical.versionista, musical.textoOriginal, musical.musicaOriginal
       ]
       return (
         campos.some(c => normalizar(c).includes(termo)) &&
@@ -211,76 +200,125 @@ function Home() {
   const temMais = visiveis < musicaisFiltrados.length
 
   function CardMusical({ musical, tamanho = "normal" }) {
+    const [hovered, setHovered] = useState(false)
     const media = musical.totalVotos > 0
       ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
       : "—"
-    const largura = tamanho === "pequeno" ? "140px" : "100%"
+
+    if (tamanho === "pequeno") {
+      return (
+        <a
+          href={"/musical/" + musical.id}
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "140px",
+            flexShrink: 0
+          }}
+        >
+          <div style={{ width: "140px", height: "200px", marginBottom: "10px", borderRadius: "6px", overflow: "hidden" }}>
+            {musical.capa
+              ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
+            }
+          </div>
+          <div style={{ width: "100%" }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: "600", fontSize: "13px", margin: "0 0 4px", lineHeight: "1.3" }}>{musical.titulo}</p>
+            <div className="rating-badge">★ {media}</div>
+          </div>
+        </a>
+      )
+    }
 
     return (
       <a
         href={"/musical/" + musical.id}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
           textDecoration: "none",
           color: "inherit",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          width: tamanho === "pequeno" ? "140px" : "100%",
-          flexShrink: 0
+          width: "100%",
+          background: "#fff",
+          border: hovered ? "1px solid #F5C518" : "1px solid #e8e8e4",
+          borderRadius: "12px",
+          overflow: "hidden",
+          transition: "border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease",
+          transform: hovered ? "translateY(-2px)" : "translateY(0)",
+          boxShadow: hovered ? "0 6px 20px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.06)",
+          position: "relative"
         }}
       >
-        <div style={{
-          width: largura,
-          position: "relative",
-          paddingBottom: tamanho === "pequeno" ? "0" : "140%",
-          height: tamanho === "pequeno" ? "200px" : "0",
-          marginBottom: "10px"
-        }}>
-          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
-            {musical.capa
-              ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", borderRadius: "6px", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>
-            }
-          </div>
-        </div>
-        <div style={{ width: "100%" }}>
-          <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: "600", fontSize: tamanho === "pequeno" ? "13px" : "15px", margin: "0 0 4px", lineHeight: "1.3" }}>{musical.titulo}</p>
-          {tamanho !== "pequeno" && (
-            <p style={{ fontSize: "13px", color: "#888", margin: "0 0 6px" }}>Direção: {musical.direcao || "—"}</p>
-          )}
-          <div className="rating-badge">
-            ★ {media}
-            <span className="rating-votos">
-              ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
-            </span>
-          </div>
+        {/* CAPA com proporção fixa */}
+        <div style={{ width: "100%", aspectRatio: "2/3", position: "relative", overflow: "hidden" }}>
+          {musical.capa
+            ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "12px", textAlign: "center" }}>{musical.titulo}</div>
+          }
+
+          {/* OVERLAY com botões Já vi / Quero ver — aparece só no hover */}
           {usuario && (
-            <div style={{ display: "flex", gap: "8px", marginTop: "10px", justifyContent: "center" }}>
+            <div style={{
+              position: "absolute", bottom: 0, left: 0, right: 0,
+              background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
+              padding: "24px 10px 10px",
+              display: "flex", gap: "6px", justifyContent: "center",
+              opacity: hovered ? 1 : 0,
+              transition: "opacity 0.2s ease"
+            }}>
               <button
                 onClick={e => toggleJaVi(e, musical)}
                 style={{
-                  background: "none", border: "none", padding: 0,
-                  fontFamily: "'DM Sans', sans-serif", fontSize: "12px", cursor: "pointer",
-                  color: jaViSet.has(musical.id) ? "#1a1a1a" : "#aaa",
-                  fontWeight: jaViSet.has(musical.id) ? "600" : "400"
+                  background: jaViSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)",
+                  border: jaViSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)",
+                  borderRadius: "20px",
+                  padding: "5px 12px",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  color: jaViSet.has(musical.id) ? "#1a1a1a" : "#fff",
+                  cursor: "pointer",
+                  backdropFilter: "blur(4px)"
                 }}
               >
                 {jaViSet.has(musical.id) ? "✓ Já vi" : "Já vi"}
               </button>
-              <span style={{ color: "#ddd", fontSize: "12px" }}>·</span>
               <button
                 onClick={e => toggleQueroVer(e, musical)}
                 style={{
-                  background: "none", border: "none", padding: 0,
-                  fontFamily: "'DM Sans', sans-serif", fontSize: "12px", cursor: "pointer",
-                  color: queroVerSet.has(musical.id) ? "#b8960a" : "#aaa",
-                  fontWeight: queroVerSet.has(musical.id) ? "600" : "400"
+                  background: queroVerSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)",
+                  border: queroVerSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)",
+                  borderRadius: "20px",
+                  padding: "5px 12px",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  color: queroVerSet.has(musical.id) ? "#1a1a1a" : "#fff",
+                  cursor: "pointer",
+                  backdropFilter: "blur(4px)"
                 }}
               >
                 {queroVerSet.has(musical.id) ? "★ Quero ver" : "☆ Quero ver"}
               </button>
             </div>
           )}
+        </div>
+
+        {/* INFO abaixo da capa */}
+        <div style={{ padding: "10px 12px 12px" }}>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: "700", fontSize: "14px", margin: "0 0 3px", lineHeight: "1.3", color: "#1a1a1a" }}>{musical.titulo}</p>
+          <p style={{ fontSize: "12px", color: "#888", margin: "0 0 8px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{musical.direcao || "—"}</p>
+          <div className="rating-badge" style={{ fontSize: "14px", padding: "4px 10px" }}>
+            ★ {media}
+            <span className="rating-votos" style={{ fontSize: "11px" }}>
+              ({musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"})
+            </span>
+          </div>
         </div>
       </a>
     )
@@ -324,12 +362,8 @@ function Home() {
             EM CARTAZ
           </p>
           <div style={{
-            display: "flex",
-            gap: "16px",
-            overflowX: "auto",
-            paddingBottom: "8px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none"
+            display: "flex", gap: "16px", overflowX: "auto",
+            paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none"
           }}>
             {destaques.map(musical => (
               <CardMusical key={musical.id} musical={musical} tamanho="pequeno" />
@@ -338,70 +372,19 @@ function Home() {
         </div>
       )}
 
-      {/* ── RECÉM ADICIONADOS (carrossel) ── */}
+      {/* ── RECÉM ADICIONADOS ── */}
       {recentesIds.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
-          {/* cabeçalho com setas */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
             <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", margin: 0 }}>
               Recém adicionados
             </p>
             <div style={{ display: "flex", gap: "6px" }}>
-              <button
-                onClick={() => scrollCarrossel(-1)}
-                disabled={!podePrev}
-                style={{
-                  width: "32px", height: "32px",
-                  borderRadius: "50%",
-                  border: "1px solid #e8e8e4",
-                  background: podePrev ? "#1a1a1a" : "#f5f5f5",
-                  color: podePrev ? "#F5C518" : "#ccc",
-                  fontSize: "14px", fontWeight: "700",
-                  cursor: podePrev ? "pointer" : "default",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "background 0.15s, color 0.15s",
-                  lineHeight: 1
-                }}
-                aria-label="Anterior"
-              >
-                ‹
-              </button>
-              <button
-                onClick={() => scrollCarrossel(1)}
-                disabled={!podeNext}
-                style={{
-                  width: "32px", height: "32px",
-                  borderRadius: "50%",
-                  border: "1px solid #e8e8e4",
-                  background: podeNext ? "#1a1a1a" : "#f5f5f5",
-                  color: podeNext ? "#F5C518" : "#ccc",
-                  fontSize: "14px", fontWeight: "700",
-                  cursor: podeNext ? "pointer" : "default",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "background 0.15s, color 0.15s",
-                  lineHeight: 1
-                }}
-                aria-label="Próximo"
-              >
-                ›
-              </button>
+              <button onClick={() => scrollCarrossel(-1)} disabled={!podePrev} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e8e8e4", background: podePrev ? "#1a1a1a" : "#f5f5f5", color: podePrev ? "#F5C518" : "#ccc", fontSize: "14px", fontWeight: "700", cursor: podePrev ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s, color 0.15s", lineHeight: 1 }} aria-label="Anterior">‹</button>
+              <button onClick={() => scrollCarrossel(1)} disabled={!podeNext} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e8e8e4", background: podeNext ? "#1a1a1a" : "#f5f5f5", color: podeNext ? "#F5C518" : "#ccc", fontSize: "14px", fontWeight: "700", cursor: podeNext ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s, color 0.15s", lineHeight: 1 }} aria-label="Próximo">›</button>
             </div>
           </div>
-
-          {/* trilho do carrossel */}
-          <div
-            ref={carrosselRef}
-            onScroll={atualizarBotoes}
-            style={{
-              display: "flex",
-              gap: "16px",
-              overflowX: "auto",
-              paddingBottom: "8px",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              scrollSnapType: "x mandatory"
-            }}
-          >
+          <div ref={carrosselRef} onScroll={atualizarBotoes} style={{ display: "flex", gap: "16px", overflowX: "auto", paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}>
             {recentesIds.map(musical => (
               <div key={musical.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}>
                 <CardMusical musical={musical} tamanho="pequeno" />
@@ -413,10 +396,8 @@ function Home() {
 
       <hr className="divider" />
 
-      {/* ── LAYOUT DUAS COLUNAS (desktop) ── */}
+      {/* ── LAYOUT DUAS COLUNAS ── */}
       <div className="home-layout">
-
-        {/* ── COLUNA ESQUERDA: filtros + grid ── */}
         <div className="home-conteudo">
 
           {/* ── FILTROS ── */}
@@ -426,21 +407,11 @@ function Home() {
               placeholder="Buscar musical ou pessoa..."
               value={buscaInput}
               onChange={e => setBuscaInput(e.target.value)}
-              style={{
-                flex: 1, minWidth: "200px", padding: "12px 16px",
-                border: "1px solid #e8e8e4", borderRadius: "8px",
-                fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none"
-              }}
+              style={{ flex: 1, minWidth: "200px", padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
             />
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
-                Organizar por
-              </label>
-              <select
-                value={ordenacao}
-                onChange={e => { setOrdenacao(e.target.value); setVisiveis(24) }}
-                style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
-              >
+              <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Organizar por</label>
+              <select value={ordenacao} onChange={e => { setOrdenacao(e.target.value); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}>
                 <option value="az">A → Z</option>
                 <option value="za">Z → A</option>
                 <option value="melhor">Melhor avaliação</option>
@@ -452,39 +423,16 @@ function Home() {
               </select>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
-                Ano
-              </label>
-              <select
-                value={filtroAno}
-                onChange={e => { setFiltroAno(e.target.value); setVisiveis(24) }}
-                style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}
-              >
+              <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Ano</label>
+              <select value={filtroAno} onChange={e => { setFiltroAno(e.target.value); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}>
                 <option value="">Todos os anos</option>
                 {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
               </select>
             </div>
             {usuario && (
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  Vistos
-                </label>
-                <button
-                  onClick={() => { setOcultarVistos(v => !v); setVisiveis(24) }}
-                  style={{
-                    padding: "12px 16px",
-                    border: "1px solid #e8e8e4",
-                    borderRadius: "8px",
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "15px",
-                    cursor: "pointer",
-                    background: ocultarVistos ? "#b8960a" : "#fff",
-                    color: ocultarVistos ? "#fff" : "#1a1a1a",
-                    fontWeight: ocultarVistos ? "600" : "400",
-                    whiteSpace: "nowrap",
-                    transition: "background 0.15s, color 0.15s"
-                  }}
-                >
+                <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Vistos</label>
+                <button onClick={() => { setOcultarVistos(v => !v); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", background: ocultarVistos ? "#b8960a" : "#fff", color: ocultarVistos ? "#fff" : "#1a1a1a", fontWeight: ocultarVistos ? "600" : "400", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}>
                   {ocultarVistos ? "✓ Não vi ainda" : "Não vi ainda"}
                 </button>
               </div>
@@ -492,32 +440,19 @@ function Home() {
           </div>
 
           {/* ── GRID PRINCIPAL ── */}
-          <div
-            className="grid-musicais"
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}
-          >
+          <div className="grid-musicais" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
             {carregando ? (
               Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} style={{
-                  borderRadius: "6px",
-                  background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-                  backgroundSize: "200% 100%",
-                  animation: "shimmer 1.2s infinite",
-                  aspectRatio: "3/4"
-                }} />
+                <div key={i} style={{ borderRadius: "12px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite", aspectRatio: "2/3" }} />
               ))
             ) : musicaisVisiveis.length === 0 ? (
               <div style={{ gridColumn: "1 / -1", padding: "40px 0", textAlign: "center" }}>
                 <p style={{ fontSize: "32px", marginBottom: "8px" }}>🎭</p>
                 <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>
-                  {ocultarVistos && busca === "" && filtroAno === ""
-                    ? "Você já viu todos os musicais!"
-                    : `Nenhum resultado para "${busca}"`}
+                  {ocultarVistos && busca === "" && filtroAno === "" ? "Você já viu todos os musicais!" : `Nenhum resultado para "${busca}"`}
                 </p>
                 <p style={{ fontSize: "14px", color: "#888" }}>
-                  {ocultarVistos && busca === "" && filtroAno === ""
-                    ? "Que tal explorar mais musicais ou sugerir um novo?"
-                    : "Tente outro nome, diretor ou membro do elenco."}
+                  {ocultarVistos && busca === "" && filtroAno === "" ? "Que tal explorar mais musicais ou sugerir um novo?" : "Tente outro nome, diretor ou membro do elenco."}
                 </p>
               </div>
             ) : (
@@ -529,22 +464,14 @@ function Home() {
 
           {temMais && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
-              <button
-                onClick={() => setVisiveis(v => v + 24)}
-                style={{
-                  padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px",
-                  background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px",
-                  cursor: "pointer", color: "#1a1a1a", fontWeight: "500"
-                }}
-              >
+              <button onClick={() => setVisiveis(v => v + 24)} style={{ padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", color: "#1a1a1a", fontWeight: "500" }}>
                 Carregar mais ({musicaisFiltrados.length - visiveis} restantes)
               </button>
             </div>
           )}
-
         </div>
 
-        {/* ── SIDEBAR: últimos comentários (só desktop) ── */}
+        {/* ── SIDEBAR ── */}
         <aside className="sidebar-comentarios">
           <p style={{ fontSize: "12px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "16px", marginTop: "24px" }}>
             Últimos comentários
@@ -556,32 +483,14 @@ function Home() {
               <div key={c.id} style={{ marginBottom: "16px", paddingBottom: "16px", borderBottom: "1px solid #e8e8e4" }}>
                 <a href={`/musical/${c.musicalId}`} style={{ textDecoration: "none", color: "inherit" }}>
                   <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                    {c.musicalCapa ? (
-                      <img
-                        src={c.musicalCapa}
-                        alt={c.musicalTitulo}
-                        style={{ width: "36px", height: "50px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
-                      />
-                    ) : (
-                      <div style={{ width: "36px", height: "50px", background: "#1a1a1a", borderRadius: "4px", flexShrink: 0 }} />
-                    )}
+                    {c.musicalCapa
+                      ? <img src={c.musicalCapa} alt={c.musicalTitulo} style={{ width: "36px", height: "50px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                      : <div style={{ width: "36px", height: "50px", background: "#1a1a1a", borderRadius: "4px", flexShrink: 0 }} />
+                    }
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: "12px", fontWeight: "700", margin: "0 0 2px", color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {c.musicalTitulo}
-                      </p>
-                      <a
-                        href={`/perfil/${c.userId}`}
-                        onClick={e => e.stopPropagation()}
-                        style={{ fontSize: "12px", color: "#888", textDecoration: "none" }}
-                      >
-                        {c.nome}
-                      </a>
-                      <p style={{
-                        fontSize: "13px", color: "#444", margin: "4px 0 0", lineHeight: "1.4",
-                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden"
-                      }}>
-                        {c.texto}
-                      </p>
+                      <p style={{ fontSize: "12px", fontWeight: "700", margin: "0 0 2px", color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.musicalTitulo}</p>
+                      <a href={`/perfil/${c.userId}`} onClick={e => e.stopPropagation()} style={{ fontSize: "12px", color: "#888", textDecoration: "none" }}>{c.nome}</a>
+                      <p style={{ fontSize: "13px", color: "#444", margin: "4px 0 0", lineHeight: "1.4", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.texto}</p>
                     </div>
                   </div>
                 </a>
@@ -589,7 +498,6 @@ function Home() {
             ))
           )}
         </aside>
-
       </div>
     </main>
   )
