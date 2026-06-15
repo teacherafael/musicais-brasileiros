@@ -808,18 +808,36 @@ function Musical() {
           )}
 
           {musical.elenco && (
-            <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
-              <p style={{ fontSize: "15px", lineHeight: "1.75" }}>{nomesClicaveis(musical.elenco)}</p>
-            </div>
-          )}
+  <div style={{ marginBottom: "24px" }}>
+    <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {musical.elenco.split(",").map((nome) => {
+        const n = nome.trim()
+        return (
+          <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
+            {n}
+          </a>
+        )
+      })}
+    </div>
+  </div>
+)}
 
           {musical.elencoAdicional && (
-            <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
-              <p style={{ fontSize: "15px", lineHeight: "1.75" }}>{nomesClicaveis(musical.elencoAdicional)}</p>
-            </div>
-          )}
+  <div style={{ marginBottom: "24px" }}>
+    <p style={{ fontSize: "13px", fontWeight: "700", color: "#636262", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {musical.elencoAdicional.split(",").map((nome) => {
+        const n = nome.trim()
+        return (
+          <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #e8e8e4", background: "#f5f5f0", color: "#3f3f3f", textDecoration: "none" }}>
+            {n}
+          </a>
+        )
+      })}
+    </div>
+  </div>
+)}
 
           <hr className="divider" />
 
