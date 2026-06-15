@@ -12,6 +12,7 @@ function Admin() {
   const [sugestoes, setSugestoes] = useState([])
   const [relatos, setRelatos] = useState([])
   const [musicais, setMusicais] = useState([])
+  const [mensagens, setMensagens] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
   const [capas, setCapas] = useState({})
@@ -33,6 +34,9 @@ function Admin() {
 
       const musicaisSnap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
       setMusicais(musicaisSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+      const mensagensSnap = await getDocs(query(collection(db, "mensagens"), orderBy("data", "desc")))
+      setMensagens(mensagensSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
       setCarregando(false)
     }
@@ -113,6 +117,17 @@ await setDoc(doc(db, "musicais", slug), {
     setMusicais(prev => prev.filter(m => m.id !== musicalId))
   }
 
+  async function marcarMensagemLida(mensagemId) {
+    await updateDoc(doc(db, "mensagens", mensagemId), { lida: true })
+    setMensagens(prev => prev.map(m => m.id === mensagemId ? { ...m, lida: true } : m))
+  }
+
+  async function deletarMensagem(mensagemId) {
+    if (!window.confirm("Deletar esta mensagem?")) return
+    await deleteDoc(doc(db, "mensagens", mensagemId))
+    setMensagens(prev => prev.filter(m => m.id !== mensagemId))
+  }
+
   const campoSugestao = (label, chave, multiline = false) => (
     <div style={{ marginBottom: "12px" }}>
       <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
@@ -135,6 +150,8 @@ await setDoc(doc(db, "musicais", slug), {
     </div>
   )
 
+  const naoLidas = mensagens.filter(m => !m.lida).length
+
   if (!usuario) return <main><p>Carregando...</p></main>
   if (!ADMINS.includes(usuario.uid)) return <main><p>Acesso negado.</p></main>
 
@@ -153,6 +170,9 @@ await setDoc(doc(db, "musicais", slug), {
         </button>
         <button onClick={() => setAba("musicais")} className={aba === "musicais" ? "btn-comentar" : "btn-sair"}>
           Musicais publicados ({musicais.length})
+        </button>
+        <button onClick={() => setAba("mensagens")} className={aba === "mensagens" ? "btn-comentar" : "btn-sair"}>
+          Mensagens {naoLidas > 0 && `(${naoLidas} nova${naoLidas > 1 ? "s" : ""})`}
         </button>
       </div>
 
@@ -257,6 +277,61 @@ await setDoc(doc(db, "musicais", slug), {
               <div style={{ display: "flex", gap: "12px" }}>
                 <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>Ver musical</button>
                 <button className="btn-sair" onClick={() => resolverRelato(r.id)}>Marcar como resolvido</button>
+              </div>
+            </div>
+          ))
+        )
+      ) : aba === "mensagens" ? (
+        mensagens.length === 0 ? (
+          <p style={{ color: "#888" }}>Nenhuma mensagem ainda.</p>
+        ) : (
+          mensagens.map(m => (
+            <div key={m.id} style={{
+              background: m.lida ? "#fff" : "#fffbe6",
+              border: m.lida ? "1px solid #e8e8e4" : "1px solid #F5C518",
+              borderRadius: "12px",
+              padding: "20px",
+              marginBottom: "16px"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", flexWrap: "wrap" }}>
+                {!m.lida && (
+                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px", background: "#F5C518", color: "#1a1a1a", borderRadius: "4px", padding: "2px 8px" }}>
+                    Nova
+                  </span>
+                )}
+                <p style={{ fontSize: "15px", fontWeight: "700", margin: 0 }}>{m.nome}</p>
+                {m.email && (
+                  <a href={`mailto:${m.email}`} style={{ fontSize: "13px", color: "#888", textDecoration: "none" }}>
+                    {m.email}
+                  </a>
+                )}
+                <p style={{ fontSize: "12px", color: "#bbb", margin: 0, marginLeft: "auto" }}>
+                  {m.data?.toDate ? m.data.toDate().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
+                </p>
+              </div>
+              <p style={{ fontSize: "15px", color: "#333", lineHeight: "1.6", marginBottom: "16px", whiteSpace: "pre-wrap" }}>
+                {m.mensagem}
+              </p>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                {!m.lida && (
+                  <button className="btn-comentar" onClick={() => marcarMensagemLida(m.id)}>
+                    ✓ Marcar como lida
+                  </button>
+                )}
+                {m.email && (
+                  <a
+                    href={`mailto:${m.email}`}
+                    style={{ display: "inline-block", padding: "10px 20px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", color: "#1a1a1a", textDecoration: "none", background: "#fff" }}
+                  >
+                    Responder por e-mail
+                  </a>
+                )}
+                <button
+                  onClick={() => deletarMensagem(m.id)}
+                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}
+                >
+                  Deletar
+                </button>
               </div>
             </div>
           ))

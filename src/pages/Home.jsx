@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit } from "firebase/firestore"
+import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit, addDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -28,6 +28,13 @@ function Home() {
   const carrosselRef = useRef(null)
   const [podePrev, setPodePrev] = useState(false)
   const [podeNext, setPodeNext] = useState(true)
+
+  // Fale com a gente
+  const [contatoNome, setContatoNome] = useState("")
+  const [contatoEmail, setContatoEmail] = useState("")
+  const [contatoMensagem, setContatoMensagem] = useState("")
+  const [contatoEnviando, setContatoEnviando] = useState(false)
+  const [contatoEnviado, setContatoEnviado] = useState(false)
 
   function mostrarToast(msg) {
     setToast(msg)
@@ -158,6 +165,29 @@ function Home() {
     }
   }
 
+  async function enviarContato(e) {
+    e.preventDefault()
+    if (!contatoNome.trim() || !contatoMensagem.trim()) return
+    setContatoEnviando(true)
+    try {
+      await addDoc(collection(db, "mensagens"), {
+        nome: contatoNome.trim(),
+        email: contatoEmail.trim(),
+        mensagem: contatoMensagem.trim(),
+        userId: usuario?.uid || null,
+        data: serverTimestamp(),
+        lida: false
+      })
+      setContatoEnviado(true)
+      setContatoNome("")
+      setContatoEmail("")
+      setContatoMensagem("")
+    } catch (err) {
+      mostrarToast("Erro ao enviar mensagem. Tente novamente.")
+    }
+    setContatoEnviando(false)
+  }
+
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
   const destaquesIds = new Set(destaques.map(m => m.id))
   const recentesIds = [...musicais]
@@ -254,14 +284,12 @@ function Home() {
           position: "relative"
         }}
       >
-        {/* CAPA com proporção fixa */}
         <div style={{ width: "100%", aspectRatio: "2/3", position: "relative", overflow: "hidden" }}>
           {musical.capa
             ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "12px", textAlign: "center" }}>{musical.titulo}</div>
           }
 
-          {/* OVERLAY com botões Já vi / Quero ver — aparece só no hover */}
           {usuario && (
             <div style={{
               position: "absolute", bottom: 0, left: 0, right: 0,
@@ -309,7 +337,6 @@ function Home() {
           )}
         </div>
 
-        {/* INFO abaixo da capa */}
         <div style={{ padding: "10px 12px 12px" }}>
           <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: "700", fontSize: "14px", margin: "0 0 3px", lineHeight: "1.3", color: "#1a1a1a" }}>{musical.titulo}</p>
           <p style={{ fontSize: "12px", color: "#888", margin: "0 0 8px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{musical.direcao || "—"}</p>
@@ -498,6 +525,105 @@ function Home() {
             ))
           )}
         </aside>
+      </div>
+
+      {/* ── FALE COM A GENTE ── */}
+      <div style={{
+        marginTop: "64px",
+        padding: "48px 0",
+        borderTop: "1px solid #e8e8e4"
+      }}>
+        <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "8px" }}>
+          Fale com a gente
+        </p>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: "0 0 8px" }}>
+          Tem algo a dizer?
+        </h2>
+        <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px" }}>
+          Sugestões, correções, parcerias ou só um oi — a gente lê tudo.
+        </p>
+
+        {contatoEnviado ? (
+          <div style={{
+            background: "#f9f9f9",
+            border: "1px solid #e8e8e4",
+            borderRadius: "12px",
+            padding: "32px",
+            textAlign: "center",
+            maxWidth: "560px"
+          }}>
+            <p style={{ fontSize: "32px", marginBottom: "12px" }}>✉️</p>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Mensagem enviada!</p>
+            <p style={{ fontSize: "14px", color: "#888", marginBottom: "20px" }}>Obrigado por entrar em contato. Retornaremos em breve.</p>
+            <button
+              onClick={() => setContatoEnviado(false)}
+              style={{ padding: "10px 24px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer", color: "#1a1a1a" }}
+            >
+              Enviar outra mensagem
+            </button>
+          </div>
+        ) : (
+          <div style={{ maxWidth: "560px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: "200px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  Nome <span style={{ color: "#cc0000" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Seu nome"
+                  value={contatoNome}
+                  onChange={e => setContatoNome(e.target.value)}
+                  style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: "200px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  E-mail <span style={{ color: "#888", fontWeight: "400", textTransform: "none", letterSpacing: 0 }}>(opcional)</span>
+                </label>
+                <input
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={contatoEmail}
+                  onChange={e => setContatoEmail(e.target.value)}
+                  style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
+                />
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Mensagem <span style={{ color: "#cc0000" }}>*</span>
+              </label>
+              <textarea
+                placeholder="Escreva sua mensagem..."
+                value={contatoMensagem}
+                onChange={e => setContatoMensagem(e.target.value)}
+                rows={5}
+                style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical", lineHeight: "1.5" }}
+              />
+            </div>
+            <div>
+              <button
+                onClick={enviarContato}
+                disabled={contatoEnviando || !contatoNome.trim() || !contatoMensagem.trim()}
+                style={{
+                  padding: "12px 28px",
+                  background: contatoEnviando || !contatoNome.trim() || !contatoMensagem.trim() ? "#ccc" : "#1a1a1a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "15px",
+                  fontWeight: "600",
+                  cursor: contatoEnviando || !contatoNome.trim() || !contatoMensagem.trim() ? "not-allowed" : "pointer",
+                  transition: "background 0.15s"
+                }}
+              >
+                {contatoEnviando ? "Enviando..." : "Enviar mensagem"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )
