@@ -828,9 +828,9 @@ function Musical() {
                     const maxVal = Math.max(...arr.map(k => d[k] || 0))
                     const altura = maxVal > 0 ? Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0) : 0
                     const pct = musical.totalVotos > 0 ? Math.round((val / musical.totalVotos) * 100) : 0
-                    const posX = `${(arr.indexOf(chave) / (arr.length - 1)) * 100}%`
+                    const posX = `${(i / (arr.length - 1)) * 100}%`
                     return (
-                      <div key={chave} style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", cursor: "pointer" }}
+                      <div key={chave} style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", cursor: "pointer", position: "relative" }}
                         onMouseEnter={() => setTooltipHistograma({ chave, val, pct, x: posX })}
                         onMouseLeave={() => setTooltipHistograma(null)}
                       >
