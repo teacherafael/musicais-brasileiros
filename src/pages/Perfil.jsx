@@ -253,7 +253,7 @@ function Perfil() {
     <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
       style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+      <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "12px" }}>
         {item.capa
           ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
           : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
