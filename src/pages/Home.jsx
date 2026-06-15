@@ -15,6 +15,7 @@ function Home() {
   const [busca, setBusca] = useState(searchParams.get("q") || "")
   const [ordenacao, setOrdenacao] = useState(searchParams.get("ordem") || "az")
   const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
+  const [ocultarVistos, setOcultarVistos] = useState(false)
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
@@ -55,6 +56,7 @@ function mostrarToast(msg) {
       } else {
         setQueroVerSet(new Set())
         setJaViSet(new Set())
+        setOcultarVistos(false)
       }
     })
   }, [])
@@ -87,7 +89,6 @@ function mostrarToast(msg) {
         const snap = await getDocs(q)
         setUltimosComentarios(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       } catch (e) {
-        // Coleção ainda vazia ou índice não criado — sidebar fica em branco
         setUltimosComentarios([])
       }
     }
@@ -166,6 +167,7 @@ function mostrarToast(msg) {
         (filtroAno === "" || musical.ano === filtroAno)
       )
     })
+    .filter(musical => !ocultarVistos || !jaViSet.has(musical.id))
     .map(musical => ({
       ...musical,
       media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0
@@ -388,6 +390,31 @@ const temMais = visiveis < musicaisFiltrados.length
                 {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
               </select>
             </div>
+            {usuario && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  Vistos
+                </label>
+                <button
+                  onClick={() => { setOcultarVistos(v => !v); setVisiveis(24) }}
+                  style={{
+                    padding: "12px 16px",
+                    border: "1px solid #e8e8e4",
+                    borderRadius: "8px",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "15px",
+                    cursor: "pointer",
+                    background: ocultarVistos ? "#b8960a" : "#fff",
+                    color: ocultarVistos ? "#fff" : "#1a1a1a",
+                    fontWeight: ocultarVistos ? "600" : "400",
+                    whiteSpace: "nowrap",
+                    transition: "background 0.15s, color 0.15s"
+                  }}
+                >
+                  {ocultarVistos ? "✓ Não vi ainda" : "Não vi ainda"}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* ── GRID PRINCIPAL ── */}
@@ -407,14 +434,18 @@ const temMais = visiveis < musicaisFiltrados.length
               ))
             ) : musicaisVisiveis.length === 0 ? (
               <div style={{ gridColumn: "1 / -1", padding: "40px 0", textAlign: "center" }}>
-  <p style={{ fontSize: "32px", marginBottom: "8px" }}>🎭</p>
-  <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>
-    Nenhum resultado para "{busca}"
-  </p>
-  <p style={{ fontSize: "14px", color: "#888" }}>
-    Tente outro nome, diretor ou membro do elenco.
-  </p>
-</div>
+                <p style={{ fontSize: "32px", marginBottom: "8px" }}>🎭</p>
+                <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>
+                  {ocultarVistos && busca === "" && filtroAno === ""
+                    ? "Você já viu todos os musicais!"
+                    : `Nenhum resultado para "${busca}"`}
+                </p>
+                <p style={{ fontSize: "14px", color: "#888" }}>
+                  {ocultarVistos && busca === "" && filtroAno === ""
+                    ? "Que tal explorar mais musicais ou sugerir um novo?"
+                    : "Tente outro nome, diretor ou membro do elenco."}
+                </p>
+              </div>
             ) : (
               musicaisVisiveis.map(musical => (
                 <CardMusical key={musical.id} musical={musical} />
