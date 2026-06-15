@@ -257,36 +257,52 @@ function Musical() {
 
     if (votoAtual) {
       const chaveAntiga = String(votoAtual)
-      await updateDoc(doc(db, "musicais", id), {
+
+      const musicalRef = doc(db, "musicais", id)
+      const snap = await getDoc(musicalRef)
+      const dist = snap.data()?.distribuicao || {}
+
+      const novaDistribuicao = {}
+      for (const k of Object.keys(dist)) {
+        novaDistribuicao[k] = Number(dist[k]) || 0
+      }
+      novaDistribuicao[chaveAntiga] = Math.max((novaDistribuicao[chaveAntiga] || 0) - 1, 0)
+      novaDistribuicao[chaveNova] = (novaDistribuicao[chaveNova] || 0) + 1
+
+      await updateDoc(musicalRef, {
         somaEstrelas: increment(estrelas - votoAtual),
-        [`distribuicao.${chaveAntiga}`]: increment(-1),
-        [`distribuicao.${chaveNova}`]: increment(1),
+        distribuicao: novaDistribuicao,
       })
       await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+
       setMusical(prev => ({
         ...prev,
         somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual),
-        distribuicao: {
-          ...prev.distribuicao,
-          [chaveAntiga]: Math.max((prev.distribuicao?.[chaveAntiga] || 1) - 1, 0),
-          [chaveNova]: (prev.distribuicao?.[chaveNova] || 0) + 1,
-        }
+        distribuicao: novaDistribuicao,
       }))
     } else {
+      const musicalRef = doc(db, "musicais", id)
+      const snap = await getDoc(musicalRef)
+      const dist = snap.data()?.distribuicao || {}
+
+      const novaDistribuicao = {}
+      for (const k of Object.keys(dist)) {
+        novaDistribuicao[k] = Number(dist[k]) || 0
+      }
+      novaDistribuicao[chaveNova] = (novaDistribuicao[chaveNova] || 0) + 1
+
       await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      await updateDoc(doc(db, "musicais", id), {
+      await updateDoc(musicalRef, {
         totalVotos: increment(1),
         somaEstrelas: increment(estrelas),
-        [`distribuicao.${chaveNova}`]: increment(1),
+        distribuicao: novaDistribuicao,
       })
+
       setMusical(prev => ({
         ...prev,
         totalVotos: prev.totalVotos + 1,
         somaEstrelas: prev.somaEstrelas + estrelas,
-        distribuicao: {
-          ...prev.distribuicao,
-          [chaveNova]: (prev.distribuicao?.[chaveNova] || 0) + 1,
-        }
+        distribuicao: novaDistribuicao,
       }))
     }
 
@@ -303,20 +319,29 @@ function Musical() {
 
   async function removerVoto() {
     const chave = String(votoAtual)
+
+    const musicalRef = doc(db, "musicais", id)
+    const snap = await getDoc(musicalRef)
+    const dist = snap.data()?.distribuicao || {}
+
+    const novaDistribuicao = {}
+    for (const k of Object.keys(dist)) {
+      novaDistribuicao[k] = Number(dist[k]) || 0
+    }
+    novaDistribuicao[chave] = Math.max((novaDistribuicao[chave] || 0) - 1, 0)
+
     await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
-    await updateDoc(doc(db, "musicais", id), {
+    await updateDoc(musicalRef, {
       totalVotos: increment(-1),
       somaEstrelas: increment(-votoAtual),
-      [`distribuicao.${chave}`]: increment(-1),
+      distribuicao: novaDistribuicao,
     })
+
     setMusical(prev => ({
       ...prev,
       totalVotos: prev.totalVotos - 1,
       somaEstrelas: prev.somaEstrelas - votoAtual,
-      distribuicao: {
-        ...prev.distribuicao,
-        [chave]: Math.max((prev.distribuicao?.[chave] || 1) - 1, 0),
-      }
+      distribuicao: novaDistribuicao,
     }))
     setVotoAtual(null)
     setConfirmandoRemocao(false)
@@ -679,7 +704,6 @@ function Musical() {
                 📅 Suas sessões
               </p>
 
-              {/* Chips das sessões existentes + botão nova sessão */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: mostrarFormSessao ? "16px" : "0" }}>
                 {sessoes.map(s => (
                   <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#fff", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "6px 14px" }}>
@@ -709,7 +733,6 @@ function Musical() {
                 )}
               </div>
 
-              {/* Formulário de nova sessão */}
               {mostrarFormSessao && (
                 <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "14px 16px" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "12px" }}>
@@ -743,7 +766,6 @@ function Musical() {
                     </div>
                   </div>
 
-                  {/* Toggle público/privado */}
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
                     <span style={{ fontSize: "13px", color: "#666" }}>
                       {novaSessaoPublica ? "🌐 Público — visível no seu perfil" : "🔒 Privado — só você vê"}
@@ -801,7 +823,7 @@ function Musical() {
 
           <hr className="divider" />
 
-          {musical.totalVotos > 0 && musical.distribuicao && (
+          {musical.totalVotos > 0 && musical.distribuicao && Object.keys(musical.distribuicao).length > 0 && (
             <div style={{ marginBottom: "24px", background: "#1a1a1a", borderRadius: "8px", padding: "16px 20px", display: "inline-block", minWidth: "280px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <span style={{ fontSize: "11px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.08em", color: "#888" }}>Avaliações</span>
@@ -824,9 +846,9 @@ function Musical() {
                 <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "32px", marginBottom: "6px" }}>
                   {["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map((chave, i, arr) => {
                     const d = musical.distribuicao || {}
-                    const val = d[chave] || 0
-                    const maxVal = Math.max(...arr.map(k => d[k] || 0))
-                    const altura = maxVal > 0 ? Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0) : 0
+                    const val = Number(d[chave]) || 0
+                    const maxVal = Math.max(...arr.map(k => Number(d[k]) || 0), 1)
+                    const altura = Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0)
                     const pct = musical.totalVotos > 0 ? Math.round((val / musical.totalVotos) * 100) : 0
                     const posX = `${(i / (arr.length - 1)) * 100}%`
                     return (
