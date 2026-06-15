@@ -46,6 +46,7 @@ function Perfil() {
 
   const [sessoesPorMusical, setSessoesPorMusical] = useState({})
   const [sessoesExpandidas, setSessoesExpandidas] = useState({})
+  const [tabAtiva, setTabAtiva] = useState("avaliacoes")
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
@@ -336,7 +337,7 @@ function Perfil() {
 
       <div style={{ marginBottom: "32px" }}>
         {fotoPerfil && (
-          <img src={fotoPerfil} alt={nomePerfil} style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }} />
+          <img src={fotoPerfil} alt={nomePerfil} style={{ width: "96px", height: "96px", borderRadius: "50%", marginBottom: "16px", border: "3px solid #F5C518" }} />
         )}
         <h1 className="page-title" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
           {nomePerfil || "Usuario"}
@@ -399,17 +400,26 @@ function Perfil() {
       </div>
 
       {/* NAVEGAÇÃO INTERNA */}
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '0 0 32px 0' }}>
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '0 0 8px 0' }}>
+        <a href="#top3" style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
+          ✦ Top 3
+        </a>
+      </div>
+      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0' }}>
         {[
-          { href: '#top3', label: '✦ Top 3' },
-          { href: '#avaliacoes', label: 'Avaliações' },
-          { href: '#ja-vi', label: 'Já vi' },
-          { href: '#quero-ver', label: 'Quero ver' },
-          { href: '#comentarios', label: 'Comentários' },
-        ].map(({ href, label }) => (
-          <a key={href} href={href} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
-            {label}
-          </a>
+          { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
+          { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
+          { id: 'quero-ver', label: `Quero ver (${queroVer.length})` },
+          { id: 'comentarios', label: `Comentários (${comentarios.length})` },
+        ].map(tab => (
+          <button key={tab.id} onClick={() => setTabAtiva(tab.id)} style={{
+            background: 'none', border: 'none', borderBottom: tabAtiva === tab.id ? '2px solid #F5C518' : '2px solid transparent',
+            marginBottom: '-2px', padding: '10px 16px', fontFamily: "'DM Sans', sans-serif",
+            fontSize: '14px', fontWeight: tabAtiva === tab.id ? '600' : '400',
+            color: tabAtiva === tab.id ? '#1a1a1a' : '#888', cursor: 'pointer', whiteSpace: 'nowrap'
+          }}>
+            {tab.label}
+          </button>
         ))}
       </div>
 
@@ -480,104 +490,112 @@ function Perfil() {
         )}
       </div>
 
-      {/* AVALIACOES */}
-      <div id="avaliacoes" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
-        {isProprioPerfil && (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "13px", color: "#888" }}>{avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}</span>
-            <div onClick={toggleAvaliacoesPublicas} style={{ width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer", backgroundColor: avaliacoesPublicas ? "#F5C518" : "#555", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-              <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: avaliacoesPublicas ? "23px" : "3px", transition: "left 0.2s" }} />
+      {/* CONTEÚDO DAS TABS */}
+      {tabAtiva === "avaliacoes" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
+            {isProprioPerfil && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "13px", color: "#888" }}>{avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}</span>
+                <div onClick={toggleAvaliacoesPublicas} style={{ width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer", backgroundColor: avaliacoesPublicas ? "#F5C518" : "#555", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                  <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: avaliacoesPublicas ? "23px" : "3px", transition: "left 0.2s" }} />
+                </div>
+              </div>
+            )}
+          </div>
+          {(isProprioPerfil || avaliacoesPublicas) ? (
+            votos.length === 0 ? (
+              <p className="login-aviso">
+                {isProprioPerfil
+                  ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+                  : "Este usuário ainda não fez nenhuma avaliação."
+                }
+              </p>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+                {votos.map(voto => {
+                  const musical = musicais[voto.musicalId]
+                  if (!musical) return null
+                  return cardMusical({ id: voto.musicalId, musicalId: voto.musicalId, ...musical }, <div className="rating-badge">★ {voto.estrelas}</div>)
+                })}
+              </div>
+            )
+          ) : (
+            <p className="login-aviso">Este usuário optou por manter suas avaliações privadas.</p>
+          )}
+        </div>
+      )}
+
+      {tabAtiva === "ja-vi" && (
+        <div>
+          {jaVi.length === 0 ? (
+            <p className="login-aviso">
+              {isProprioPerfil
+                ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+                : "Este usuário ainda não marcou nenhum musical como visto."
+              }
+            </p>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+              {jaVi.map(item => cardJaVi(item))}
             </div>
-          </div>
-        )}
-      </div>
-
-      {(isProprioPerfil || avaliacoesPublicas) ? (
-        votos.length === 0 ? (
-          <p className="login-aviso" style={{ marginBottom: "32px" }}>
-            {isProprioPerfil
-              ? <>Você ainda não avaliou nenhum musical. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-              : "Este usuário ainda não fez nenhuma avaliação."
-            }
-          </p>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-            {votos.map(voto => {
-              const musical = musicais[voto.musicalId]
-              if (!musical) return null
-              return cardMusical({ id: voto.musicalId, musicalId: voto.musicalId, ...musical }, <div className="rating-badge">★ {voto.estrelas}</div>)
-            })}
-          </div>
-        )
-      ) : (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>Este usuário optou por manter suas avaliações privadas.</p>
-      )}
-
-      {/* JA VI */}
-      <h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Já vi ({jaVi.length})</h2>
-      {jaVi.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>
-          {isProprioPerfil
-            ? <>Você ainda não marcou nenhum musical como visto. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-            : "Este usuário ainda não marcou nenhum musical como visto."
-          }
-        </p>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {jaVi.map(item => cardJaVi(item))}
+          )}
+          {isProprioPerfil && jaViSemAvaliacao.length > 0 && (
+            <div style={{ marginTop: "32px" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", marginBottom: "8px" }}>Ainda não avaliei ({jaViSemAvaliacao.length})</h3>
+              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Musicais que você marcou como "Já vi" mas ainda não deu uma nota.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+                {jaViSemAvaliacao.map(item => cardJaVi(item))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* JA VI SEM AVALIACAO */}
-      {isProprioPerfil && jaViSemAvaliacao.length > 0 && (
-        <>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>Já vi, mas não avaliei ({jaViSemAvaliacao.length})</h2>
-          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Musicais que você marcou como "Já vi" mas ainda não deu uma nota.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-            {jaViSemAvaliacao.map(item => cardJaVi(item))}
-          </div>
-        </>
-      )}
-
-      {/* QUERO VER */}
-      <h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>
-      {queroVer.length === 0 ? (
-        <p className="login-aviso" style={{ marginBottom: "32px" }}>
-          {isProprioPerfil
-            ? <>Você ainda não adicionou nenhum musical à sua lista. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-            : "Este usuário ainda não tem musicais na lista."
-          }
-        </p>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-          {queroVer.map(item => cardMusical(item, <p className="card-meta">Direcao: {item.direcao || "—"}</p>))}
+      {tabAtiva === "quero-ver" && (
+        <div>
+          {queroVer.length === 0 ? (
+            <p className="login-aviso">
+              {isProprioPerfil
+                ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+                : "Este usuário ainda não tem musicais na lista."
+              }
+            </p>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+              {queroVer.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* COMENTARIOS */}
-      <h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentários ({comentarios.length})</h2>
-      {comentarios.length === 0 ? (
-        <p className="login-aviso">
-          {isProprioPerfil
-            ? <>Você ainda não fez nenhum comentário. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-            : "Este usuário ainda não fez nenhum comentário."
-          }
-        </p>
-      ) : (
-        comentarios.map(c => {
-          const musical = musicais[c.musicalId]
-          return (
-            <a key={c.id} href={"/musical/" + c.musicalId} className="comentario-item"
-              style={{ display: "block", textDecoration: "none", color: "inherit", cursor: "pointer" }}
-            >
-              <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "4px" }}>{musical?.titulo}</p>
-              <p className="comentario-texto">{c.texto}</p>
-            </a>
-          )
-        })
+      {tabAtiva === "comentarios" && (
+        <div>
+          {comentarios.length === 0 ? (
+            <p className="login-aviso">
+              {isProprioPerfil
+                ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
+                : "Este usuário ainda não fez nenhum comentário."
+              }
+            </p>
+          ) : (
+            comentarios.map(c => {
+              const musical = musicais[c.musicalId]
+              return (
+                <a key={c.id} href={"/musical/" + c.musicalId} className="comentario-item"
+                  style={{ display: "block", textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                >
+                  <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "4px" }}>{musical?.titulo}</p>
+                  <p className="comentario-texto">{c.texto}</p>
+                </a>
+              )
+            })
+          )}
+        </div>
       )}
     </main>
   )
 }
 
 export default Perfil
+
