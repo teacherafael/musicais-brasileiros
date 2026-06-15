@@ -73,8 +73,13 @@ function Stats() {
       const anosSorted = Object.entries(anoCount).sort((a, b) => a[0].localeCompare(b[0]))
       const maxPorAno = Math.max(...anosSorted.map(([, v]) => v))
 
+      // Usuários
+      const usuariosSnap = await getDocs(collection(db, "usuarios"))
+      const totalUsuarios = usuariosSnap.size
+
       setStats({
         totalMusicais, totalVotos, totalComentarios, mediaNota,
+        totalUsuarios,
         top3Votados, top3Avaliados, top3Comentados,
         notaMaisAlta, dirMaisFrequente, teatroMaisFrequente,
         anosSorted, maxPorAno, comentariosPorMusical
@@ -141,6 +146,7 @@ function Stats() {
       <h2 style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 12px" }}>Números gerais</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px", marginBottom: "40px" }}>
         {bloco("Total de musicais", stats.totalMusicais)}
+        {bloco("Usuários cadastrados", stats.totalUsuarios)}
         {bloco("Total de avaliações", stats.totalVotos)}
         {bloco("Total de comentários", stats.totalComentarios)}
         {bloco("Nota média geral", `★ ${stats.mediaNota.toFixed(2)}`)}
