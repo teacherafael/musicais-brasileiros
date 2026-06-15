@@ -15,6 +15,7 @@ const ALIASES = {
 "maria bia martins": "Maria Bia",
 "leonardo wagner": "Leo Wagner",
 "andressa massei": "Andrezza Massei",
+"andré gomes": "André Ulo",
   "nome antigo": "Nome Atual",
   "outro nome antigo": "Nome Atual",
   
