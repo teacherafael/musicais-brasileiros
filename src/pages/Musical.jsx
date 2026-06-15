@@ -668,45 +668,75 @@ function Musical() {
             </div>
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
-              <p className="musical-meta"><strong>Direção:</strong> {nomesClicaveis(musical.direcao) || "—"}</p>
-              {musical.direcaoMusical && <p className="musical-meta"><strong>Direção musical:</strong> {nomesClicaveis(musical.direcaoMusical)}</p>}
-              {musical.producao && <p className="musical-meta"><strong>Produção:</strong> {nomesClicaveis(musical.producao)}</p>}
-              {musical.ano && <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>}
-              {musical.teatro && (() => {
-                const t = encontrarTeatroPorNome(musical.teatro);
-                return (
-                  <p className="musical-meta">
-                    <strong>Teatro de estreia:</strong>{" "}
-                    {t ? (
-                      <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>
-                        {musical.teatro}
-                      </Link>
-                    ) : (
-                      musical.teatro
-                    )}
-                  </p>
-                );
-              })()}
-              {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
-              {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
-              {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
-              {media ? (
-                <div className="rating-grande">
-                  ★ {media}
-                  <span className="rating-grande-label">{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
+
+              {/* Metadados principais — maior destaque */}
+              <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
+                {nomesClicaveis(musical.direcao) || "—"}
+              </p>
+              {musical.direcaoMusical && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}
+                  {nomesClicaveis(musical.direcaoMusical)}
+                </p>
+              )}
+              {musical.producao && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Produção:</strong>{" "}
+                  {nomesClicaveis(musical.producao)}
+                </p>
+              )}
+
+              {/* Metadados secundários — menor destaque */}
+              <div style={{ marginTop: "4px", marginBottom: "4px" }}>
+                {musical.ano && (
+                  <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>
+                )}
+                {musical.teatro && (() => {
+                  const t = encontrarTeatroPorNome(musical.teatro);
+                  return (
+                    <p className="musical-meta">
+                      <strong>Teatro de estreia:</strong>{" "}
+                      {t ? (
+                        <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>
+                          {musical.teatro}
+                        </Link>
+                      ) : (
+                        musical.teatro
+                      )}
+                    </p>
+                  );
+                })()}
+                {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
+                {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
+                {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
+              </div>
+
+              {/* Nota em destaque */}
+              <div style={{ margin: "16px 0 12px" }}>
+                {media ? (
+                  <div style={{ display: "inline-flex", alignItems: "baseline", gap: "10px", background: "#1a1a1a", borderRadius: "10px", padding: "10px 20px" }}>
+                    <span style={{ fontSize: "32px", fontWeight: "700", color: "#F5C518", lineHeight: 1 }}>★ {media}</span>
+                    <span style={{ fontSize: "13px", color: "#888" }}>{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
+                  </div>
+                ) : (
+                  <div style={{ display: "inline-flex", alignItems: "baseline", gap: "10px", background: "#1a1a1a", borderRadius: "10px", padding: "10px 20px" }}>
+                    <span style={{ fontSize: "24px", fontWeight: "700", color: "#555", lineHeight: 1 }}>—</span>
+                    <span style={{ fontSize: "13px", color: "#888" }}>sem votos ainda</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Botões admin separados e discretos */}
+              {usuario && usuario.uid === ADMIN_UID && (
+                <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
+                  <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>
+                    ✏️ Editar
+                  </button>
+                  <button onClick={toggleDestaque} style={{ background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: musical.destaque ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
+                    {musical.destaque ? "★ Em destaque" : "☆ Destaque"}
+                  </button>
                 </div>
-              ) : (
-                <div className="rating-grande">— <span className="rating-grande-label">sem votos ainda</span></div>
-              )}
-              {usuario && usuario.uid === ADMIN_UID && (
-                <button onClick={abrirEdicao} style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
-                  ✏️ Editar musical
-                </button>
-              )}
-              {usuario && usuario.uid === ADMIN_UID && (
-                <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
-                  {musical.destaque ? "★ Em destaque" : "☆ Colocar em destaque"}
-                </button>
               )}
             </div>
           </div>
