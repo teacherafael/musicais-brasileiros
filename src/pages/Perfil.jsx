@@ -191,8 +191,14 @@ function Perfil() {
     if (top3Selecionado.includes(musicalId)) {
       setTop3Selecionado(prev => prev.filter(id => id !== musicalId))
     } else {
-      if (top3Selecionado.length >= 3) return alert("Voce ja selecionou 3 musicais.")
-      setTop3Selecionado(prev => [...prev, musicalId])
+      if (top3Selecionado.length >= 5) return alert("Voce ja selecionou 5 musicais.")
+      setTop3Selecionado(prev => {
+        const novo = [...prev]
+        const primeiroVazio = [0, 1, 2, 3, 4].find(i => !novo[i])
+        if (primeiroVazio !== undefined) novo[primeiroVazio] = musicalId
+        else novo.push(musicalId)
+        return novo
+      })
     }
   }
 
@@ -401,8 +407,8 @@ function Perfil() {
 
       {/* NAVEGAÇÃO INTERNA */}
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '0 0 8px 0' }}>
-        <a href="#top3" style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
-          ✦ Top 3
+        <a href="#top5" style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
+          ✦ Top 5
         </a>
       </div>
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0' }}>
@@ -423,10 +429,10 @@ function Perfil() {
         ))}
       </div>
 
-      {/* TOP 3 */}
-      <div id="top3" style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
+      {/* TOP 5 */}
+      <div id="top5" style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 5</h2>
           {isProprioPerfil && !editandoTop3 && (
             <button onClick={() => { setTop3Selecionado(top3.map(t => t.musicalId)); setEditandoTop3(true) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}>
               ✏️ Editar
@@ -435,7 +441,26 @@ function Perfil() {
         </div>
         {editandoTop3 ? (
           <div>
-            <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>Selecione ate 3 musicais favoritos ({top3Selecionado.length}/3)</p>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+              {[0, 1, 2, 3, 4].map(pos => {
+                const id = top3Selecionado[pos]
+                const m = id ? musicais[id] : null
+                return (
+                  <div key={pos} style={{ flex: "1 1 140px", background: "#2a2a2a", border: "2px solid #F5C518", borderRadius: "8px", padding: "8px", minHeight: "60px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "700", flexShrink: 0 }}>{pos + 1}</span>
+                    {m ? (
+                      <>
+                        <span style={{ fontSize: "12px", color: "#fff", flex: 1, lineHeight: "1.3" }}>{m.titulo}</span>
+                        <button onClick={() => setTop3Selecionado(prev => prev.filter((_, i) => i !== pos))} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "14px", padding: 0, flexShrink: 0 }}>✕</button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "#555", fontStyle: "italic" }}>vazio</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>Selecione até 5 musicais favoritos ({top3Selecionado.length}/5)</p>
             <input type="text" placeholder="Buscar musical..." value={buscaTop3} onChange={e => setBuscaTop3(e.target.value)}
               style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "12px" }}
             />
@@ -452,7 +477,11 @@ function Perfil() {
                     <p style={{ fontSize: "14px", fontWeight: "500", color: "#fff" }}>{m.titulo}</p>
                     <p style={{ fontSize: "12px", color: "#666" }}>{m.direcao || "—"}</p>
                   </div>
-                  {top3Selecionado.includes(m.id) && <span style={{ color: "#F5C518", fontSize: "18px" }}>★</span>}
+                  {top3Selecionado.includes(m.id) && (
+                    <span style={{ background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "20px", height: "20px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "700" }}>
+                      {top3Selecionado.indexOf(m.id) + 1}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -463,26 +492,26 @@ function Perfil() {
           </div>
         ) : top3.length === 0 ? (
           <p style={{ fontSize: "14px", color: "#666", fontStyle: "italic" }}>
-            {isProprioPerfil ? "Clique em editar para escolher seus 3 musicais favoritos." : "Nenhum favorito definido ainda."}
+            {isProprioPerfil ? "Clique em editar para escolher seus 5 musicais favoritos." : "Nenhum favorito definido ainda."}
           </p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
             {top3.map((item, i) => (
               <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
-                style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518" }}
+                style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518", padding: "8px" }}
               >
-                <div style={{ position: "absolute", top: "8px", left: "8px", background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "700", zIndex: 1 }}>
+                <div style={{ position: "absolute", top: "6px", left: "6px", background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "700", zIndex: 1 }}>
                   {i + 1}
                 </div>
-                <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
+                <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "8px" }}>
                   {item.capa
-                    ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                    : <div style={{ width: "100%", height: "100%", background: "#333", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
+                    ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }} />
+                    : <div style={{ width: "100%", height: "100%", background: "#333", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
                   }
                 </div>
                 <div style={{ width: "100%" }}>
-                  <p className="card-titulo">{item.titulo}</p>
-                  <p className="card-meta">Direcao: {item.direcao || "—"}</p>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "12px", fontWeight: "700", marginBottom: "2px", lineHeight: "1.3" }}>{item.titulo}</p>
+                  <p style={{ fontSize: "11px", color: "#666" }}>Dir. {item.direcao || "—"}</p>
                 </div>
               </a>
             ))}
@@ -598,4 +627,3 @@ function Perfil() {
 }
 
 export default Perfil
-
