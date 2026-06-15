@@ -35,18 +35,13 @@ header {
 .logo > span:first-child {
   color: #ffffff;
 }
+
 .logo-subtitulo {
   font-size: 19px;
   font-weight: 400;
   color: #aaa !important;
   letter-spacing: 0.1px;
   font-family: 'DM Sans', sans-serif;
-}
-
-@media (max-width: 600px) {
-  .logo-subtitulo {
-    display: none;
-  }
 }
 
 .header-right {
@@ -70,7 +65,7 @@ header {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.2s ease;
 }
 
 .btn-login:hover {
@@ -86,7 +81,7 @@ header {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-sair:hover {
@@ -126,13 +121,13 @@ main {
   align-items: center;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .card-musical:hover {
   border-color: #F5C518;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
@@ -192,32 +187,6 @@ main {
   gap: 24px;
   align-items: flex-start;
   margin-bottom: 24px;
-}
-
-@media (max-width: 600px) {
-  .musical-header {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .musical-poster {
-    width: 200px !important;
-    height: 280px !important;
-  }
-
-  .musical-titulo {
-    font-size: 24px !important;
-    text-align: center;
-  }
-
-  .musical-meta {
-    text-align: center;
-  }
-
-  .rating-grande {
-    display: flex;
-    justify-content: center;
-  }
 }
 
 .musical-poster {
@@ -350,6 +319,7 @@ main {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .btn-comentar:hover {
@@ -390,6 +360,7 @@ main {
   background: none;
   border: none;
   font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s ease;
 }
 
 .voltar:hover { color: #1a1a1a; }
@@ -415,7 +386,36 @@ main {
   overflow-y: auto;
 }
 
-/* No mobile a sidebar some e o main volta ao tamanho original */
+/* ── EMPTY STATES ── */
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #888;
+}
+
+.empty-state-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.empty-state-titulo {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #444;
+}
+
+.empty-state-subtitulo {
+  font-size: 14px;
+  color: #888;
+}
+
+/* ── CURSOR POINTER GLOBAL ── */
+a, button, [onClick], [role="button"] {
+  cursor: pointer;
+}
+
+/* ── MOBILE ── */
 @media (max-width: 768px) {
   .sidebar-comentarios {
     display: none;
@@ -427,46 +427,67 @@ main {
 }
 
 @media (max-width: 600px) {
+  .logo-subtitulo {
+    display: none;
+  }
+
   .grid-musicais {
     grid-template-columns: repeat(2, 1fr) !important;
   }
+
   .header-user-nome {
     display: none;
   }
-  @media (max-width: 600px) {
-  .grid-musicais {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-  .header-user-nome {
-    display: none;
-  }
+
   .btn-login-texto-completo {
     display: none;
   }
+
   .btn-login-texto-curto {
     display: inline;
   }
+
   header {
     padding: 12px 16px;
     gap: 8px;
   }
+
   .header-right {
     gap: 8px;
   }
-}
-.btn-sair {
+
+  .btn-sair {
     padding: 10px 14px;
     min-height: 44px;
   }
+
   .btn-login {
     padding: 10px 16px;
     min-height: 44px;
   }
-  .btn-login-texto-completo {
-    display: none;
+
+  .musical-header {
+    flex-direction: column;
+    align-items: center;
   }
-  .btn-login-texto-curto {
-    display: inline;
+
+  .musical-poster {
+    width: 200px !important;
+    height: 280px !important;
+  }
+
+  .musical-titulo {
+    font-size: 24px !important;
+    text-align: center;
+  }
+
+  .musical-meta {
+    text-align: center;
+  }
+
+  .rating-grande {
+    display: flex;
+    justify-content: center;
   }
 }
 
