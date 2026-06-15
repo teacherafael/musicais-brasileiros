@@ -14,6 +14,7 @@ body {
 header {
   background: #1a1a1a;
   padding: 14px 32px;
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -427,10 +428,39 @@ main {
 
 @media (max-width: 600px) {
   .grid-musicais {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
   }
   .header-user-nome {
     display: none;
+  }
+  @media (max-width: 600px) {
+  .grid-musicais {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .header-user-nome {
+    display: none;
+  }
+  .btn-login-texto-completo {
+    display: none;
+  }
+  .btn-login-texto-curto {
+    display: inline;
+  }
+  header {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .header-right {
+    gap: 8px;
+  }
+}
+.btn-sair {
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+  .btn-login {
+    padding: 10px 16px;
+    min-height: 44px;
   }
   .btn-login-texto-completo {
     display: none;
