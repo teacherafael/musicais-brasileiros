@@ -9,7 +9,7 @@ import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 
-const ADMIN_UID = ["LFDNXIXywqQrLsDLobaGzOOmok03", "ddN3y50zE5X56aQPQzhL17hw8m83"];
+const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
 
 function SeloVerificado() {
   return (
@@ -117,10 +117,10 @@ function Musical() {
   const [sessoes, setSessoes] = useState([])
   const [mostrarFormSessao, setMostrarFormSessao] = useState(false)
   const [novaData, setNovaData] = useState("")
+  const [novoHorario, setNovoHorario] = useState("")
   const [novoAssento, setNovoAssento] = useState("")
   const [novaSessaoPublica, setNovaSessaoPublica] = useState(true)
   const [salvandoSessao, setSalvandoSessao] = useState(false)
-  const [novoHorario, setNovoHorario] = useState("")
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -196,19 +196,18 @@ function Musical() {
     buscarEstados()
   }, [usuario, id])
 
-  // Buscar sessões do usuário para este musical
   useEffect(() => {
     async function buscarSessoes() {
       if (!usuario) return
-      const snap = await getDocs(
-        query(
-          collection(db, "usuarios", usuario.uid, "sessoesAssistidas"),
-        )
-      )
+      const snap = await getDocs(collection(db, "usuarios", usuario.uid, "sessoesAssistidas"))
       const lista = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .filter(s => s.musicalId === id)
-        .sort((a, b) => (a.data > b.data ? -1 : 1))
+        .sort((a, b) => {
+          const da = a.data + (a.horario || "")
+          const db2 = b.data + (b.horario || "")
+          return da > db2 ? -1 : 1
+        })
       setSessoes(lista)
     }
     buscarSessoes()
@@ -359,20 +358,23 @@ function Musical() {
     if (!novaData) return mostrarToast("Informe a data da sessão.")
     setSalvandoSessao(true)
     const novaSessao = {
-  musicalId: id,
-  titulo: musical.titulo,
-  capa: musical.capa || null,
-  direcao: musical.direcao || "",
-  data: novaData,
-  horario: novoHorario.trim(),
-  assento: novoAssento.trim(),
-  publico: novaSessaoPublica,
-}
-    const docRef = await addDoc(
-      collection(db, "usuarios", usuario.uid, "sessoesAssistidas"),
-      novaSessao
+      musicalId: id,
+      titulo: musical.titulo,
+      capa: musical.capa || null,
+      direcao: musical.direcao || "",
+      data: novaData,
+      horario: novoHorario.trim(),
+      assento: novoAssento.trim(),
+      publico: novaSessaoPublica,
+    }
+    const docRef = await addDoc(collection(db, "usuarios", usuario.uid, "sessoesAssistidas"), novaSessao)
+    setSessoes(prev =>
+      [{ id: docRef.id, ...novaSessao }, ...prev].sort((a, b) => {
+        const da = a.data + (a.horario || "")
+        const db2 = b.data + (b.horario || "")
+        return da > db2 ? -1 : 1
+      })
     )
-    setSessoes(prev => [{ id: docRef.id, ...novaSessao }, ...prev].sort((a, b) => (a.data > b.data ? -1 : 1)))
     setNovaData("")
     setNovoHorario("")
     setNovoAssento("")
@@ -393,6 +395,13 @@ function Musical() {
     if (!dataStr) return ""
     const [ano, mes, dia] = dataStr.split("-")
     return `${dia}/${mes}/${ano}`
+  }
+
+  function labelChip(s) {
+    let label = formatarData(s.data)
+    if (s.horario) label += ` · ${s.horario}`
+    if (s.assento) label += ` · ${s.assento}`
+    return label
   }
 
   async function gerarImagem() {
@@ -638,13 +647,13 @@ function Musical() {
               ) : (
                 <div className="rating-grande">— <span className="rating-grande-label">sem votos ainda</span></div>
               )}
-              {usuario && ADMIN_UID.includes(usuario.uid) && (
-  <button onClick={abrirEdicao} style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              {usuario && usuario.uid === ADMIN_UID && (
+                <button onClick={abrirEdicao} style={{ marginTop: "12px", background: "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                   ✏️ Editar musical
                 </button>
               )}
-              {usuario && ADMIN_UID.includes(usuario.uid) && (
-  <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
+              {usuario && usuario.uid === ADMIN_UID && (
+                <button onClick={toggleDestaque} style={{ marginTop: "8px", background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ccc", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: musical.destaque ? "#1a1a1a" : "#888", cursor: "pointer" }}>
                   {musical.destaque ? "★ Em destaque" : "☆ Colocar em destaque"}
                 </button>
               )}
@@ -663,76 +672,76 @@ function Musical() {
             </button>
           </div>
 
-          {/* BLOCO DE SESSÕES — aparece só se o usuário estiver logado e tiver marcado "Já vi" */}
+          {/* BLOCO DE SESSÕES */}
           {usuario && jaVi && (
             <div style={{ marginBottom: "24px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px 20px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#555", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
+              <p style={{ fontSize: "11px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
                 📅 Suas sessões
               </p>
 
-              {/* Lista de sessões já registradas */}
-              {sessoes.length > 0 && (
-                <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {sessoes.map(s => (
-                    <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "10px 14px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a1a" }}>
-  {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}
-</span>
-                        {s.assento && (
-                          <span style={{ fontSize: "13px", color: "#666" }}>
-                            🪑 {s.assento}
-                          </span>
-                        )}
-                        <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#999", background: s.publico ? "#eaf7ee" : "#f0f0f0", borderRadius: "20px", padding: "2px 8px" }}>
-                          {s.publico ? "🌐 Público" : "🔒 Privado"}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => deletarSessao(s.id)}
-                        style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: "16px", flexShrink: 0, padding: "0 4px" }}
-                        title="Remover sessão"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Chips das sessões existentes + botão nova sessão */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: mostrarFormSessao ? "16px" : "0" }}>
+                {sessoes.map(s => (
+                  <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#fff", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "6px 14px" }}>
+                    <span style={{ fontSize: "13px", fontWeight: "500", color: "#1a1a1a" }}>
+                      {labelChip(s)}
+                    </span>
+                    <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>
+                      {s.publico ? "🌐" : "🔒"}
+                    </span>
+                    <button
+                      onClick={() => deletarSessao(s.id)}
+                      style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: "13px", padding: "0", lineHeight: 1, display: "flex", alignItems: "center" }}
+                      title="Remover sessão"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+
+                {!mostrarFormSessao && (
+                  <button
+                    onClick={() => setMostrarFormSessao(true)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
+                  >
+                    + Nova sessão
+                  </button>
+                )}
+              </div>
 
               {/* Formulário de nova sessão */}
-              {mostrarFormSessao ? (
+              {mostrarFormSessao && (
                 <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "14px 16px" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "12px" }}>
-  <div style={{ flex: "1 1 140px" }}>
-    <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Data</label>
-    <input
-      type="date"
-      value={novaData}
-      onChange={e => setNovaData(e.target.value)}
-      style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-    />
-  </div>
-  <div style={{ flex: "1 1 100px" }}>
-    <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Horário (opcional)</label>
-    <input
-      type="time"
-      value={novoHorario}
-      onChange={e => setNovoHorario(e.target.value)}
-      style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-    />
-  </div>
-  <div style={{ flex: "2 1 200px" }}>
-    <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
-    <input
-      type="text"
-      value={novoAssento}
-      onChange={e => setNovoAssento(e.target.value)}
-      placeholder="ex: Plateia A, fileira 10, cadeira 5"
-      style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-    />
-  </div>
-</div>
+                    <div style={{ flex: "1 1 130px" }}>
+                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Data</label>
+                      <input
+                        type="date"
+                        value={novaData}
+                        onChange={e => setNovaData(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                      />
+                    </div>
+                    <div style={{ flex: "1 1 100px" }}>
+                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Horário (opcional)</label>
+                      <input
+                        type="time"
+                        value={novoHorario}
+                        onChange={e => setNovoHorario(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                      />
+                    </div>
+                    <div style={{ flex: "2 1 180px" }}>
+                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
+                      <input
+                        type="text"
+                        value={novoAssento}
+                        onChange={e => setNovoAssento(e.target.value)}
+                        placeholder="ex: Plateia A, fileira 10, cadeira 5"
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                      />
+                    </div>
+                  </div>
 
                   {/* Toggle público/privado */}
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
@@ -757,30 +766,14 @@ function Musical() {
                   </div>
 
                   <div style={{ display: "flex", gap: "10px" }}>
-                    <button
-                      onClick={salvarSessao}
-                      disabled={salvandoSessao}
-                      className="btn-comentar"
-                      style={{ fontSize: "13px", padding: "7px 16px" }}
-                    >
+                    <button onClick={salvarSessao} disabled={salvandoSessao} className="btn-comentar" style={{ fontSize: "13px", padding: "7px 16px" }}>
                       {salvandoSessao ? "Salvando..." : "Salvar"}
                     </button>
-                    <button
-                      onClick={() => { setMostrarFormSessao(false); setNovaData(""); setNovoAssento(""); setNovaSessaoPublica(true) }}
-                      className="btn-sair"
-                      style={{ fontSize: "13px", padding: "7px 16px" }}
-                    >
+                    <button onClick={() => { setMostrarFormSessao(false); setNovaData(""); setNovoHorario(""); setNovoAssento(""); setNovaSessaoPublica(true) }} className="btn-sair" style={{ fontSize: "13px", padding: "7px 16px" }}>
                       Cancelar
                     </button>
                   </div>
                 </div>
-              ) : (
-                <button
-                  onClick={() => setMostrarFormSessao(true)}
-                  style={{ background: "none", border: "1px dashed #ccc", borderRadius: "8px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer", width: "100%" }}
-                >
-                  + Registrar nova sessão
-                </button>
               )}
             </div>
           )}
@@ -842,11 +835,9 @@ function Musical() {
                         onMouseLeave={() => setTooltipHistograma(null)}
                       >
                         <div style={{
-                          width: "100%",
-                          height: altura + "%",
+                          width: "100%", height: altura + "%",
                           background: Number(chave) % 1 !== 0 ? "#b8960a" : "#F5C518",
-                          borderRadius: "2px 2px 0 0",
-                          minHeight: val > 0 ? "2px" : "0"
+                          borderRadius: "2px 2px 0 0", minHeight: val > 0 ? "2px" : "0"
                         }} />
                       </div>
                     )
@@ -879,10 +870,7 @@ function Musical() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setConfirmandoRemocao(true)}
-                  style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, textDecoration: "underline" }}
-                >
+                <button onClick={() => setConfirmandoRemocao(true)} style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, textDecoration: "underline" }}>
                   Remover avaliação
                 </button>
               )}
@@ -923,11 +911,7 @@ function Musical() {
 
           {usuario ? (
             <div className="comentario-form">
-              <textarea
-                value={textoComentario}
-                onChange={e => setTextoComentario(e.target.value)}
-                placeholder="Escreva um comentário..."
-              />
+              <textarea value={textoComentario} onChange={e => setTextoComentario(e.target.value)} placeholder="Escreva um comentário..." />
               <p style={{ fontSize: "16px", color: "#8d6e01", marginBottom: "8px" }}>
                 Lembre-se de manter sua crítica respeitosa e sem ataques gratuitos ao espetáculo.
               </p>
@@ -951,14 +935,9 @@ function Musical() {
                     <span style={{ marginLeft: "8px", color: "#b8960a", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
                   )}
                 </a>
-
                 {editandoComentario !== null && editandoComentario === c.id ? (
                   <div>
-                    <textarea
-                      value={textoEdicao}
-                      onChange={e => setTextoEdicao(e.target.value)}
-                      style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginBottom: "8px" }}
-                    />
+                    <textarea value={textoEdicao} onChange={e => setTextoEdicao(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginBottom: "8px" }} />
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button className="btn-comentar" onClick={() => salvarEdicao(c.id)}>Salvar</button>
                       <button className="btn-sair" onClick={() => setEditandoComentario(null)}>Cancelar</button>
@@ -972,23 +951,7 @@ function Musical() {
                         const count = reacoes[c.id]?.[emoji] || 0
                         const ativo = minhaReacao[c.id] === emoji
                         return (
-                          <button
-                            key={emoji}
-                            onClick={() => reagir(c.id, emoji)}
-                            style={{
-                              background: ativo ? "#F5C518" : "#e0e0e0",
-                              border: ativo ? "1px solid #F5C518" : "1px solid #e8e8e4",
-                              borderRadius: "99px",
-                              padding: "3px 10px",
-                              fontSize: "13px",
-                              cursor: "pointer",
-                              color: "#1a1a1a",
-                              fontFamily: "'DM Sans', sans-serif",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px"
-                            }}
-                          >
+                          <button key={emoji} onClick={() => reagir(c.id, emoji)} style={{ background: ativo ? "#F5C518" : "#e0e0e0", border: ativo ? "1px solid #F5C518" : "1px solid #e8e8e4", borderRadius: "99px", padding: "3px 10px", fontSize: "13px", cursor: "pointer", color: "#1a1a1a", fontFamily: "'DM Sans', sans-serif", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                             {emoji} {count > 0 && <span>{count}</span>}
                           </button>
                         )
@@ -997,12 +960,8 @@ function Musical() {
                     <div style={{ display: "flex", gap: "12px", marginTop: "8px", flexWrap: "wrap" }}>
                       {usuario && usuario.uid === c.userId && (
                         <>
-                          <button onClick={() => { setEditandoComentario(c.id); setTextoEdicao(c.texto) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>
-                            Editar
-                          </button>
-                          <button onClick={() => deletarComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0 }}>
-                            Apagar
-                          </button>
+                          <button onClick={() => { setEditandoComentario(c.id); setTextoEdicao(c.texto) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>Editar</button>
+                          <button onClick={() => deletarComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0 }}>Apagar</button>
                         </>
                       )}
                       {usuario && usuario.uid !== c.userId && (
@@ -1011,21 +970,14 @@ function Musical() {
                             <span style={{ fontSize: "13px", color: "#888" }}>Denúncia enviada!</span>
                           ) : denunciandoComentario === c.id ? (
                             <div style={{ width: "100%", marginTop: "8px" }}>
-                              <textarea
-                                value={textoDenuncia}
-                                onChange={e => setTextoDenuncia(e.target.value)}
-                                placeholder="Descreva o motivo da denúncia..."
-                                style={{ width: "100%", height: "70px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", marginBottom: "8px", resize: "none" }}
-                              />
+                              <textarea value={textoDenuncia} onChange={e => setTextoDenuncia(e.target.value)} placeholder="Descreva o motivo da denúncia..." style={{ width: "100%", height: "70px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", marginBottom: "8px", resize: "none" }} />
                               <div style={{ display: "flex", gap: "8px" }}>
                                 <button className="btn-comentar" onClick={() => enviarDenuncia(c)} style={{ fontSize: "13px", padding: "6px 14px" }}>Enviar</button>
                                 <button className="btn-sair" onClick={() => { setDenunciandoComentario(null); setTextoDenuncia("") }} style={{ fontSize: "13px", padding: "6px 14px" }}>Cancelar</button>
                               </div>
                             </div>
                           ) : (
-                            <button onClick={() => setDenunciandoComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#bbb", cursor: "pointer", padding: 0 }}>
-                              Denunciar
-                            </button>
+                            <button onClick={() => setDenunciandoComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#bbb", cursor: "pointer", padding: 0 }}>Denunciar</button>
                           )}
                         </>
                       )}

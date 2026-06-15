@@ -44,7 +44,6 @@ function Perfil() {
   const [mostrarSeguidores, setMostrarSeguidores] = useState(false)
   const [mostrarSeguindo, setMostrarSeguindo] = useState(false)
 
-  // Sessões: { [musicalId]: [{ id, data, assento, publico }, ...] }
   const [sessoesPorMusical, setSessoesPorMusical] = useState({})
   const [sessoesExpandidas, setSessoesExpandidas] = useState({})
 
@@ -84,9 +83,7 @@ function Perfil() {
       todosVotos.forEach((snap, i) => {
         const musicalId = musicalIds[i]
         snap.docs.forEach(d => {
-          if (d.id === userId) {
-            votosEncontrados.push({ musicalId, estrelas: d.data().estrelas })
-          }
+          if (d.id === userId) votosEncontrados.push({ musicalId, estrelas: d.data().estrelas })
         })
       })
 
@@ -122,16 +119,18 @@ function Perfil() {
         if (usuarioDoc.data().foto) setFotoUsuario(usuarioDoc.data().foto)
       }
 
-      // Organizar sessões por musicalId
       const sessoesPorId = {}
       sessoesSnap.docs.forEach(d => {
         const s = { id: d.id, ...d.data() }
         if (!sessoesPorId[s.musicalId]) sessoesPorId[s.musicalId] = []
         sessoesPorId[s.musicalId].push(s)
       })
-      // Ordenar cada lista por data decrescente
       Object.keys(sessoesPorId).forEach(mid => {
-        sessoesPorId[mid].sort((a, b) => (a.data > b.data ? -1 : 1))
+        sessoesPorId[mid].sort((a, b) => {
+          const da = a.data + (a.horario || "")
+          const db2 = b.data + (b.horario || "")
+          return da > db2 ? -1 : 1
+        })
       })
       setSessoesPorMusical(sessoesPorId)
 
@@ -154,10 +153,8 @@ function Perfil() {
   async function toggleSeguir() {
     if (!usuarioLogado) return alert("Voce precisa estar logado para seguir alguem.")
     setCarregandoSeguir(true)
-
     const refMeuSeguindo = doc(db, "usuarios", usuarioLogado.uid, "seguindo", userId)
     const refSeguidorDele = doc(db, "usuarios", userId, "seguidores", usuarioLogado.uid)
-
     if (jaSigo) {
       await Promise.all([deleteDoc(refMeuSeguindo), deleteDoc(refSeguidorDele)])
       setJaSigo(false)
@@ -169,14 +166,12 @@ function Perfil() {
       setJaSigo(true)
       setSeguidores(prev => [...prev, { id: usuarioLogado.uid, ...meusDados }])
     }
-
     setCarregandoSeguir(false)
   }
 
   async function salvarTop3() {
     const snap = await getDocs(collection(db, "usuarios", userId, "top3"))
     for (const d of snap.docs) await deleteDoc(d.ref)
-
     for (let i = 0; i < top3Selecionado.length; i++) {
       const m = musicais[top3Selecionado[i]]
       if (m) {
@@ -185,10 +180,7 @@ function Perfil() {
         })
       }
     }
-
-    const novoTop3 = top3Selecionado
-      .map((id, i) => ({ id, musicalId: id, ordem: i, ...musicais[id] }))
-      .filter(Boolean)
+    const novoTop3 = top3Selecionado.map((id, i) => ({ id, musicalId: id, ordem: i, ...musicais[id] })).filter(Boolean)
     setTop3(novoTop3)
     setEditandoTop3(false)
     setBuscaTop3("")
@@ -225,6 +217,13 @@ function Perfil() {
     return `${dia}/${mes}/${ano}`
   }
 
+  function labelChip(s) {
+    let label = formatarData(s.data)
+    if (s.horario) label += ` · ${s.horario}`
+    if (s.assento) label += ` · ${s.assento}`
+    return label
+  }
+
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = usuarioLogado && usuarioLogado.uid === ADMIN_UID
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
@@ -244,10 +243,7 @@ function Perfil() {
   )
 
   const cardMusical = (item, extra) => (
-    <a
-      key={item.id}
-      href={"/musical/" + item.musicalId}
-      className="card-musical"
+    <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
       style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
     >
       <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
@@ -263,19 +259,15 @@ function Perfil() {
     </a>
   )
 
-  // Card do "Já vi" com sessões expandíveis
   const cardJaVi = (item) => {
     const sessoes = sessoesPorMusical[item.musicalId] || []
-    // Visitantes só veem sessões públicas; dono vê todas
     const sessoesVisiveis = isProprioPerfil ? sessoes : sessoes.filter(s => s.publico)
     const expandido = sessoesExpandidas[item.musicalId]
     const temSessoes = sessoesVisiveis.length > 0
 
     return (
       <div key={item.id} style={{ display: "flex", flexDirection: "column" }}>
-        <a
-          href={"/musical/" + item.musicalId}
-          className="card-musical"
+        <a href={"/musical/" + item.musicalId} className="card-musical"
           style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
         >
           <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
@@ -290,35 +282,24 @@ function Perfil() {
           </div>
         </a>
 
-        {/* Botão de sessões — fora do <a> para não navegar */}
         {temSessoes && (
           <button
-            onClick={e => { e.preventDefault(); toggleSessoes(item.musicalId) }}
-            style={{
-              marginTop: "6px", background: "none", border: "1px solid #e8e8e4",
-              borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif",
-              fontSize: "12px", color: "#888", cursor: "pointer", textAlign: "left"
-            }}
+            onClick={() => toggleSessoes(item.musicalId)}
+            style={{ marginTop: "6px", background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer", textAlign: "left" }}
           >
             📅 {sessoesVisiveis.length} {sessoesVisiveis.length === 1 ? "sessão" : "sessões"} {expandido ? "▲" : "▼"}
           </button>
         )}
 
-        {/* Lista de sessões expandida */}
         {temSessoes && expandido && (
-          <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "6px" }}>
             {sessoesVisiveis.map(s => (
-              <div key={s.id} style={{ background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "7px 10px" }}>
-                <span style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a1a" }}>
-  {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}
-</span>
-                {s.assento && (
-                  <span style={{ fontSize: "12px", color: "#666", marginLeft: "8px" }}>
-                    🪑 {s.assento}
-                  </span>
-                )}
+              <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "5px 12px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "500", color: "#1a1a1a" }}>
+                  {labelChip(s)}
+                </span>
                 {isProprioPerfil && (
-                  <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa", marginLeft: "6px" }}>
+                  <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>
                     {s.publico ? "🌐" : "🔒"}
                   </span>
                 )}
@@ -330,19 +311,19 @@ function Perfil() {
     )
   }
 
-  const cardUsuario = (pessoa) => (
-    <a
-      key={pessoa.id}
-      href={"/perfil/" + pessoa.userId}
-      style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#f5f5f0" }}
-    >
-      {pessoa.foto
-        ? <img src={pessoa.foto} alt={pessoa.nome} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-        : <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "16px", flexShrink: 0 }}>👤</div>
-      }
-      <span style={{ fontSize: "14px", fontWeight: "500" }}>{pessoa.nome || "Usuario"}</span>
-    </a>
-  )
+  const cardUsuario = (pessoa) => {
+    return (
+      <a key={pessoa.id} href={"/perfil/" + pessoa.userId}
+        style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#f5f5f0" }}
+      >
+        {pessoa.foto
+          ? <img src={pessoa.foto} alt={pessoa.nome} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+          : <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "16px", flexShrink: 0 }}>👤</div>
+        }
+        <span style={{ fontSize: "14px", fontWeight: "500" }}>{pessoa.nome || "Usuario"}</span>
+      </a>
+    )
+  }
 
   const estiloContador = {
     background: "none", border: "none", padding: 0, fontSize: "14px", color: "#555",
@@ -357,25 +338,14 @@ function Perfil() {
         {fotoPerfil && (
           <img src={fotoPerfil} alt={nomePerfil} style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "12px" }} />
         )}
-
         <h1 className="page-title" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
           {nomePerfil || "Usuario"}
           {verificado && <SeloVerificado />}
         </h1>
-
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
 
         {isAdmin && !isProprioPerfil && (
-          <button
-            onClick={toggleVerificado}
-            style={{
-              marginTop: "8px", padding: "5px 14px", borderRadius: "20px", fontSize: "12px",
-              border: "1px solid #1D9BF0",
-              background: verificado ? "#1D9BF0" : "transparent",
-              color: verificado ? "#fff" : "#1D9BF0",
-              cursor: "pointer", fontFamily: "'DM Sans', sans-serif"
-            }}
-          >
+          <button onClick={toggleVerificado} style={{ marginTop: "8px", padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #1D9BF0", background: verificado ? "#1D9BF0" : "transparent", color: verificado ? "#fff" : "#1D9BF0", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
             {verificado ? "✓ Verificado — Remover selo" : "Verificar usuário"}
           </button>
         )}
@@ -388,19 +358,7 @@ function Perfil() {
             <strong>{seguindo.length}</strong> seguindo
           </button>
           {!isProprioPerfil && usuarioLogado && (
-            <button
-              onClick={toggleSeguir}
-              disabled={carregandoSeguir}
-              style={{
-                padding: "6px 18px", borderRadius: "20px",
-                border: jaSigo ? "1px solid #ccc" : "none",
-                background: jaSigo ? "transparent" : "#F5C518",
-                color: jaSigo ? "#555" : "#1a1a1a",
-                fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600",
-                cursor: carregandoSeguir ? "not-allowed" : "pointer",
-                opacity: carregandoSeguir ? 0.6 : 1
-              }}
-            >
+            <button onClick={toggleSeguir} disabled={carregandoSeguir} style={{ padding: "6px 18px", borderRadius: "20px", border: jaSigo ? "1px solid #ccc" : "none", background: jaSigo ? "transparent" : "#F5C518", color: jaSigo ? "#555" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: carregandoSeguir ? "not-allowed" : "pointer", opacity: carregandoSeguir ? 0.6 : 1 }}>
               {carregandoSeguir ? "..." : jaSigo ? "Seguindo" : "Seguir"}
             </button>
           )}
@@ -449,11 +407,7 @@ function Perfil() {
           { href: '#quero-ver', label: 'Quero ver' },
           { href: '#comentarios', label: 'Comentários' },
         ].map(({ href, label }) => (
-          <a key={href} href={href} style={{
-            color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
-            fontSize: '13px', fontWeight: '600', padding: '6px 14px',
-            background: '#F5C518', borderRadius: '20px',
-          }}>
+          <a key={href} href={href} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
             {label}
           </a>
         ))}
@@ -464,27 +418,20 @@ function Perfil() {
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "26px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 3</h2>
           {isProprioPerfil && !editandoTop3 && (
-            <button
-              onClick={() => { setTop3Selecionado(top3.map(t => t.musicalId)); setEditandoTop3(true) }}
-              style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}
-            >
+            <button onClick={() => { setTop3Selecionado(top3.map(t => t.musicalId)); setEditandoTop3(true) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}>
               ✏️ Editar
             </button>
           )}
         </div>
-
         {editandoTop3 ? (
           <div>
             <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>Selecione ate 3 musicais favoritos ({top3Selecionado.length}/3)</p>
-            <input
-              type="text" placeholder="Buscar musical..." value={buscaTop3}
-              onChange={e => setBuscaTop3(e.target.value)}
+            <input type="text" placeholder="Buscar musical..." value={buscaTop3} onChange={e => setBuscaTop3(e.target.value)}
               style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "12px" }}
             />
             <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #333", borderRadius: "8px", marginBottom: "16px" }}>
               {musicaisFiltradosTop3.map(m => (
-                <div
-                  key={m.id} onClick={() => toggleTop3(m.id)}
+                <div key={m.id} onClick={() => toggleTop3(m.id)}
                   style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", cursor: "pointer", background: top3Selecionado.includes(m.id) ? "#2a2a1a" : "#222", borderBottom: "1px solid #333" }}
                 >
                   {m.capa
@@ -511,8 +458,7 @@ function Perfil() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
             {top3.map((item, i) => (
-              <a
-                key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
+              <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
                 style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518" }}
               >
                 <div style={{ position: "absolute", top: "8px", left: "8px", background: "#F5C518", color: "#1a1a1a", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "700", zIndex: 1 }}>
@@ -538,23 +484,9 @@ function Perfil() {
       <div id="avaliacoes" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
         {isProprioPerfil && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "13px", color: "#888" }}>
-              {avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}
-            </span>
-            <div
-              onClick={toggleAvaliacoesPublicas}
-              style={{
-                width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer",
-                backgroundColor: avaliacoesPublicas ? "#F5C518" : "#555",
-                position: "relative", transition: "background 0.2s", flexShrink: 0
-              }}
-            >
-              <div style={{
-                width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff",
-                position: "absolute", top: "3px",
-                left: avaliacoesPublicas ? "23px" : "3px",
-                transition: "left 0.2s"
-              }} />
+            <span style={{ fontSize: "13px", color: "#888" }}>{avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}</span>
+            <div onClick={toggleAvaliacoesPublicas} style={{ width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer", backgroundColor: avaliacoesPublicas ? "#F5C518" : "#555", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+              <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: avaliacoesPublicas ? "23px" : "3px", transition: "left 0.2s" }} />
             </div>
           </div>
         )}
@@ -564,7 +496,7 @@ function Perfil() {
         votos.length === 0 ? (
           <p className="login-aviso" style={{ marginBottom: "32px" }}>
             {isProprioPerfil
-              ? <></>
+              ? <>Você ainda não avaliou nenhum musical. <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
               : "Este usuário ainda não fez nenhuma avaliação."
             }
           </p>
@@ -582,9 +514,7 @@ function Perfil() {
       )}
 
       {/* JA VI */}
-      <h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Já vi ({jaVi.length})
-      </h2>
+      <h2 id="ja-vi" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Já vi ({jaVi.length})</h2>
       {jaVi.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>
           {isProprioPerfil
@@ -601,12 +531,8 @@ function Perfil() {
       {/* JA VI SEM AVALIACAO */}
       {isProprioPerfil && jaViSemAvaliacao.length > 0 && (
         <>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>
-            Já vi, mas não avaliei ({jaViSemAvaliacao.length})
-          </h2>
-          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-            Musicais que você marcou como "Já vi" mas ainda não deu uma nota.
-          </p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>Já vi, mas não avaliei ({jaViSemAvaliacao.length})</h2>
+          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Musicais que você marcou como "Já vi" mas ainda não deu uma nota.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
             {jaViSemAvaliacao.map(item => cardJaVi(item))}
           </div>
@@ -614,9 +540,7 @@ function Perfil() {
       )}
 
       {/* QUERO VER */}
-      <h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Quero ver ({queroVer.length})
-      </h2>
+      <h2 id="quero-ver" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Quero ver ({queroVer.length})</h2>
       {queroVer.length === 0 ? (
         <p className="login-aviso" style={{ marginBottom: "32px" }}>
           {isProprioPerfil
@@ -631,9 +555,7 @@ function Perfil() {
       )}
 
       {/* COMENTARIOS */}
-      <h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>
-        Comentários ({comentarios.length})
-      </h2>
+      <h2 id="comentarios" style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Comentários ({comentarios.length})</h2>
       {comentarios.length === 0 ? (
         <p className="login-aviso">
           {isProprioPerfil
@@ -654,7 +576,6 @@ function Perfil() {
           )
         })
       )}
-
     </main>
   )
 }
