@@ -48,10 +48,12 @@ function Perfil() {
   const [sessoesExpandidas, setSessoesExpandidas] = useState({})
   const [tabAtiva, setTabAtiva] = useState("avaliacoes")
 
-  // Redes sociais
+  // Redes sociais e bio
   const [redesSociais, setRedesSociais] = useState({ instagram: "", tiktok: "", x: "" })
+  const [bio, setBio] = useState("")
   const [editandoRedes, setEditandoRedes] = useState(false)
   const [redesTemp, setRedesTemp] = useState({ instagram: "", tiktok: "", x: "" })
+  const [bioTemp, setBioTemp] = useState("")
 
   // Mensagem
   const [enviandoMensagem, setEnviandoMensagem] = useState(false)
@@ -132,6 +134,7 @@ function Perfil() {
           tiktok: data.tiktok || "",
           x: data.x || "",
         })
+        setBio(data.bio || "")
       }
 
       const sessoesPorId = {}
@@ -216,8 +219,10 @@ function Perfil() {
   }
 
   async function salvarRedesSociais() {
-    await setDoc(doc(db, "usuarios", userId), redesTemp, { merge: true })
+    const dados = { ...redesTemp, bio: bioTemp.slice(0, 200) }
+    await setDoc(doc(db, "usuarios", userId), dados, { merge: true })
     setRedesSociais(redesTemp)
+    setBio(bioTemp.slice(0, 200))
     setEditandoRedes(false)
   }
 
@@ -276,12 +281,12 @@ function Perfil() {
   }
 
   function labelChip(s) {
-  let label = formatarData(s.data)
-  if (s.horario) label += ` · ${s.horario}`
-  if (s.teatro) label += ` · ${s.teatro}`
-  if (s.assento) label += ` · ${s.assento}`
-  return label
-}
+    let label = formatarData(s.data)
+    if (s.horario) label += ` · ${s.horario}`
+    if (s.teatro) label += ` · ${s.teatro}`
+    if (s.assento) label += ` · ${s.assento}`
+    return label
+  }
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = usuarioLogado && usuarioLogado.uid === ADMIN_UID
@@ -395,6 +400,11 @@ function Perfil() {
         </h1>
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
 
+        {/* Bio */}
+        {bio && (
+          <p style={{ fontSize: "14px", color: "#444", marginTop: "8px", maxWidth: "480px", lineHeight: "1.5" }}>{bio}</p>
+        )}
+
         {isAdmin && !isProprioPerfil && (
           <button onClick={toggleVerificado} style={{ marginTop: "8px", padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #1D9BF0", background: verificado ? "#1D9BF0" : "transparent", color: verificado ? "#fff" : "#1D9BF0", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
             {verificado ? "✓ Verificado — Remover selo" : "Verificar usuário"}
@@ -423,17 +433,33 @@ function Perfil() {
               </a>
             )}
             {isProprioPerfil && !editandoRedes && (
-              <button onClick={() => { setRedesTemp({ ...redesSociais }); setEditandoRedes(true) }}
+              <button onClick={() => { setRedesTemp({ ...redesSociais }); setBioTemp(bio); setEditandoRedes(true) }}
                 style={{ background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "4px 12px", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-                {temRedesSociais ? "✏️ Editar redes" : "+ Adicionar redes sociais"}
+                {(temRedesSociais || bio) ? "✏️ Editar perfil" : "+ Editar perfil"}
               </button>
             )}
           </div>
         )}
 
-        {/* Formulário de redes sociais */}
+        {/* Formulário de redes sociais e bio */}
         {editandoRedes && (
           <div style={{ marginTop: "14px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px", maxWidth: "360px" }}>
+            {/* Bio */}
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Bio</label>
+              <textarea
+                value={bioTemp}
+                onChange={e => setBioTemp(e.target.value.slice(0, 200))}
+                placeholder="Conte um pouco sobre você..."
+                rows={3}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+              />
+              <p style={{ fontSize: "11px", color: bioTemp.length >= 200 ? "#c0392b" : "#aaa", textAlign: "right", marginTop: "2px" }}>
+                {bioTemp.length}/200
+              </p>
+            </div>
+
+            {/* Redes */}
             {[
               { chave: "instagram", label: "Instagram", placeholder: "@seunome" },
               { chave: "tiktok", label: "TikTok", placeholder: "@seunome" },
@@ -444,7 +470,7 @@ function Perfil() {
                 <input type="text" value={redesTemp[chave]}
                   onChange={e => setRedesTemp(prev => ({ ...prev, [chave]: e.target.value }))}
                   placeholder={placeholder}
-                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
                 />
               </div>
             ))}
