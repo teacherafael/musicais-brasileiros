@@ -240,7 +240,7 @@ function Header() {
               onClick={() => navigate(`/perfil/${usuario.uid}`)}
               style={{ cursor: "pointer" }}
             >
-              Olá, {usuario.displayName}
+              Meu perfil
             </span>
             <button className="btn-sair" onClick={sair}>Sair</button>
           </>
