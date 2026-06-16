@@ -55,6 +55,38 @@ function Stats() {
         })
       })
       const dirMaisFrequente = Object.entries(direcaoCount).sort((a, b) => b[1] - a[1])[0]
+      const top3Diretores = Object.entries(direcaoCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+
+      // Direção musical
+      const direcaoMusicalCount = {}
+      lista.forEach(m => {
+        if (!m.direcaoMusical) return
+        m.direcaoMusical.split(",").forEach(nome => {
+          const n = nome.trim()
+          if (n) direcaoMusicalCount[n] = (direcaoMusicalCount[n] || 0) + 1
+        })
+      })
+      const top3DiretoresMusicais = Object.entries(direcaoMusicalCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+
+      // Elenco (elenco + elencoAdicional somados)
+      const elencoCount = {}
+      lista.forEach(m => {
+        const nomes = [
+          ...(m.elenco ? m.elenco.split(",") : []),
+          ...(m.elencoAdicional ? m.elencoAdicional.split(",") : [])
+        ]
+        nomes.forEach(nome => {
+          const n = nome.trim()
+          if (n) elencoCount[n] = (elencoCount[n] || 0) + 1
+        })
+      })
+      const top3Elenco = Object.entries(elencoCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
 
       // Teatro
       const teatroCount = {}
@@ -82,6 +114,7 @@ function Stats() {
         totalUsuarios,
         top3Votados, top3Avaliados, top3Comentados,
         notaMaisAlta, dirMaisFrequente, teatroMaisFrequente,
+        top3Diretores, top3DiretoresMusicais, top3Elenco,
         anosSorted, maxPorAno, comentariosPorMusical
       })
     }
@@ -135,6 +168,34 @@ function Stats() {
     </div>
   )
 
+  // Top 3 de pessoas (elenco, diretores, diretores musicais) — sem capa, clicável para /pessoa/:nome
+  const blocoTop3Pessoas = (label, listaPares) => (
+    <div style={{
+      background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px",
+      padding: "20px 24px"
+    }}>
+      <p style={{ fontSize: "12px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px" }}>{label}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {listaPares.map(([nome, qtd], i) => (
+          <div
+            key={nome}
+            onClick={() => navigate(`/pessoa/${encodeURIComponent(nome)}`)}
+            style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+          >
+            <span style={{ fontSize: "22px", width: "28px", flexShrink: 0 }}>{medalha(i)}</span>
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                margin: 0, fontWeight: "600", fontSize: "14px",
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+              }}>{nome}</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#888" }}>{qtd} musicai{qtd === 1 ? "" : "s"}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
   return (
     <main>
       <p className="section-label">MBDb</p>
@@ -167,7 +228,7 @@ function Stats() {
         )}
       </div>
 
-      {/* Top 3s */}
+      {/* Top 3s de musicais */}
       <h2 style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 12px" }}>Rankings</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
         {blocoTop3(
@@ -185,6 +246,14 @@ function Stats() {
           stats.top3Comentados,
           m => `${stats.comentariosPorMusical[m.id]} comentários`
         )}
+      </div>
+
+      {/* Top 3s de pessoas */}
+      <h2 style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 12px" }}>Mais presentes</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+        {stats.top3Elenco.length > 0 && blocoTop3Pessoas("Elenco mais presente", stats.top3Elenco)}
+        {stats.top3Diretores.length > 0 && blocoTop3Pessoas("Diretores mais presentes", stats.top3Diretores)}
+        {stats.top3DiretoresMusicais.length > 0 && blocoTop3Pessoas("Direção musical mais presente", stats.top3DiretoresMusicais)}
       </div>
 
       {/* Por ano */}
