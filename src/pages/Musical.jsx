@@ -324,6 +324,16 @@ const [novoTeatro, setNovoTeatro] = useState("")
         somaEstrelas: increment(estrelas),
         distribuicao: novaDistribuicao,
       })
+      await addDoc(collection(db, "atividades"), {
+        tipo: "avaliacao",
+        userId: usuario.uid,
+        nome: usuario.displayName || "Anônimo",
+        foto: usuario.photoURL || "",
+        musicalId: id,
+        musicalTitulo: musical.titulo,
+        estrelas,
+        data: serverTimestamp()
+      })
 
       setMusical(prev => ({
         ...prev,
@@ -493,6 +503,15 @@ setNovaSessaoPublica(true)
       musicalId: id,
       musicalTitulo: musical.titulo,
       musicalCapa: musical.capa || null,
+      data: serverTimestamp()
+    })
+    await addDoc(collection(db, "atividades"), {
+      tipo: "comentario",
+      userId: usuario.uid,
+      nome: usuario.displayName || "Anônimo",
+      foto: usuario.photoURL || "",
+      musicalId: id,
+      musicalTitulo: musical.titulo,
       data: serverTimestamp()
     })
 

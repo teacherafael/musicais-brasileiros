@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit, where, addDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -21,7 +21,8 @@ function Home() {
   const [jaViSet, setJaViSet] = useState(new Set())
   const [visiveis, setVisiveis] = useState(24)
   const [carregando, setCarregando] = useState(true)
-  const [ultimosComentarios, setUltimosComentarios] = useState([])
+  const [feedAtividade, setFeedAtividade] = useState([])
+  const [seguindoIds, setSeguindoIds] = useState(new Set())
   const navigate = useNavigate()
   const [toast, setToast] = useState(null)
 
@@ -108,17 +109,43 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    async function buscarComentarios() {
+    async function buscarSeguindo() {
+      if (!usuario) { setSeguindoIds(new Set()); return }
+      const snap = await getDocs(collection(db, "usuarios", usuario.uid, "seguindo"))
+      setSeguindoIds(new Set(snap.docs.map(d => d.id)))
+    }
+    buscarSeguindo()
+  }, [usuario])
+
+  useEffect(() => {
+    async function buscarFeed() {
       try {
-        const q = query(collection(db, "comentarios"), orderBy("data", "desc"), limit(15))
-        const snap = await getDocs(q)
-        setUltimosComentarios(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+        const qGlobal = query(collection(db, "atividades"), orderBy("data", "desc"), limit(15))
+        const snapGlobal = await getDocs(qGlobal)
+        const globais = snapGlobal.docs.map(d => ({ id: d.id, ...d.data() }))
+
+        let seguidos = []
+        if (seguindoIds.size > 0) {
+          const qSeguidos = query(
+            collection(db, "atividades"),
+            where("userId", "in", [...seguindoIds].slice(0, 10)),
+            limit(10)
+          )
+          const snapSeguidos = await getDocs(qSeguidos)
+          seguidos = snapSeguidos.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => (b.data?.seconds || 0) - (a.data?.seconds || 0))
+        }
+
+        const idsGlobais = new Set(globais.map(a => a.id))
+        const seguidosUnicos = seguidos.filter(a => !idsGlobais.has(a.id))
+        setFeedAtividade([...seguidosUnicos, ...globais])
       } catch (e) {
-        setUltimosComentarios([])
+        setFeedAtividade([])
       }
     }
-    buscarComentarios()
-  }, [])
+    buscarFeed()
+  }, [seguindoIds])
 
   useEffect(() => {
     atualizarBotoes()
@@ -501,26 +528,35 @@ function Home() {
         {/* ── SIDEBAR ── */}
         <aside className="sidebar-comentarios">
           <p style={{ fontSize: "12px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "16px", marginTop: "24px" }}>
-            Últimos comentários
+            Atividade recente
           </p>
-          {ultimosComentarios.length === 0 ? (
-            <p style={{ fontSize: "13px", color: "#bbb" }}>Nenhum comentário ainda.</p>
+          {feedAtividade.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "#bbb" }}>Nenhuma atividade ainda.</p>
           ) : (
-            ultimosComentarios.map(c => (
-              <div key={c.id} style={{ marginBottom: "16px", paddingBottom: "16px", borderBottom: "1px solid #e8e8e4" }}>
-                <a href={`/musical/${c.musicalId}`} style={{ textDecoration: "none", color: "inherit" }}>
-                  <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                    {c.musicalCapa
-                      ? <img src={c.musicalCapa} alt={c.musicalTitulo} style={{ width: "36px", height: "50px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
-                      : <div style={{ width: "36px", height: "50px", background: "#1a1a1a", borderRadius: "4px", flexShrink: 0 }} />
-                    }
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: "12px", fontWeight: "700", margin: "0 0 2px", color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.musicalTitulo}</p>
-                      <a href={`/perfil/${c.userId}`} onClick={e => e.stopPropagation()} style={{ fontSize: "12px", color: "#888", textDecoration: "none" }}>{c.nome}</a>
-                      <p style={{ fontSize: "13px", color: "#444", margin: "4px 0 0", lineHeight: "1.4", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.texto}</p>
-                    </div>
+            feedAtividade.map(a => (
+              <div
+                key={a.id}
+                onClick={() => navigate(`/musical/${a.musicalId}`)}
+                style={{ cursor: "pointer", color: "inherit", display: "block", marginBottom: "14px", paddingBottom: "14px", borderBottom: "1px solid #e8e8e4" }}
+              >
+                <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                  {a.foto
+                    ? <img src={a.foto} alt={a.nome} style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: seguindoIds.has(a.userId) ? "2px solid #F5C518" : "none" }} />
+                    : <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#1a1a1a", color: "#F5C518", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>👤</div>
+                  }
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: "13px", margin: 0, lineHeight: "1.4", color: "#1a1a1a" }}>
+                      <a href={`/perfil/${a.userId}`} onClick={e => e.stopPropagation()} style={{ fontWeight: "700", color: "#1a1a1a", textDecoration: "none" }}>{a.nome}</a>
+                      {" "}
+                      {a.tipo === "avaliacao"
+                        ? <span style={{ color: "#888" }}>avaliou com <span style={{ color: "#b8960a", fontWeight: "600" }}>★ {a.estrelas}</span></span>
+                        : <span style={{ color: "#888" }}>comentou em</span>
+                      }
+                      {" "}
+                      <span style={{ fontWeight: "600" }}>{a.musicalTitulo}</span>
+                    </p>
                   </div>
-                </a>
+                </div>
               </div>
             ))
           )}

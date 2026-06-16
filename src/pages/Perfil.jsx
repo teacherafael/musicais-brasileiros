@@ -372,9 +372,18 @@ function Perfil() {
       style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#f5f5f0" }}
     >
       {pessoa.foto
-        ? <img src={pessoa.foto} alt={pessoa.nome} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-        : <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "16px", flexShrink: 0 }}>👤</div>
-      }
+      ? <img
+          src={pessoa.foto}
+          alt={pessoa.nome}
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.target.style.display = "none";
+            e.target.nextSibling.style.display = "flex";
+          }}
+          style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+        />
+      : null}
+    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: pessoa.foto ? "none" : "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "600", flexShrink: 0 }}>{(pessoa.nome || "U").charAt(0).toUpperCase()}</div>
       <span style={{ fontSize: "14px", fontWeight: "500" }}>{pessoa.nome || "Usuario"}</span>
     </a>
   )
