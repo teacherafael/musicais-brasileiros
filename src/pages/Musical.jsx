@@ -324,16 +324,20 @@ const [novoTeatro, setNovoTeatro] = useState("")
         somaEstrelas: increment(estrelas),
         distribuicao: novaDistribuicao,
       })
-      await addDoc(collection(db, "atividades"), {
-        tipo: "avaliacao",
-        userId: usuario.uid,
-        nome: usuario.displayName || "Anônimo",
-        foto: usuario.photoURL || "",
-        musicalId: id,
-        musicalTitulo: musical.titulo,
-        estrelas,
-        data: serverTimestamp()
-      })
+      const perfilSnap = await getDoc(doc(db, "usuarios", usuario.uid))
+      const avaliacoesPublicas = perfilSnap.exists() ? (perfilSnap.data().avaliacoesPublicas ?? true) : true
+      if (avaliacoesPublicas) {
+        await setDoc(doc(db, "atividades", `${usuario.uid}_${id}`), {
+          tipo: "avaliacao",
+          userId: usuario.uid,
+          nome: usuario.displayName || "Anônimo",
+          foto: usuario.photoURL || "",
+          musicalId: id,
+          musicalTitulo: musical.titulo,
+          estrelas,
+          data: serverTimestamp()
+        })
+      }
 
       setMusical(prev => ({
         ...prev,
@@ -368,6 +372,7 @@ const [novoTeatro, setNovoTeatro] = useState("")
     novaDistribuicao[chave] = Math.max((novaDistribuicao[chave] || 0) - 1, 0)
 
     await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
+    await deleteDoc(doc(db, "atividades", `${usuario.uid}_${id}`))
     await updateDoc(musicalRef, {
       totalVotos: increment(-1),
       somaEstrelas: increment(-votoAtual),
