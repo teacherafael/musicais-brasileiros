@@ -276,11 +276,12 @@ function Perfil() {
   }
 
   function labelChip(s) {
-    let label = formatarData(s.data)
-    if (s.horario) label += ` · ${s.horario}`
-    if (s.assento) label += ` · ${s.assento}`
-    return label
-  }
+  let label = formatarData(s.data)
+  if (s.horario) label += ` · ${s.horario}`
+  if (s.teatro) label += ` · ${s.teatro}`
+  if (s.assento) label += ` · ${s.assento}`
+  return label
+}
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = usuarioLogado && usuarioLogado.uid === ADMIN_UID

@@ -145,6 +145,7 @@ function Musical() {
   const [novaData, setNovaData] = useState("")
   const [novoHorario, setNovoHorario] = useState("")
   const [novoAssento, setNovoAssento] = useState("")
+const [novoTeatro, setNovoTeatro] = useState("")
   const [novaSessaoPublica, setNovaSessaoPublica] = useState(true)
   const [salvandoSessao, setSalvandoSessao] = useState(false)
 
@@ -416,6 +417,7 @@ function Musical() {
       data: novaData,
       horario: novoHorario.trim(),
       assento: novoAssento.trim(),
+teatro: novoTeatro.trim(),
       publico: novaSessaoPublica,
     }
     const docRef = await addDoc(collection(db, "usuarios", usuario.uid, "sessoesAssistidas"), novaSessao)
@@ -427,9 +429,9 @@ function Musical() {
       })
     )
     setNovaData("")
-    setNovoHorario("")
     setNovoAssento("")
-    setNovaSessaoPublica(true)
+setNovoTeatro("")
+setNovaSessaoPublica(true)
     setMostrarFormSessao(false)
     setSalvandoSessao(false)
     mostrarToast("Sessão registrada!")
@@ -449,11 +451,12 @@ function Musical() {
   }
 
   function labelChip(s) {
-    let label = formatarData(s.data)
-    if (s.horario) label += ` · ${s.horario}`
-    if (s.assento) label += ` · ${s.assento}`
-    return label
-  }
+  let label = formatarData(s.data)
+  if (s.horario) label += ` · ${s.horario}`
+  if (s.teatro) label += ` · ${s.teatro}`
+  if (s.assento) label += ` · ${s.assento}`
+  return label
+}
 
   async function gerarImagem() {
     if (!cartaoRef.current) return
@@ -827,15 +830,25 @@ function Musical() {
                       />
                     </div>
                     <div style={{ flex: "2 1 180px" }}>
-                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
-                      <input
-                        type="text"
-                        value={novoAssento}
-                        onChange={e => setNovoAssento(e.target.value)}
-                        placeholder="ex: Plateia A, fileira 10, cadeira 5"
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                      />
-                    </div>
+  <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Teatro (opcional)</label>
+  <input
+    type="text"
+    value={novoTeatro}
+    onChange={e => setNovoTeatro(e.target.value)}
+    placeholder="ex: Teatro Santander"
+    style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+  />
+</div>
+<div style={{ flex: "2 1 180px" }}>
+  <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
+  <input
+    type="text"
+    value={novoAssento}
+    onChange={e => setNovoAssento(e.target.value)}
+    placeholder="ex: Plateia A, fileira 10, cadeira 5"
+    style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+  />
+</div>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
