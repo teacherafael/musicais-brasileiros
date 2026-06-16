@@ -12,8 +12,10 @@ import Termos from "./pages/Termos"
 import Politica from "./pages/Politica"
 import Pessoa from "./pages/Pessoa"
 import Stats from "./pages/Stats"
+import Teatro from "./pages/Teatro"
+import Mensagens from "./pages/Mensagens"
+import Conversa from "./pages/Conversa"
 import { useState, useEffect } from "react"
-import Teatro from "./pages/Teatro";
 import NProgress from "nprogress"
 import "nprogress/nprogress.css"
 import { useLocation } from "react-router-dom"
@@ -44,6 +46,7 @@ function VoltarAoTopo() {
     </button>
   )
 }
+
 function BarraProgresso() {
   const location = useLocation()
 
@@ -59,7 +62,7 @@ function BarraProgresso() {
 
 function App() {
   return (
-     <BrowserRouter>
+    <BrowserRouter>
       <Header />
       <BarraProgresso />
       <Routes>
@@ -75,7 +78,8 @@ function App() {
         <Route path="/pessoa/:nome" element={<Pessoa />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/teatro/:id" element={<Teatro />} />
-        
+        <Route path="/mensagens" element={<Mensagens />} />
+        <Route path="/mensagens/:conversaId" element={<Conversa />} />
       </Routes>
       <VoltarAoTopo />
       <Footer />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -47,6 +47,14 @@ function Perfil() {
   const [sessoesPorMusical, setSessoesPorMusical] = useState({})
   const [sessoesExpandidas, setSessoesExpandidas] = useState({})
   const [tabAtiva, setTabAtiva] = useState("avaliacoes")
+
+  // Redes sociais
+  const [redesSociais, setRedesSociais] = useState({ instagram: "", tiktok: "", x: "" })
+  const [editandoRedes, setEditandoRedes] = useState(false)
+  const [redesTemp, setRedesTemp] = useState({ instagram: "", tiktok: "", x: "" })
+
+  // Mensagem
+  const [enviandoMensagem, setEnviandoMensagem] = useState(false)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
@@ -114,10 +122,16 @@ function Perfil() {
       setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
       if (usuarioDoc.exists()) {
-        setAvaliacoesPublicas(usuarioDoc.data().avaliacoesPublicas ?? true)
-        setVerificado(usuarioDoc.data().verificado ?? false)
-        if (usuarioDoc.data().nome) setNomeUsuario(usuarioDoc.data().nome)
-        if (usuarioDoc.data().foto) setFotoUsuario(usuarioDoc.data().foto)
+        const data = usuarioDoc.data()
+        setAvaliacoesPublicas(data.avaliacoesPublicas ?? true)
+        setVerificado(data.verificado ?? false)
+        if (data.nome) setNomeUsuario(data.nome)
+        if (data.foto) setFotoUsuario(data.foto)
+        setRedesSociais({
+          instagram: data.instagram || "",
+          tiktok: data.tiktok || "",
+          x: data.x || "",
+        })
       }
 
       const sessoesPorId = {}
@@ -166,8 +180,6 @@ function Perfil() {
       await Promise.all([setDoc(refMeuSeguindo, dadosAlvo), setDoc(refSeguidorDele, meusDados)])
       setJaSigo(true)
       setSeguidores(prev => [...prev, { id: usuarioLogado.uid, ...meusDados }])
-
-      // Notifica o usuário que ganhou um novo seguidor
       try {
         await addDoc(collection(db, "notificacoes", userId, "itens"), {
           tipo: "seguidor",
@@ -177,11 +189,36 @@ function Perfil() {
           lida: false,
           data: serverTimestamp(),
         })
-      } catch (e) {
-        // Notificação é silenciosa — falha não bloqueia o follow
-      }
+      } catch (e) {}
     }
     setCarregandoSeguir(false)
+  }
+
+  async function enviarMensagem() {
+    if (!usuarioLogado) return alert("Faça login para enviar mensagens.")
+    setEnviandoMensagem(true)
+    const conversasSnap = await getDocs(
+      query(collection(db, "conversas"), where("participantes", "array-contains", usuarioLogado.uid))
+    )
+    const conversaExistente = conversasSnap.docs.find(d => d.data().participantes.includes(userId))
+    if (conversaExistente) {
+      navigate(`/mensagens/${conversaExistente.id}`)
+    } else {
+      const novaConversa = await addDoc(collection(db, "conversas"), {
+        participantes: [usuarioLogado.uid, userId],
+        ultimaMensagem: "",
+        ultimaMensagemData: serverTimestamp(),
+        naoLidas: { [usuarioLogado.uid]: 0, [userId]: 0 },
+      })
+      navigate(`/mensagens/${novaConversa.id}`)
+    }
+    setEnviandoMensagem(false)
+  }
+
+  async function salvarRedesSociais() {
+    await setDoc(doc(db, "usuarios", userId), redesTemp, { merge: true })
+    setRedesSociais(redesTemp)
+    setEditandoRedes(false)
   }
 
   async function salvarTop3() {
@@ -302,27 +339,19 @@ function Perfil() {
             <p className="card-meta">Direção: {item.direcao || "—"}</p>
           </div>
         </a>
-
         {temSessoes && (
-          <button
-            onClick={() => toggleSessoes(item.musicalId)}
-            style={{ marginTop: "6px", background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer", textAlign: "left" }}
-          >
+          <button onClick={() => toggleSessoes(item.musicalId)}
+            style={{ marginTop: "6px", background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer", textAlign: "left" }}>
             📅 {sessoesVisiveis.length} {sessoesVisiveis.length === 1 ? "sessão" : "sessões"} {expandido ? "▲" : "▼"}
           </button>
         )}
-
         {temSessoes && expandido && (
           <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "6px" }}>
             {sessoesVisiveis.map(s => (
               <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "5px 12px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "500", color: "#1a1a1a" }}>
-                  {labelChip(s)}
-                </span>
+                <span style={{ fontSize: "12px", fontWeight: "500", color: "#1a1a1a" }}>{labelChip(s)}</span>
                 {isProprioPerfil && (
-                  <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>
-                    {s.publico ? "🌐" : "🔒"}
-                  </span>
+                  <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>{s.publico ? "🌐" : "🔒"}</span>
                 )}
               </div>
             ))}
@@ -332,24 +361,24 @@ function Perfil() {
     )
   }
 
-  const cardUsuario = (pessoa) => {
-    return (
-      <a key={pessoa.id} href={"/perfil/" + pessoa.userId}
-        style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#f5f5f0" }}
-      >
-        {pessoa.foto
-          ? <img src={pessoa.foto} alt={pessoa.nome} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-          : <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "16px", flexShrink: 0 }}>👤</div>
-        }
-        <span style={{ fontSize: "14px", fontWeight: "500" }}>{pessoa.nome || "Usuario"}</span>
-      </a>
-    )
-  }
+  const cardUsuario = (pessoa) => (
+    <a key={pessoa.id} href={"/perfil/" + pessoa.userId}
+      style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#f5f5f0" }}
+    >
+      {pessoa.foto
+        ? <img src={pessoa.foto} alt={pessoa.nome} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+        : <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "16px", flexShrink: 0 }}>👤</div>
+      }
+      <span style={{ fontSize: "14px", fontWeight: "500" }}>{pessoa.nome || "Usuario"}</span>
+    </a>
+  )
 
   const estiloContador = {
     background: "none", border: "none", padding: 0, fontSize: "14px", color: "#555",
     cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", textDecorationColor: "#ccc"
   }
+
+  const temRedesSociais = redesSociais.instagram || redesSociais.tiktok || redesSociais.x
 
   return (
     <main>
@@ -371,7 +400,61 @@ function Perfil() {
           </button>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
+        {/* Redes sociais */}
+        {(temRedesSociais || isProprioPerfil) && (
+          <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            {redesSociais.instagram && (
+              <a href={`https://instagram.com/${redesSociais.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "#E1306C", textDecoration: "none", background: "#fff0f5", border: "1px solid #f0c0d0", borderRadius: "99px", padding: "4px 12px" }}>
+                📸 @{redesSociais.instagram.replace("@", "")}
+              </a>
+            )}
+            {redesSociais.tiktok && (
+              <a href={`https://tiktok.com/@${redesSociais.tiktok.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "#1a1a1a", textDecoration: "none", background: "#f0f0f0", border: "1px solid #ddd", borderRadius: "99px", padding: "4px 12px" }}>
+                🎵 @{redesSociais.tiktok.replace("@", "")}
+              </a>
+            )}
+            {redesSociais.x && (
+              <a href={`https://x.com/${redesSociais.x.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "#1a1a1a", textDecoration: "none", background: "#f0f0f0", border: "1px solid #ddd", borderRadius: "99px", padding: "4px 12px" }}>
+                𝕏 @{redesSociais.x.replace("@", "")}
+              </a>
+            )}
+            {isProprioPerfil && !editandoRedes && (
+              <button onClick={() => { setRedesTemp({ ...redesSociais }); setEditandoRedes(true) }}
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "4px 12px", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                {temRedesSociais ? "✏️ Editar redes" : "+ Adicionar redes sociais"}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Formulário de redes sociais */}
+        {editandoRedes && (
+          <div style={{ marginTop: "14px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px", maxWidth: "360px" }}>
+            {[
+              { chave: "instagram", label: "Instagram", placeholder: "@seunome" },
+              { chave: "tiktok", label: "TikTok", placeholder: "@seunome" },
+              { chave: "x", label: "X (Twitter)", placeholder: "@seunome" },
+            ].map(({ chave, label, placeholder }) => (
+              <div key={chave} style={{ marginBottom: "12px" }}>
+                <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>{label}</label>
+                <input type="text" value={redesTemp[chave]}
+                  onChange={e => setRedesTemp(prev => ({ ...prev, [chave]: e.target.value }))}
+                  placeholder={placeholder}
+                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                />
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+              <button className="btn-comentar" onClick={salvarRedesSociais} style={{ fontSize: "13px", padding: "7px 16px" }}>Salvar</button>
+              <button className="btn-sair" onClick={() => setEditandoRedes(false)} style={{ fontSize: "13px", padding: "7px 16px" }}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "16px", flexWrap: "wrap" }}>
           <button style={estiloContador} onClick={() => { setMostrarSeguidores(prev => !prev); setMostrarSeguindo(false) }}>
             <strong>{seguidores.length}</strong> {seguidores.length === 1 ? "seguidor" : "seguidores"}
           </button>
@@ -379,8 +462,21 @@ function Perfil() {
             <strong>{seguindo.length}</strong> seguindo
           </button>
           {!isProprioPerfil && usuarioLogado && (
-            <button onClick={toggleSeguir} disabled={carregandoSeguir} style={{ padding: "6px 18px", borderRadius: "20px", border: jaSigo ? "1px solid #ccc" : "none", background: jaSigo ? "transparent" : "#F5C518", color: jaSigo ? "#555" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: carregandoSeguir ? "not-allowed" : "pointer", opacity: carregandoSeguir ? 0.6 : 1 }}>
-              {carregandoSeguir ? "..." : jaSigo ? "Seguindo" : "Seguir"}
+            <>
+              <button onClick={toggleSeguir} disabled={carregandoSeguir}
+                style={{ padding: "6px 18px", borderRadius: "20px", border: jaSigo ? "1px solid #ccc" : "none", background: jaSigo ? "transparent" : "#F5C518", color: jaSigo ? "#555" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: carregandoSeguir ? "not-allowed" : "pointer", opacity: carregandoSeguir ? 0.6 : 1 }}>
+                {carregandoSeguir ? "..." : jaSigo ? "Seguindo" : "Seguir"}
+              </button>
+              <button onClick={enviarMensagem} disabled={enviandoMensagem}
+                style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+                ✉️ Mensagem
+              </button>
+            </>
+          )}
+          {isProprioPerfil && (
+            <button onClick={() => navigate("/mensagens")}
+              style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+              ✉️ Mensagens
             </button>
           )}
         </div>
@@ -533,7 +629,7 @@ function Perfil() {
         )}
       </div>
 
-      {/* CONTEÚDO DAS TABS */}
+      {/* TABS */}
       {tabAtiva === "avaliacoes" && (
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
@@ -548,12 +644,7 @@ function Perfil() {
           </div>
           {(isProprioPerfil || avaliacoesPublicas) ? (
             votos.length === 0 ? (
-              <p className="login-aviso">
-                {isProprioPerfil
-                  ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-                  : "Este usuário ainda não fez nenhuma avaliação."
-                }
-              </p>
+              <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não fez nenhuma avaliação."}</p>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
                 {votos.map(voto => {
@@ -572,12 +663,7 @@ function Perfil() {
       {tabAtiva === "ja-vi" && (
         <div>
           {jaVi.length === 0 ? (
-            <p className="login-aviso">
-              {isProprioPerfil
-                ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-                : "Este usuário ainda não marcou nenhum musical como visto."
-              }
-            </p>
+            <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não marcou nenhum musical como visto."}</p>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
               {jaVi.map(item => cardJaVi(item))}
@@ -598,12 +684,7 @@ function Perfil() {
       {tabAtiva === "quero-ver" && (
         <div>
           {queroVer.length === 0 ? (
-            <p className="login-aviso">
-              {isProprioPerfil
-                ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-                : "Este usuário ainda não tem musicais na lista."
-              }
-            </p>
+            <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não tem musicais na lista."}</p>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
               {queroVer.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
@@ -615,19 +696,13 @@ function Perfil() {
       {tabAtiva === "comentarios" && (
         <div>
           {comentarios.length === 0 ? (
-            <p className="login-aviso">
-              {isProprioPerfil
-                ? <><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></>
-                : "Este usuário ainda não fez nenhum comentário."
-              }
-            </p>
+            <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não fez nenhum comentário."}</p>
           ) : (
             comentarios.map(c => {
               const musical = musicais[c.musicalId]
               return (
                 <a key={c.id} href={"/musical/" + c.musicalId} className="comentario-item"
-                  style={{ display: "block", textDecoration: "none", color: "inherit", cursor: "pointer" }}
-                >
+                  style={{ display: "block", textDecoration: "none", color: "inherit", cursor: "pointer" }}>
                   <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518", marginBottom: "4px" }}>{musical?.titulo}</p>
                   <p className="comentario-texto">{c.texto}</p>
                 </a>
