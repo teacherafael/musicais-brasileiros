@@ -257,6 +257,14 @@ export const teatros = [
     bairro: "Campos Elísios",
     cidade: "São Paulo – SP",
   },
+   {
+    id: "teatro-faap",
+    nomeOficial: "Teatro FAAP",
+    aliases: [],
+    endereco: "R. Alagoas, 903",
+    bairro: "Higienópolis",
+    cidade: "São Paulo – SP",
+  },
  {
     id: "teatro-villa-lobos-sp",
     nomeOficial: "Teatro Villa-Lobos (SP)",
@@ -304,6 +312,14 @@ export const teatros = [
     endereco: "R. Marquês de São Vicente, 52",
     bairro: "Gávea",
     cidade: "Rio de Janeiro – RJ",
+  },
+  {
+    id: "teatro-guaira",
+    nomeOficial: "Teatro Guaira",
+    aliases: ["Teatro Guairão", "Teatro Guaíra", "Teatro Guaira"],
+    endereco: "R. XV de Novembro, 971",
+    bairro: "Centro",
+    cidade: "Curitiba – PR",
   },
   {
     id: "teatro-tca",
