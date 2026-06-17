@@ -17,6 +17,14 @@ export const teatros = [
     bairro: "Jardim Paulista",
     cidade: "São Paulo – SP",
   },
+    {
+    id: "teatro-procopio-ferreira",
+    nomeOficial: "Teatro Procópio Ferreira",
+    aliases: [""],
+    endereco: "Rua Augusta, 2823",
+    bairro: "Cerqueira César",
+    cidade: "São Paulo – SP",
+  },
   {
     id: "teatro-renault",
     nomeOficial: "Teatro Renault",
