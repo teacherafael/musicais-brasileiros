@@ -8,8 +8,7 @@ import ReportarErro from "../components/ReportarErro"
 import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
-
-const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
+import { ehAdmin } from "../admins";
 
 function SeloVerificado() {
   return (
@@ -895,7 +894,7 @@ setNovaSessaoPublica(true)
                 )}
               </div>
 
-              {usuario && usuario.uid === ADMIN_UID && (
+              {ehAdmin(usuario) && (
                 <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
                   <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>
                     ✏️ Editar

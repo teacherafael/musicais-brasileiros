@@ -3,8 +3,7 @@ import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, ser
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
-
-const ADMIN_UID = "LFDNXIXywqQrLsDLobaGzOOmok03"
+import { ehAdmin } from "../admins"
 
 function SeloVerificado() {
   return (
@@ -289,7 +288,7 @@ function Perfil() {
   }
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
-  const isAdmin = usuarioLogado && usuarioLogado.uid === ADMIN_UID
+  const isAdmin = ehAdmin(usuarioLogado)
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
   const fotoPerfil = isProprioPerfil ? usuarioLogado.photoURL : fotoUsuario
 
