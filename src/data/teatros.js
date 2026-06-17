@@ -234,11 +234,27 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
+    id: "teatro-nair-bello",
+    nomeOficial: "Teatro Nair Bello",
+    aliases: [],
+    endereco: "R. Frei Caneca, 569",
+    bairro: "Consolação",
+    cidade: "São Paulo – SP",
+  },
+  {
     id: "teatro-casa-grande-rj",
     nomeOficial: "Teatro Casa Grande",
     aliases: ["Teatro Oi Casa Grande"],
     endereco: "Av. Afrânio de Melo Franco, 290",
     bairro: "Leblon",
+    cidade: "Rio de Janeiro – RJ",
+  },
+  {
+    id: "teatro-clara-nunes",
+    nomeOficial: "Teatro Clara Nunes",
+    aliases: [],
+    endereco: "R. Marquês de São Vicente, 52",
+    bairro: "Gávea",
     cidade: "Rio de Janeiro – RJ",
   },
   // Adicione mais teatros aqui seguindo o mesmo padrão
