@@ -59,7 +59,7 @@ export const teatros = [
   },
  {
   id: "teatro-joao-caetano-sp",
-  nomeOficial: "Teatro João Caetano",
+  nomeOficial: "Teatro João Caetano (SP)",
   aliases: ["Teatro João Caetano SP"],
   endereco: "Rua Borges Lagoa, 650",
   bairro: "Vila Clementino",
