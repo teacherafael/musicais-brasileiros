@@ -284,7 +284,7 @@ export const teatros = [
   {
     id: "teatro-frei-caneca",
     nomeOficial: "Teatro Sabesp Frei Caneca",
-    aliases: ["Teatro Opus Frei Caneca", "Teatro Frei Caneca"],
+    aliases: ["Teatro Opus Frei Caneca", "Teatro Frei Caneca", "Teatro Shopping Frei Caneca"],
     endereco: "R. Frei Caneca, 569",
     bairro: "Consolação",
     cidade: "São Paulo – SP",
