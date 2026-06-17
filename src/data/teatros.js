@@ -316,7 +316,7 @@ export const teatros = [
   {
     id: "teatro-guaira",
     nomeOficial: "Teatro Guaira",
-    aliases: ["Teatro Guairão", "Teatro Guaíra", "Teatro Guaira"],
+    aliases: ["Teatro Guairão", "Teatro Guaíra", "Teatro Guairinha"],
     endereco: "R. XV de Novembro, 971",
     bairro: "Centro",
     cidade: "Curitiba – PR",
