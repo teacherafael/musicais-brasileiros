@@ -175,7 +175,7 @@ export const teatros = [
     aliases: ["Teatro Tomie Ohtake", "Teatro Cetip", "Teatro Geo"],
     endereco: "Rua dos Coropés, 88",
     bairro: "Pinheiros",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "São Paulo – SP",
   },
   {
     id: "teatro-bradesco-sp",
