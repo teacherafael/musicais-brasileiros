@@ -28,7 +28,7 @@ export const teatros = [
   {
     id: "teatro-claro-mais-sp",
     nomeOficial: "Teatro Claro Mais SP",
-    aliases: ["Theatro Net SP"],
+    aliases: ["Theatro Net SP", "Theatro Net São Paulo"],
     endereco: "Rua Olimpíadas, 360",
     bairro: "Vila Olímpia",
     cidade: "São Paulo – SP",
@@ -36,7 +36,7 @@ export const teatros = [
    {
     id: "teatro-claro-mais-rj",
     nomeOficial: "Teatro Claro Mais RJ",
-    aliases: ["Theatro Net RJ", "Teatro Tereza Rachel"],
+    aliases: ["Theatro Net RJ","Theatro Net Rio", "Teatro Tereza Rachel"],
     endereco: "Rua Siqueira Campos, 143",
     bairro: "Copacabana",
     cidade: "Rio de Janeiro – RJ",
