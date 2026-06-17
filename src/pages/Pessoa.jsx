@@ -65,6 +65,7 @@ function Pessoa() {
             c && todosOsNomes.some(n => c.toLowerCase().includes(n))
           )
         })
+        .sort((a, b) => Number(a.ano) - Number(b.ano))
       setMusicais(lista)
       setCarregando(false)
     }
