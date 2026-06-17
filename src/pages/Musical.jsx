@@ -78,14 +78,14 @@ function Estrelas({ votoAtual, onVotar }) {
                 lineHeight: 1,
                 cursor: "pointer",
                 transition: "transform 0.1s ease",
-                transform: hover === estrela || hover === estrela - 0.5 ? "scale(1.15)" : "scale(1)"
+                transform: valorAtivo >= estrela - 0.5 ? "scale(1.1)" : "scale(1)"
               }}
             >
               {meia ? (
-                <>
+                <span style={{ position: "relative", display: "inline-block" }}>
                   <span style={{ color: "#ddd" }}>★</span>
-                  <span style={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-100%)", width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
-                </>
+                  <span style={{ position: "absolute", left: 0, top: 0, width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
+                </span>
               ) : (
                 <span style={{ color: cheia ? "#F5C518" : "#ddd", transition: "color 0.1s ease" }}>★</span>
               )}
