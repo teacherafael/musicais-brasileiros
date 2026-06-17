@@ -156,7 +156,7 @@ export const teatros = [
   {
     id: "nucleo-experimental-sp",
     nomeOficial: "Núcleo Experimental",
-    aliases: [],
+    aliases: ["Teatro do Núcleo Experimental"],
     endereco: "R. Barra Funda, 637",
     bairro: "Barra Funda",
     cidade: "São Paulo – SP",
