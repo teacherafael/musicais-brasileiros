@@ -32,19 +32,19 @@ function ReportarErro({ musicalId, musicalTitulo, usuario }) {
           onClick={() => setAberto(true)}
           style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0, textDecoration: "underline" }}
         >
-          Reportar erro nesta página
+          Reportar erro ou pedir mudança
         </button>
       ) : (
         <div style={{ background: "#fff8f8", border: "1px solid #f0e0e0", borderRadius: "8px", padding: "16px" }}>
-          <p style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>Reportar erro em {musicalTitulo}</p>
+          <p style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>Reportar erro ou pedir mudança em {musicalTitulo}</p>
           {enviado ? (
-            <p style={{ fontSize: "14px", color: "#888" }}>Obrigado! Seu relatório foi enviado.</p>
+            <p style={{ fontSize: "14px", color: "#888" }}>Obrigado! Sua mensagem foi enviada.</p>
           ) : (
             <>
               <textarea
                 value={texto}
                 onChange={e => setTexto(e.target.value)}
-                placeholder="Descreva o erro encontrado..."
+                placeholder="Descreva o erro ou a mudança que você gostaria..."
                 style={{ width: "100%", height: "80px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginBottom: "8px" }}
               />
               <div style={{ display: "flex", gap: "8px" }}>

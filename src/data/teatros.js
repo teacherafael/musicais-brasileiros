@@ -170,6 +170,14 @@ export const teatros = [
     cidade: "Rio de Janeiro – RJ",
   },
   {
+    id: "teatro-bravos",
+    nomeOficial: "Teatro Bravos",
+    aliases: ["Teatro Tomie Ohtake", "Teatro Cetip", "Teatro Geo"],
+    endereco: "Rua dos Coropés, 88",
+    bairro: "Pinheiros",
+    cidade: "Rio de Janeiro – RJ",
+  },
+  {
     id: "teatro-bradesco-sp",
     nomeOficial: "Teatro Bradesco",
     aliases: [""],
