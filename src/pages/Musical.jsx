@@ -127,6 +127,7 @@ function Musical() {
   const [textoEdicao, setTextoEdicao] = useState("")
   const [editandoMusical, setEditandoMusical] = useState(false)
   const [formEdicao, setFormEdicao] = useState({})
+  const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [gerando, setGerando] = useState(false)
   const [denunciandoComentario, setDenunciandoComentario] = useState(null)
   const [textoDenuncia, setTextoDenuncia] = useState("")
@@ -261,13 +262,44 @@ const [novoTeatro, setNovoTeatro] = useState("")
       teatro: musical.teatro || "",
       capa: musical.capa || ""
     })
+    let listaTeatros = musical.teatros || []
+    if (listaTeatros.length === 0 && musical.teatro) {
+      listaTeatros = [{ ano: musical.ano || "", teatros: [musical.teatro] }]
+      if (musical.teatrosAdicionais) {
+        musical.teatrosAdicionais.forEach(item => listaTeatros.push({ ano: item.ano, teatros: item.teatros }))
+      }
+    }
+    setTeatrosAdicionais(
+      listaTeatros.map(item => ({ ...item, teatrosTexto: item.teatros.join(", ") }))
+    )
     setEditandoMusical(true)
+    
   }
 
   async function salvarEdicaoMusical() {
-    await updateDoc(doc(db, "musicais", id), formEdicao)
-    setMusical(prev => ({ ...prev, ...formEdicao }))
+    const teatrosLimpos = teatrosAdicionais
+      .map(item => ({
+        ano: item.ano.trim(),
+        teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean)
+      }))
+      .filter(item => item.ano && item.teatros.length > 0)
+    const dadosFinais = {
+      ...formEdicao,
+      teatro: teatrosLimpos[0]?.teatros[0] || "",
+      teatros: teatrosLimpos,
+      teatrosAdicionais: [],
+    }
+    await updateDoc(doc(db, "musicais", id), dadosFinais)
+    setMusical(prev => ({ ...prev, ...dadosFinais }))
     setEditandoMusical(false)
+  }
+
+  function moverTeatro(index, direcao) {
+    const destino = index + direcao
+    if (destino < 0 || destino >= teatrosAdicionais.length) return
+    const novo = [...teatrosAdicionais]
+    ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
+    setTeatrosAdicionais(novo)
   }
 
   async function toggleDestaque() {
@@ -696,6 +728,68 @@ setNovaSessaoPublica(true)
           {campo("Ano", "ano")}
           {campo("Teatro de estreia", "teatro")}
           {campo("URL da capa", "capa")}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+              Teatros (o primeiro da lista é considerado a estreia)
+            </label>
+            {teatrosAdicionais.map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <button
+                    onClick={() => moverTeatro(i, -1)}
+                    disabled={i === 0}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }}
+                    title="Mover para cima"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => moverTeatro(i, 1)}
+                    disabled={i === teatrosAdicionais.length - 1}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === teatrosAdicionais.length - 1 ? "default" : "pointer", color: i === teatrosAdicionais.length - 1 ? "#ddd" : "#888", fontSize: "12px" }}
+                    title="Mover para baixo"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Ano"
+                  value={item.ano}
+                  onChange={e => {
+                    const novo = [...teatrosAdicionais]
+                    novo[i] = { ...novo[i], ano: e.target.value }
+                    setTeatrosAdicionais(novo)
+                  }}
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                />
+                <input
+                  type="text"
+                  placeholder="Teatros (separados por vírgula)"
+                  value={item.teatrosTexto}
+                  onChange={e => {
+                    const novo = [...teatrosAdicionais]
+                    novo[i] = { ...novo[i], teatrosTexto: e.target.value }
+                    setTeatrosAdicionais(novo)
+                  }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                />
+                <button
+                  onClick={() => setTeatrosAdicionais(teatrosAdicionais.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
+                  title="Remover"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setTeatrosAdicionais([...teatrosAdicionais, { ano: "", teatrosTexto: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
+            >
+              + Adicionar teatro
+            </button>
+          </div>
           {formEdicao.capa && (
             <img src={formEdicao.capa} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
           )}
@@ -734,27 +828,57 @@ setNovaSessaoPublica(true)
               )}
 
               <div style={{ marginTop: "4px", marginBottom: "4px" }}>
-                {musical.ano && (
-                  <p className="musical-meta"><strong>Ano:</strong> {musical.ano}</p>
-                )}
-                {musical.teatro && (() => {
-                  const t = encontrarTeatroPorNome(musical.teatro);
-                  return (
-                    <p className="musical-meta">
-                      <strong>Teatro de estreia:</strong>{" "}
-                      {t ? (
-                        <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>
-                          {musical.teatro}
-                        </Link>
-                      ) : (
-                        musical.teatro
-                      )}
-                    </p>
-                  );
-                })()}
+                
                 {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
                 {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
                 {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
+                {(musical.teatros?.length > 0 || musical.teatro) && (() => {
+                  const listaBase = musical.teatros && musical.teatros.length > 0
+                    ? musical.teatros
+                    : musical.teatro
+                      ? [{ ano: musical.ano || "", teatros: [musical.teatro] }, ...(musical.teatrosAdicionais || [])]
+                      : []
+                  const linhas = listaBase.map((item, i) => ({ ...item, estreia: i === 0 }))
+                  return (
+                    <div style={{ marginTop: "10px" }}>
+                      <p className="musical-meta" style={{ marginBottom: "6px" }}><strong>Teatros:</strong></p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingLeft: "4px" }}>
+                        {linhas.map((item, i) => {
+                          const porCidade = {}
+                          item.teatros.forEach(nomeTeatro => {
+                            const t = encontrarTeatroPorNome(nomeTeatro)
+                            const cidade = t ? t.cidade.split(" – ")[0] : null
+                            const chave = cidade || "?"
+                            if (!porCidade[chave]) porCidade[chave] = []
+                            porCidade[chave].push({ nome: nomeTeatro, id: t?.id })
+                          })
+                          return (
+                            <div key={i} style={{ display: "flex", gap: "14px", alignItems: "baseline", fontSize: "14px" }}>
+                              <span style={{ fontWeight: "500", color: "#1a1a1a", minWidth: "40px" }}>{item.ano}</span>
+                              <span style={{ color: "#666" }}>
+                                {Object.entries(porCidade).map(([cidade, lista], j) => (
+                                  <span key={cidade}>
+                                    {j > 0 && " / "}
+                                    {lista.map((t, k) => (
+                                      <span key={k}>
+                                        {k > 0 && ", "}
+                                        {t.id ? (
+                                          <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>{t.nome}</Link>
+                                        ) : t.nome}
+                                      </span>
+                                    ))}
+                                    {cidade !== "?" && <span style={{ color: "#999" }}> — {cidade}</span>}
+                                  </span>
+                                ))}
+                                {item.estreia && <span style={{ fontSize: "12px", color: "#999" }}> (estreia)</span>}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
 
               <div style={{ margin: "16px 0 12px" }}>
