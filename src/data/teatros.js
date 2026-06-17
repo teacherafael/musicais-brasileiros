@@ -209,6 +209,30 @@ export const teatros = [
     bairro: "Centro",
     cidade: "Rio de Janeiro – RJ",
   },
+   {
+    id: "teatro-fernanda-montenegro",
+    nomeOficial: "Teatro Fernanda Montenegro",
+    aliases: ["Teatro Copacabana Palace"],
+    endereco: "Av. Nossa Sra. de Copacabana, 261 ",
+    bairro: "Copacabana",
+    cidade: "Rio de Janeiro – RJ",
+  },
+    {
+    id: "teatro-nova-iguacu",
+    nomeOficial: "Teatro Nova Iguaçu Petrobras",
+    aliases: ["Teatro Nova Iguaçu"],
+    endereco: "R. Cel. Bernardino de Melo, 1081",
+    bairro: "Caonze",
+    cidade: "Nova Iguaçu – RJ",
+  },
+    {
+    id: "teatro-prio",
+    nomeOficial: "Teatro PRIO",
+    aliases: ["Teatro XP Investimentos", "Teatro do Jockey"],
+    endereco: "Av. Bartolomeu Mitre, 1110",
+    bairro: "Lagoa",
+    cidade: "Rio de Janeiro – RJ",
+  },
   {
     id: "teatro-estudio",
     nomeOficial: "Teatro Estúdio",
@@ -264,6 +288,14 @@ export const teatros = [
     endereco: "R. Marquês de São Vicente, 52",
     bairro: "Gávea",
     cidade: "Rio de Janeiro – RJ",
+  },
+  {
+    id: "teatro-tca",
+    nomeOficial: "Teatro Castro Alves (TCA)",
+    aliases: [],
+    endereco: "Praça Dois de Julho, s/n",
+    bairro: "Campo Grande",
+    cidade: "Salvador – BA",
   },
   // Adicione mais teatros aqui seguindo o mesmo padrão
 ];
