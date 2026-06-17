@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { setDoc, doc, collection, onSnapshot, updateDoc, getDocs } from "firebase/firestore"
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth"
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth"
 import { auth, provider, db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
@@ -26,21 +26,6 @@ function Header() {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
-  }, [])
-
-  // Conclui o login quando ele acontece via redirecionamento (celular)
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then(async (resultado) => {
-        if (resultado && resultado.user) {
-          const user = resultado.user
-          await setDoc(doc(db, "usuarios", user.uid), {
-            nome: user.displayName,
-            foto: user.photoURL,
-          }, { merge: true })
-        }
-      })
-      .catch(() => {})
   }, [])
 
   // Escuta notificações em tempo real
@@ -127,12 +112,9 @@ function Header() {
         foto: user.photoURL,
       }, { merge: true })
     } catch (e) {
-      // Se a janelinha (popup) for bloqueada, tenta por redirecionamento
-      try {
-        await signInWithRedirect(auth, provider)
-      } catch (e2) {
-        alert("Não foi possível entrar agora. Tente novamente ou abra o site em outro navegador.")
-      }
+      // Usuário fechou a janelinha sozinho: não é erro, ignora
+      if (e?.code === "auth/popup-closed-by-user" || e?.code === "auth/cancelled-popup-request") return
+      alert("Não foi possível entrar agora. Tente novamente.")
     }
   }
 
