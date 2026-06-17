@@ -74,6 +74,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
+    id: "teatro-carlos-gomes",
+    nomeOficial: "Teatro Carlos Gomes",
+    aliases: [],
+    endereco: "Prç. Tiradentes, s/n° ",
+    bairro: "Centro",
+    cidade: "Rio de Janeiro – RJ",
+  },
+  {
     id: "teatro-santander",
     nomeOficial: "Teatro Santander",
     aliases: [],
@@ -120,6 +128,22 @@ export const teatros = [
     endereco: "Rua da Consolação, 1218",
     bairro: "Consolação",
     cidade: "São Paulo – SP",
+  },
+   {
+    id: "teatro-multiplan",
+    nomeOficial: "Teatro Multiplan",
+    aliases: ["Teatro Bradesco RJ"],
+    endereco: "Av. das Américas, 3900",
+    bairro: "Barra da Tijuca",
+    cidade: "Rio de Janeiro – RJ",
+  },
+   {
+    id: "teatro-multiplan-sp",
+    nomeOficial: "Teatro Multiplan SP",
+    aliases: [],
+    endereco: "Av. Roque Petroni Júnior, 1089",
+    bairro: "Jardim das Acacias",
+    cidade: 'São Paulo – SP",
   },
   {
     id: "teatro-viradalata-sp",
