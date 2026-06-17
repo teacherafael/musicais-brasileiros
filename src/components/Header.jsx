@@ -1,14 +1,31 @@
 import { useState, useEffect, useRef } from "react"
 import { setDoc, doc, collection, onSnapshot, updateDoc, getDocs } from "firebase/firestore"
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth"
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth"
 import { auth, provider, db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
 // Detecta se o site foi aberto dentro de um navegador de app (WhatsApp, Instagram, etc.)
 function navegadorDeApp() {
   const ua = navigator.userAgent || navigator.vendor || ""
-  const apps = ["FBAN", "FBAV", "FB_IAB", "Instagram", "WhatsApp", "Line/", "Twitter", "TikTok", "musical_ly", "BytedanceWebview", "Messenger", "Snapchat"]
-  return apps.some(a => ua.includes(a))
+  const apps = [
+    "FBAN", "FBAV", "FB_IAB", "Instagram", "WhatsApp", "Line/",
+    "Twitter", "TikTok", "musical_ly", "BytedanceWebview",
+    "Messenger", "Snapchat", "LinkedIn", "Pinterest", "KAKAOTALK"
+  ]
+  if (apps.some(a => ua.includes(a))) return true
+  // WebView do Android (apps que embutem o navegador): a marca "; wv" no user-agent.
+  // Navegadores de verdade (Chrome, Firefox, Samsung Internet) NÃO têm essa marca.
+  if (ua.includes("; wv")) return true
+  return false
+}
+
+// Salva/atualiza nome e foto do usuário no Firestore (usado tanto no popup quanto no redirect)
+async function salvarUsuario(user) {
+  if (!user) return
+  await setDoc(doc(db, "usuarios", user.uid), {
+    nome: user.displayName,
+    foto: user.photoURL,
+  }, { merge: true })
 }
 
 function Header() {
@@ -25,7 +42,18 @@ function Header() {
   }, [])
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => setUsuario(user))
+    const unsub = onAuthStateChanged(auth, (user) => setUsuario(user))
+    return () => unsub()
+  }, [])
+
+  // Quando o login acontece por redirecionamento (fallback), o usuário volta pra cá:
+  // capturamos o resultado e salvamos os dados dele.
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((resultado) => {
+        if (resultado?.user) salvarUsuario(resultado.user)
+      })
+      .catch(() => {})
   }, [])
 
   // Escuta notificações em tempo real
@@ -106,14 +134,20 @@ function Header() {
     }
     try {
       const resultado = await signInWithPopup(auth, provider)
-      const user = resultado.user
-      await setDoc(doc(db, "usuarios", user.uid), {
-        nome: user.displayName,
-        foto: user.photoURL,
-      }, { merge: true })
+      await salvarUsuario(resultado.user)
     } catch (e) {
       // Usuário fechou a janelinha sozinho: não é erro, ignora
       if (e?.code === "auth/popup-closed-by-user" || e?.code === "auth/cancelled-popup-request") return
+      // Popup bloqueado pelo navegador (comum no celular): tenta pelo redirecionamento
+      if (e?.code === "auth/popup-blocked" || e?.code === "auth/operation-not-supported-in-this-environment") {
+        try {
+          await signInWithRedirect(auth, provider)
+          return
+        } catch {
+          alert("Não foi possível entrar agora. Tente novamente.")
+          return
+        }
+      }
       alert("Não foi possível entrar agora. Tente novamente.")
     }
   }
