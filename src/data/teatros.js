@@ -114,14 +114,6 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
-    id: "teatro-casagrande-rj",
-    nomeOficial: "Teatro Casagrande",
-    aliases: [],
-    endereco: "Rua Voluntários da Pátria, 53",
-    bairro: "Botafogo",
-    cidade: "Rio de Janeiro – RJ",
-  },
-  {
     id: "teatro-commune-sp",
     nomeOficial: "Teatro Commune",
     aliases: [],
@@ -175,6 +167,22 @@ export const teatros = [
     aliases: ["Teatro Abril"],
     endereco: "Rua Palestra Itália, 500",
     bairro: "Perdizes",
+    cidade: "São Paulo – SP",
+  },
+   {
+    id: "teatro-cia-da-revista",
+    nomeOficial: "Espaço Cia da Revista",
+    aliases: ["Teatro Cia da Revista"],
+    endereco: "Alameda Nothmann, 1135",
+    bairro: "Campos Elísios",
+    cidade: "São Paulo – SP",
+  },
+  {
+    id: "teatro-estudio",
+    nomeOficial: "Teatro Estúdio",
+    aliases: [],
+    endereco: "R. Conselheiro Nébias, 891",
+    bairro: "Campos Elísios",
     cidade: "São Paulo – SP",
   },
   {
@@ -244,7 +252,7 @@ export const teatros = [
   {
     id: "teatro-casa-grande-rj",
     nomeOficial: "Teatro Casa Grande",
-    aliases: ["Teatro Oi Casa Grande"],
+    aliases: ["Teatro Oi Casa Grande", "Teatro AXIA Casa Grande"],
     endereco: "Av. Afrânio de Melo Franco, 290",
     bairro: "Leblon",
     cidade: "Rio de Janeiro – RJ",
