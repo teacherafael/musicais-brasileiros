@@ -172,7 +172,7 @@ export const teatros = [
   {
     id: "teatro-bradesco-sp",
     nomeOficial: "Teatro Bradesco",
-    aliases: ["Teatro Abril"],
+    aliases: [""],
     endereco: "Rua Palestra Itália, 500",
     bairro: "Perdizes",
     cidade: "São Paulo – SP",
