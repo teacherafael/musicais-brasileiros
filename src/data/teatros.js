@@ -202,6 +202,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
+    id: "teatro-frei-caneca",
+    nomeOficial: "Teatro Sabesp Frei Caneca",
+    aliases: ["Teatro Opus Frei Caneca", "Teatro Frei Caneca"],
+    endereco: "R. Frei Caneca, 569",
+    bairro: "Consolação",
+    cidade: "São Paulo – SP",
+  },
+  {
     id: "teatro-casa-grande-rj",
     nomeOficial: "Teatro Casa Grande",
     aliases: ["Teatro Oi Casa Grande"],
