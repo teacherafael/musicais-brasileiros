@@ -143,7 +143,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Roque Petroni Júnior, 1089",
     bairro: "Jardim das Acacias",
-    cidade: 'São Paulo – SP",
+    cidade: "São Paulo – SP",
   },
   {
     id: "teatro-viradalata-sp",
