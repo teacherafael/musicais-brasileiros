@@ -298,6 +298,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
+    id: "teatro-das-artes",
+    nomeOficial: "Teatro das Artes",
+    aliases: [],
+    endereco: "Av. Rebouças, 3970",
+    bairro: "Pinheiros",
+    cidade: "São Paulo – SP",
+  },
+  {
     id: "teatro-casa-grande-rj",
     nomeOficial: "Teatro Casa Grande",
     aliases: ["Teatro Oi Casa Grande", "Teatro AXIA Casa Grande"],
