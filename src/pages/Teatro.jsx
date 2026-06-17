@@ -15,22 +15,33 @@ export default function Teatro() {
   useEffect(() => {
     if (!teatro) return;
 
+    function anosNesteTeatro(musical, nomesDoTeatro) {
+      const fonte = (musical.teatros && musical.teatros.length > 0)
+        ? musical.teatros
+        : musical.teatro
+          ? [{ ano: musical.ano || "", teatros: [musical.teatro] }]
+          : []
+      const anos = []
+      fonte.forEach((item) => {
+        const bateu = item.teatros.some((t) => nomesDoTeatro.includes((t || "").trim().toLowerCase()))
+        if (bateu && item.ano) anos.push(item.ano)
+      })
+      return [...new Set(anos)]
+    }
+
     async function buscarMusicais() {
       setCarregando(true);
       const snapshot = await getDocs(collection(db, "musicais"));
       const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-      // Filtra musicais cujo campo "teatro" bate com o nomeOficial ou qualquer alias
       const nomesDoTeatro = [teatro.nomeOficial, ...teatro.aliases].map((n) =>
         n.trim().toLowerCase()
       );
 
       const filtrados = todos
-        .filter((m) => {
-          const teatroDoMusical = (m.teatro || "").trim().toLowerCase();
-          return nomesDoTeatro.includes(teatroDoMusical);
-        })
-        .sort((a, b) => (b.ano || "").localeCompare(a.ano || ""));
+        .map((m) => ({ ...m, anosNesteTeatro: anosNesteTeatro(m, nomesDoTeatro) }))
+        .filter((m) => m.anosNesteTeatro.length > 0)
+        .sort((a, b) => (a.anosNesteTeatro[0] || "").localeCompare(b.anosNesteTeatro[0] || ""));
 
       setMusicais(filtrados);
       setCarregando(false);
@@ -191,7 +202,7 @@ export default function Teatro() {
                       {musical.titulo}
                     </div>
                     <div style={{ color: "#888", fontSize: 12 }}>
-                      {musical.ano || "—"}
+                      {musical.anosNesteTeatro.join(", ") || "—"}
                     </div>
                     {media && (
                       <div
