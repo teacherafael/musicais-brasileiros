@@ -21,6 +21,7 @@ function Admin() {
   // --- Aba "Adicionar musical" (cadastro direto pelo painel) ---
   const [formNovo, setFormNovo] = useState({})
   const [capaNovo, setCapaNovo] = useState("")
+  const [teatrosNovo, setTeatrosNovo] = useState([])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -46,6 +47,15 @@ function Admin() {
     buscarDados()
   }, [])
 
+  // Move um bloco de teatro pra cima/baixo no formulário de adicionar
+  function moverTeatroNovo(index, direcao) {
+    const destino = index + direcao
+    if (destino < 0 || destino >= teatrosNovo.length) return
+    const novo = [...teatrosNovo]
+    ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
+    setTeatrosNovo(novo)
+  }
+
   // Publica um musical novo direto na coleção "musicais"
   async function publicarNovo() {
     if (!formNovo.titulo || !formNovo.titulo.trim()) {
@@ -67,6 +77,14 @@ function Admin() {
       if (!window.confirm(`Já existe um musical com esse título ("${formNovo.titulo}"). Publicar vai SOBRESCREVER o existente e zerar as avaliações. Continuar?`)) return
     }
 
+    // Monta a lista de teatros no mesmo formato da página de musicais
+    const teatrosLimpos = teatrosNovo
+      .map(item => ({
+        ano: item.ano.trim(),
+        teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean)
+      }))
+      .filter(item => item.ano && item.teatros.length > 0)
+
     await setDoc(doc(db, "musicais", slug), {
       titulo: formNovo.titulo || "",
       sinopse: formNovo.sinopse || "",
@@ -79,7 +97,9 @@ function Admin() {
       textoOriginal: formNovo.textoOriginal || "",
       musicaOriginal: formNovo.musicaOriginal || "",
       ano: formNovo.ano || "",
-      teatro: formNovo.teatro || "",
+      teatro: teatrosLimpos[0]?.teatros[0] || "",
+      teatros: teatrosLimpos,
+      teatrosAdicionais: [],
       capa: capaNovo || "",
       totalVotos: 0,
       somaEstrelas: 0,
@@ -89,6 +109,7 @@ function Admin() {
     setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: formNovo.direcao, ano: formNovo.ano, capa: capaNovo }, ...prev])
     setFormNovo({})
     setCapaNovo("")
+    setTeatrosNovo([])
     alert("Musical publicado!")
     setAba("musicais")
   }
@@ -210,7 +231,7 @@ await setDoc(doc(db, "musicais", slug), {
         <textarea
           value={formNovo[chave] || ""}
           onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }}
+          style={{ width: "100%", height: "100px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }}
         />
       ) : (
         <input
@@ -340,13 +361,75 @@ await setDoc(doc(db, "musicais", slug), {
           {campoNovo("Direção", "direcao")}
           {campoNovo("Direção musical", "direcaoMusical")}
           {campoNovo("Produção", "producao")}
-          {campoNovo("Elenco", "elenco")}
-          {campoNovo("Elenco adicional", "elencoAdicional")}
+          {campoNovo("Elenco", "elenco", true)}
+          {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Versionista", "versionista")}
           {campoNovo("Texto original", "textoOriginal")}
           {campoNovo("Música original", "musicaOriginal")}
           {campoNovo("Ano", "ano")}
-          {campoNovo("Teatro", "teatro")}
+
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+              Teatros (o primeiro da lista é considerado a estreia)
+            </label>
+            {teatrosNovo.map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <button
+                    onClick={() => moverTeatroNovo(i, -1)}
+                    disabled={i === 0}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }}
+                    title="Mover para cima"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => moverTeatroNovo(i, 1)}
+                    disabled={i === teatrosNovo.length - 1}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === teatrosNovo.length - 1 ? "default" : "pointer", color: i === teatrosNovo.length - 1 ? "#ddd" : "#888", fontSize: "12px" }}
+                    title="Mover para baixo"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Ano"
+                  value={item.ano}
+                  onChange={e => {
+                    const novo = [...teatrosNovo]
+                    novo[i] = { ...novo[i], ano: e.target.value }
+                    setTeatrosNovo(novo)
+                  }}
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                />
+                <input
+                  type="text"
+                  placeholder="Teatros (separados por vírgula)"
+                  value={item.teatrosTexto}
+                  onChange={e => {
+                    const novo = [...teatrosNovo]
+                    novo[i] = { ...novo[i], teatrosTexto: e.target.value }
+                    setTeatrosNovo(novo)
+                  }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+                />
+                <button
+                  onClick={() => setTeatrosNovo(teatrosNovo.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
+                  title="Remover"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setTeatrosNovo([...teatrosNovo, { ano: "", teatrosTexto: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
+            >
+              + Adicionar teatro
+            </button>
+          </div>
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
@@ -366,7 +449,7 @@ await setDoc(doc(db, "musicais", slug), {
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={publicarNovo}>Publicar musical</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo("") }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]) }}>Limpar</button>
           </div>
         </div>
       ) : aba === "relatos" ? (
