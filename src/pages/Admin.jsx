@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
+import { collection, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -17,6 +17,10 @@ function Admin() {
   const [capas, setCapas] = useState({})
   const [editandoSugestao, setEditandoSugestao] = useState(null)
   const [formSugestao, setFormSugestao] = useState({})
+
+  // --- Aba "Adicionar musical" (cadastro direto pelo painel) ---
+  const [formNovo, setFormNovo] = useState({})
+  const [capaNovo, setCapaNovo] = useState("")
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -41,6 +45,53 @@ function Admin() {
     }
     buscarDados()
   }, [])
+
+  // Publica um musical novo direto na coleção "musicais"
+  async function publicarNovo() {
+    if (!formNovo.titulo || !formNovo.titulo.trim()) {
+      alert("O título é obrigatório.")
+      return
+    }
+    const slug = (formNovo.titulo
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/^-+|-+$/g, "")
+    ) || "musical-" + Date.now()
+
+    // Proteção: não sobrescrever um musical já existente (zeraria avaliações)
+    const existe = await getDoc(doc(db, "musicais", slug))
+    if (existe.exists()) {
+      if (!window.confirm(`Já existe um musical com esse título ("${formNovo.titulo}"). Publicar vai SOBRESCREVER o existente e zerar as avaliações. Continuar?`)) return
+    }
+
+    await setDoc(doc(db, "musicais", slug), {
+      titulo: formNovo.titulo || "",
+      sinopse: formNovo.sinopse || "",
+      direcao: formNovo.direcao || "",
+      direcaoMusical: formNovo.direcaoMusical || "",
+      producao: formNovo.producao || "",
+      elenco: formNovo.elenco || "",
+      elencoAdicional: formNovo.elencoAdicional || "",
+      versionista: formNovo.versionista || "",
+      textoOriginal: formNovo.textoOriginal || "",
+      musicaOriginal: formNovo.musicaOriginal || "",
+      ano: formNovo.ano || "",
+      teatro: formNovo.teatro || "",
+      capa: capaNovo || "",
+      totalVotos: 0,
+      somaEstrelas: 0,
+      dataCriacao: new Date()
+    })
+
+    setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: formNovo.direcao, ano: formNovo.ano, capa: capaNovo }, ...prev])
+    setFormNovo({})
+    setCapaNovo("")
+    alert("Musical publicado!")
+    setAba("musicais")
+  }
 
   function abrirEdicaoSugestao(s) {
     setFormSugestao({
@@ -149,6 +200,29 @@ await setDoc(doc(db, "musicais", slug), {
     </div>
   )
 
+  // Igual ao campoSugestao, mas ligado ao formulário da aba "Adicionar musical"
+  const campoNovo = (label, chave, multiline = false) => (
+    <div style={{ marginBottom: "12px" }}>
+      <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          value={formNovo[chave] || ""}
+          onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }}
+        />
+      ) : (
+        <input
+          type="text"
+          value={formNovo[chave] || ""}
+          onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+        />
+      )}
+    </div>
+  )
+
   const naoLidas = mensagens.filter(m => !m.lida).length
 
   if (!usuario) return <main><p>Carregando...</p></main>
@@ -163,6 +237,9 @@ await setDoc(doc(db, "musicais", slug), {
       <div style={{ display: "flex", gap: "12px", marginBottom: "32px", flexWrap: "wrap" }}>
         <button onClick={() => setAba("sugestoes")} className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}>
           Sugestões pendentes {sugestoes.length > 0 && `(${sugestoes.length})`}
+        </button>
+        <button onClick={() => setAba("adicionar")} className={aba === "adicionar" ? "btn-comentar" : "btn-sair"}>
+          ➕ Adicionar musical
         </button>
         <button onClick={() => setAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
           Relatos e denúncias {relatos.length > 0 && `(${relatos.length})`}
@@ -251,6 +328,47 @@ await setDoc(doc(db, "musicais", slug), {
             </div>
           ))
         )
+      ) : aba === "adicionar" ? (
+        <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>Adicionar musical</h2>
+          <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px", lineHeight: "1.5" }}>
+            Preencha os campos abaixo e clique em <strong>Publicar musical</strong> para adicionar direto na database, sem passar pelo formulário de sugestão.
+          </p>
+
+          {campoNovo("Título", "titulo")}
+          {campoNovo("Sinopse", "sinopse", true)}
+          {campoNovo("Direção", "direcao")}
+          {campoNovo("Direção musical", "direcaoMusical")}
+          {campoNovo("Produção", "producao")}
+          {campoNovo("Elenco", "elenco")}
+          {campoNovo("Elenco adicional", "elencoAdicional")}
+          {campoNovo("Versionista", "versionista")}
+          {campoNovo("Texto original", "textoOriginal")}
+          {campoNovo("Música original", "musicaOriginal")}
+          {campoNovo("Ano", "ano")}
+          {campoNovo("Teatro", "teatro")}
+
+          <div style={{ marginTop: "8px", marginBottom: "16px" }}>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+              URL da capa (opcional)
+            </label>
+            <input
+              type="text"
+              placeholder="https://..."
+              value={capaNovo}
+              onChange={e => setCapaNovo(e.target.value)}
+              style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }}
+            />
+            {capaNovo && (
+              <img src={capaNovo} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <button className="btn-comentar" onClick={publicarNovo}>Publicar musical</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo("") }}>Limpar</button>
+          </div>
+        </div>
       ) : aba === "relatos" ? (
         relatos.length === 0 ? (
           <p style={{ color: "#888" }}>Nenhum relato ou denúncia.</p>

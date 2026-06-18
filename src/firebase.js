@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app"
-import { getFirestore } from "firebase/firestore"
+import { initializeFirestore } from "firebase/firestore"
 import { getAuth, GoogleAuthProvider } from "firebase/auth"
 
 const firebaseConfig = {
@@ -12,6 +12,13 @@ const firebaseConfig = {
 }
 
 const app = initializeApp(firebaseConfig)
-export const db = getFirestore(app)
+
+// Detecta automaticamente quando a rede do usuário precisa do modo de conexão
+// alternativo (long-polling). Resolve o "Carregando..." infinito em redes/aparelhos
+// onde a conexão padrão trava (Wi-Fi de empresa, VPN, alguns Safari/operadoras).
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+})
+
 export const auth = getAuth(app)
 export const provider = new GoogleAuthProvider()
