@@ -106,11 +106,11 @@ function Sugestao() {
       {campo("Direção", "direcao")}
       {campo("Direção musical", "direcaoMusical")}
       {campo("Produção", "producao")}
-      {campoTexto("Elenco (nomes separados por vírgula)", "elenco")}
-      {campoTexto("Elenco adicional (nomes separados por vírgula)", "elencoAdicional")}
       {campo("Versionista", "versionista")}
       {campo("Texto original", "textoOriginal")}
       {campo("Música original", "musicaOriginal")}
+      {campoTexto("Elenco de estreia (nomes separados por vírgula)", "elenco")}
+      {campoTexto("Elenco adicional (nomes separados por vírgula)", "elencoAdicional")}
       {campo("Ano de estreia", "ano")}
       {campo("Teatro de estreia", "teatro")}
 

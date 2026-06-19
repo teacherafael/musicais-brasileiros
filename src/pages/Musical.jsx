@@ -719,7 +719,7 @@ setNovaSessaoPublica(true)
           {campo("Direção", "direcao")}
           {campo("Direção musical", "direcaoMusical")}
           {campo("Produção", "producao")}
-          {campo("Elenco", "elenco")}
+          {campo("Elenco de estreia", "elenco")}
           {campo("Elenco adicional", "elencoAdicional")}
           {campo("Versionista", "versionista")}
           {campo("Texto original", "textoOriginal")}
@@ -1041,7 +1041,7 @@ setNovaSessaoPublica(true)
 
           {musical.elenco && (
             <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco de estreia</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elenco.split(",").map((nome) => {
                   const n = nome.trim()

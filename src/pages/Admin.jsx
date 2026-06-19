@@ -395,7 +395,7 @@ await setDoc(doc(db, "musicais", slug), {
                   {campoSugestao("Direção", "direcao")}
                   {campoSugestao("Direção musical", "direcaoMusical")}
                   {campoSugestao("Produção", "producao")}
-                  {campoSugestao("Elenco", "elenco")}
+                  {campoSugestao("Elenco de estreia", "elenco")}
                   {campoSugestao("Elenco adicional", "elencoAdicional")}
                   {campoSugestao("Versionista", "versionista")}
                   {campoSugestao("Texto original", "textoOriginal")}
@@ -414,7 +414,7 @@ await setDoc(doc(db, "musicais", slug), {
                   {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
                   {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
                   {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
-                  {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
+                 {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco de estreia:</strong> {s.elenco}</p>}
                   {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
                   {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
                   {s.textoOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Texto original:</strong> {s.textoOriginal}</p>}
@@ -466,7 +466,7 @@ await setDoc(doc(db, "musicais", slug), {
           {campoNovo("Direção", "direcao")}
           {campoNovo("Direção musical", "direcaoMusical")}
           {campoNovo("Produção", "producao")}
-          {campoNovo("Elenco", "elenco", true)}
+          {campoNovo("Elenco de estreia", "elenco", true)}
           {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Versionista", "versionista")}
           {campoNovo("Texto original", "textoOriginal")}
