@@ -481,6 +481,14 @@ export const teatros = [
     bairro: "Centro",
     cidade: "Curitiba – PR",
   },
+   {
+    id: "teatro-positivo",
+    nomeOficial: "Teatro Positivo",
+    aliases: [],
+    endereco: "R. Prof. Pedro Viriato Parigot de Souza, 5300",
+    bairro: "Campo Comprido",
+    cidade: "Curitiba – PR",
+  },
   {
     id: "theatro-da-paz",
     nomeOficial: "Theatro da Paz",
@@ -522,12 +530,28 @@ export const teatros = [
     cidade: "Paulínia – SP",
   },
   {
+    id: "teatro-universitario",
+    nomeOficial: "Teatro Universitário",
+    aliases: ["Teatro Universitário da UFES","Teatro Universitário (UFES)"],
+    endereco: "Av. Fernando Ferrari, 514 ",
+    bairro: "Goiabeiras",
+    cidade: "Vitória – ES",
+  },
+  {
     id: "teatro-unip",
     nomeOficial: "Teatro UNIP",
     aliases: [],
     endereco: "SGAS I SGAS 913,",
     bairro: "Asa Sul",
     cidade: "Brasília – DF",
+  },
+  {
+    id: "teatro-tivoli",
+    nomeOficial: "Teatro Tivoli",
+    aliases: ["Cinema Tivoli"],
+    endereco: "Av. da Liberdade 182 188",
+    bairro: "",
+    cidade: "Lisboa – Portugal",
   },
   // Adicione mais teatros aqui seguindo o mesmo padrão
 ];

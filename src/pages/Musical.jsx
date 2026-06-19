@@ -138,6 +138,7 @@ function Musical() {
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
   const [tooltipHistograma, setTooltipHistograma] = useState(null)
   const cartaoRef = useRef(null)
+  const avaliacaoRef = useRef(null)
 
   // Estados das sessões
   const [sessoes, setSessoes] = useState([])
@@ -448,6 +449,9 @@ const [novoTeatro, setNovoTeatro] = useState("")
       await deleteDoc(refQueroVer)
       setJaVi(true)
       setQueroVer(false)
+      setTimeout(() => {
+        avaliacaoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      }, 100)
     }
   }
 
@@ -1123,11 +1127,13 @@ setNovaSessaoPublica(true)
             </div>
           )}
 
-          <p className="avaliacao-titulo">
-            {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
-          </p>
+          <div ref={avaliacaoRef}>
+            <p className="avaliacao-titulo">
+              {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
+            </p>
 
-          <Estrelas votoAtual={votoAtual} onVotar={votar} />
+            <Estrelas votoAtual={votoAtual} onVotar={votar} />
+          </div>
 
           {votoAtual && (
             <div style={{ marginBottom: "8px" }}>
