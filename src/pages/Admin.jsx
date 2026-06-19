@@ -5,6 +5,44 @@ import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 
+// Campos que a Home usa (busca, filtros, ordenações, carrosséis). A sinopse NÃO entra
+// de propósito: é o campo mais pesado e a Home não usa. Isso mantém o índice pequeno.
+function montarItemIndice(id, m) {
+  return {
+    id,
+    titulo: m.titulo || "",
+    capa: m.capa || "",
+    ano: m.ano || "",
+    direcao: m.direcao || "",
+    direcaoMusical: m.direcaoMusical || "",
+    producao: m.producao || "",
+    elenco: m.elenco || "",
+    elencoAdicional: m.elencoAdicional || "",
+    versionista: m.versionista || "",
+    textoOriginal: m.textoOriginal || "",
+    musicaOriginal: m.musicaOriginal || "",
+    totalVotos: Number(m.totalVotos) || 0,
+    somaEstrelas: Number(m.somaEstrelas) || 0,
+    destaque: m.destaque === true,
+    dataCriacao: m.dataCriacao?.seconds
+      ? { seconds: m.dataCriacao.seconds }
+      : (m.dataCriacao instanceof Date ? { seconds: Math.floor(m.dataCriacao.getTime() / 1000) } : null)
+  }
+}
+
+// Lê todos os musicais uma vez e grava a lista enxuta em indices/home.
+// Retorna a quantidade indexada (pra exibir no status).
+async function gerarIndiceHome() {
+  const snap = await getDocs(collection(db, "musicais"))
+  const itens = snap.docs.map(d => montarItemIndice(d.id, d.data()))
+  await setDoc(doc(db, "indices", "home"), {
+    itens,
+    total: itens.length,
+    atualizadoEm: new Date()
+  })
+  return itens.length
+}
+
 function Admin() {
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(null)
@@ -17,6 +55,9 @@ function Admin() {
   const [capas, setCapas] = useState({})
   const [editandoSugestao, setEditandoSugestao] = useState(null)
   const [formSugestao, setFormSugestao] = useState({})
+
+  // Status do índice da Home
+  const [indiceStatus, setIndiceStatus] = useState("")
 
   // --- Aba "Adicionar musical" (cadastro direto pelo painel) ---
   const [formNovo, setFormNovo] = useState({})
@@ -46,6 +87,18 @@ function Admin() {
     }
     buscarDados()
   }, [])
+
+  // Botão manual: regenera o índice da Home com o que está hoje na coleção musicais.
+  async function atualizarIndiceManual() {
+    setIndiceStatus("Gerando índice...")
+    try {
+      const qtd = await gerarIndiceHome()
+      setIndiceStatus(`Índice atualizado ✓ (${qtd} musicais)`)
+    } catch (e) {
+      setIndiceStatus("Erro ao gerar índice. Tente novamente.")
+    }
+    setTimeout(() => setIndiceStatus(""), 4000)
+  }
 
   // Move um bloco de teatro pra cima/baixo no formulário de adicionar
   function moverTeatroNovo(index, direcao) {
@@ -110,6 +163,8 @@ function Admin() {
     setFormNovo({})
     setCapaNovo("")
     setTeatrosNovo([])
+    // Mantém o índice da Home em dia
+    try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
     setAba("musicais")
   }
@@ -170,6 +225,8 @@ await setDoc(doc(db, "musicais", slug), {
     await updateDoc(doc(db, "sugestoes", sugestao.id), { status: "aprovado" })
     setSugestoes(prev => prev.filter(s => s.id !== sugestao.id))
     setCapas(prev => { const next = { ...prev }; delete next[sugestao.id]; return next })
+    // Mantém o índice da Home em dia
+    try { await gerarIndiceHome() } catch (e) { /* não bloqueia a aprovação */ }
   }
 
   async function rejeitar(sugestaoId) {
@@ -186,6 +243,8 @@ await setDoc(doc(db, "musicais", slug), {
     if (!window.confirm(`Tem certeza que quer deletar "${titulo}"? Esta ação não pode ser desfeita.`)) return
     await deleteDoc(doc(db, "musicais", musicalId))
     setMusicais(prev => prev.filter(m => m.id !== musicalId))
+    // Mantém o índice da Home em dia
+    try { await gerarIndiceHome() } catch (e) { /* não bloqueia a deleção */ }
   }
 
   async function marcarMensagemLida(mensagemId) {
@@ -537,31 +596,49 @@ await setDoc(doc(db, "musicais", slug), {
           ))
         )
       ) : (
-        musicais.length === 0 ? (
-          <p style={{ color: "#888" }}>Nenhum musical publicado.</p>
-        ) : (
-          musicais.map(m => (
-            <div key={m.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
-              {m.capa ? (
-                <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
-              ) : (
-                <div style={{ width: "48px", height: "64px", background: "#1a1a1a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ color: "#F5C518", fontSize: "8px", textAlign: "center", padding: "4px" }}>{m.titulo}</span>
-                </div>
+        <>
+          {/* Barra de ação do índice da Home */}
+          <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "12px", padding: "16px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: "220px" }}>
+              <p style={{ fontSize: "14px", fontWeight: "700", margin: "0 0 2px" }}>Índice da Home</p>
+              <p style={{ fontSize: "13px", color: "#666", margin: 0, lineHeight: "1.4" }}>
+                A Home lê este índice em vez de carregar todos os musicais. Ele se atualiza sozinho ao publicar, aprovar ou deletar. Use o botão se precisar forçar a atualização.
+              </p>
+              {indiceStatus && (
+                <p style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a1a", margin: "8px 0 0" }}>{indiceStatus}</p>
               )}
-              <div style={{ flex: 1 }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
-                <p style={{ fontSize: "13px", color: "#888" }}>{m.direcao || "—"} · {m.ano || "—"}</p>
-              </div>
-              <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
-                <button onClick={() => deletarMusical(m.id, m.titulo)} style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
-                  Deletar
-                </button>
-              </div>
             </div>
-          ))
-        )
+            <button className="btn-comentar" onClick={atualizarIndiceManual}>
+              🔄 Atualizar índice da Home
+            </button>
+          </div>
+
+          {musicais.length === 0 ? (
+            <p style={{ color: "#888" }}>Nenhum musical publicado.</p>
+          ) : (
+            musicais.map(m => (
+              <div key={m.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
+                {m.capa ? (
+                  <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: "48px", height: "64px", background: "#1a1a1a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#F5C518", fontSize: "8px", textAlign: "center", padding: "4px" }}>{m.titulo}</span>
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
+                  <p style={{ fontSize: "13px", color: "#888" }}>{m.direcao || "—"} · {m.ano || "—"}</p>
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                  <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
+                  <button onClick={() => deletarMusical(m.id, m.titulo)} style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    Deletar
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </>
       )}
     </main>
   )

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, limit, where, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, getDoc, doc, setDoc, deleteDoc, query, orderBy, limit, where, addDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -99,6 +99,26 @@ function Home() {
 
   useEffect(() => {
     async function buscarMusicais() {
+      try {
+        // Caminho rápido: lê 1 único documento (índice gerado pelo admin)
+        const indiceSnap = await getDoc(doc(db, "indices", "home"))
+        if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
+          const lista = indiceSnap.data().itens.map(m => ({
+            ...m,
+            id: m.id,
+            // o índice guarda dataCriacao como { seconds }; mantém o mesmo formato usado abaixo
+            dataCriacao: m.dataCriacao || null
+          }))
+          setMusicais(lista)
+          setDestaques(lista.filter(m => m.destaque === true).slice(0, 10))
+          setCarregando(false)
+          return
+        }
+      } catch (e) {
+        // se der qualquer erro no índice, cai no plano B abaixo
+      }
+
+      // Plano B: índice ausente/indisponível → lê a coleção inteira (comportamento antigo)
       const snapshot = await getDocs(collection(db, "musicais"))
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
@@ -541,7 +561,7 @@ function Home() {
               >
                 <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
                   {a.foto
-                    ? <img src={a.foto} alt={a.nome} style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: seguindoIds.has(a.userId) ? "2px solid #F5C518" : "none" }} />
+                    ? <img src={a.foto} alt={a.nome} referrerPolicy="no-referrer" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: seguindoIds.has(a.userId) ? "2px solid #F5C518" : "none" }} />
                     : <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#1a1a1a", color: "#F5C518", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>👤</div>
                   }
                   <div style={{ minWidth: 0 }}>
