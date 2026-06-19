@@ -110,7 +110,7 @@ function Sugestao() {
       {campo("Texto original", "textoOriginal")}
       {campo("Música original", "musicaOriginal")}
       {campoTexto("Elenco de estreia (nomes separados por vírgula)", "elenco")}
-      {campoTexto("Elenco adicional (nomes separados por vírgula)", "elencoAdicional")}
+      {campoTexto("Elenco adicional (que entraram durante a temporada ou em novas temporadas) (nomes separados por vírgula)", "elencoAdicional")}
       {campo("Ano de estreia", "ano")}
       {campo("Teatro de estreia", "teatro")}
 
