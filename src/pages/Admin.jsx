@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
+import { collection, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -50,6 +50,7 @@ function Admin() {
   const [relatos, setRelatos] = useState([])
   const [musicais, setMusicais] = useState([])
   const [mensagens, setMensagens] = useState([])
+  const [comentariosPendentes, setComentariosPendentes] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
   const [capas, setCapas] = useState({})
@@ -83,6 +84,11 @@ function Admin() {
       const mensagensSnap = await getDocs(query(collection(db, "mensagens"), orderBy("data", "desc")))
       setMensagens(mensagensSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
+      // Comentários de usuários NÃO verificados aguardando aprovação.
+      // Lê da coleção raiz "comentarios" (cada doc já tem musicalId e musicalTitulo).
+      const comentariosSnap = await getDocs(query(collection(db, "comentarios"), where("status", "==", "pendente"), orderBy("data", "desc")))
+      setComentariosPendentes(comentariosSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+
       setCarregando(false)
     }
     buscarDados()
@@ -107,6 +113,43 @@ function Admin() {
     const novo = [...teatrosNovo]
     ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
     setTeatrosNovo(novo)
+  }
+
+  // Aprova um comentário pendente: marca como "aprovado" na coleção raiz e na
+  // subcoleção do musical (que é a lida pela página). Depois registra na Atividade recente.
+  async function aprovarComentario(c) {
+    await updateDoc(doc(db, "comentarios", c.id), { status: "aprovado" })
+    try {
+      await updateDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id), { status: "aprovado" })
+    } catch (e) {
+      // Se o autor já tiver apagado a cópia da subcoleção, não trava a aprovação
+    }
+    try {
+      await addDoc(collection(db, "atividades"), {
+        tipo: "comentario",
+        userId: c.userId || null,
+        nome: c.nome || "Anônimo",
+        foto: c.foto || "",
+        musicalId: c.musicalId,
+        musicalTitulo: c.musicalTitulo || "",
+        data: serverTimestamp()
+      })
+    } catch (e) {
+      // Feed é secundário — falha aqui não bloqueia a aprovação
+    }
+    setComentariosPendentes(prev => prev.filter(x => x.id !== c.id))
+  }
+
+  // Rejeita: apaga o comentário nos dois lugares
+  async function rejeitarComentario(c) {
+    if (!window.confirm("Rejeitar e apagar este comentário?")) return
+    await deleteDoc(doc(db, "comentarios", c.id))
+    try {
+      await deleteDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id))
+    } catch (e) {
+      // idem: cópia da subcoleção pode já não existir
+    }
+    setComentariosPendentes(prev => prev.filter(x => x.id !== c.id))
   }
 
   // Publica um musical novo direto na coleção "musicais"
@@ -321,6 +364,9 @@ await setDoc(doc(db, "musicais", slug), {
         <button onClick={() => setAba("adicionar")} className={aba === "adicionar" ? "btn-comentar" : "btn-sair"}>
           ➕ Adicionar musical
         </button>
+        <button onClick={() => setAba("comentarios")} className={aba === "comentarios" ? "btn-comentar" : "btn-sair"}>
+          Comentários pendentes {comentariosPendentes.length > 0 && `(${comentariosPendentes.length})`}
+        </button>
         <button onClick={() => setAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
           Relatos e denúncias {relatos.length > 0 && `(${relatos.length})`}
         </button>
@@ -511,6 +557,33 @@ await setDoc(doc(db, "musicais", slug), {
             <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]) }}>Limpar</button>
           </div>
         </div>
+      ) : aba === "comentarios" ? (
+        comentariosPendentes.length === 0 ? (
+          <p style={{ color: "#888" }}>Nenhum comentário pendente.</p>
+        ) : (
+          comentariosPendentes.map(c => (
+            <div key={c.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", background: "#fff8e1", color: "#8d6e01", borderRadius: "4px", padding: "2px 8px" }}>
+                  Aguardando aprovação
+                </span>
+                <p style={{ fontSize: "13px", fontWeight: "500", color: "#b8960a", margin: 0 }}>{c.musicalTitulo}</p>
+              </div>
+              <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{c.texto}</p>
+              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Por: {c.nome || "Anônimo"}</p>
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                <button className="btn-comentar" onClick={() => aprovarComentario(c)}>Aprovar</button>
+                <button className="btn-sair" onClick={() => navigate(`/musical/${c.musicalId}`)}>Ver musical</button>
+                <button
+                  onClick={() => rejeitarComentario(c)}
+                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}
+                >
+                  Rejeitar
+                </button>
+              </div>
+            </div>
+          ))
+        )
       ) : aba === "relatos" ? (
         relatos.length === 0 ? (
           <p style={{ color: "#888" }}>Nenhum relato ou denúncia.</p>
