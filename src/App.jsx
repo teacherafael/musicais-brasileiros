@@ -11,7 +11,6 @@ import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
 import Politica from "./pages/Politica"
 import Pessoa from "./pages/Pessoa"
-import Stats from "./pages/Stats"
 import Teatro from "./pages/Teatro"
 import Mensagens from "./pages/Mensagens"
 import Conversa from "./pages/Conversa"
@@ -76,7 +75,6 @@ function App() {
         <Route path="/politica" element={<Politica />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
-        <Route path="/stats" element={<Stats />} />
         <Route path="/teatro/:id" element={<Teatro />} />
         <Route path="/mensagens" element={<Mensagens />} />
         <Route path="/mensagens/:conversaId" element={<Conversa />} />

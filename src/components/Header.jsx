@@ -209,12 +209,6 @@ function Header() {
           >
             Top 15
           </span>
-          <span
-            onClick={() => navigate("/stats")}
-            style={{ fontSize: "14px", color: "#aaa", cursor: "pointer" }}
-          >
-            Estatísticas
-          </span>
 
           {usuario && (
             <div ref={sinoRef} style={{ position: "relative" }}>
@@ -336,6 +330,7 @@ function Header() {
                 <img
                   src={usuario.photoURL}
                   alt="perfil"
+                  referrerPolicy="no-referrer"
                   onClick={() => navigate(`/perfil/${usuario.uid}`)}
                   style={{ width: "32px", height: "32px", borderRadius: "50%", cursor: "pointer", flexShrink: 0 }}
                 />
