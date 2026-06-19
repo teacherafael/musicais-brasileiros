@@ -466,11 +466,11 @@ await setDoc(doc(db, "musicais", slug), {
           {campoNovo("Direção", "direcao")}
           {campoNovo("Direção musical", "direcaoMusical")}
           {campoNovo("Produção", "producao")}
-          {campoNovo("Elenco de estreia", "elenco", true)}
-          {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Versionista", "versionista")}
           {campoNovo("Texto original", "textoOriginal")}
           {campoNovo("Música original", "musicaOriginal")}
+          {campoNovo("Elenco de estreia", "elenco", true)}
+          {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Ano", "ano")}
 
           <div style={{ marginBottom: "20px" }}>
