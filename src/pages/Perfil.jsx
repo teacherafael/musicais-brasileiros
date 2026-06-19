@@ -49,6 +49,9 @@ function Perfil() {
   const [sessoesExpandidas, setSessoesExpandidas] = useState({})
   const [tabAtiva, setTabAtiva] = useState("avaliacoes")
 
+  // Filtro da aba "Já vi"
+  const [filtroJaVi, setFiltroJaVi] = useState("todos") // "todos" | "sem-avaliacao"
+
   // Redes sociais e bio
   const [redesSociais, setRedesSociais] = useState({ instagram: "", tiktok: "", x: "", site: "" })
   const [bio, setBio] = useState("")
@@ -434,6 +437,7 @@ function Perfil() {
 
   const votosIds = votos.map(v => v.musicalId)
   const jaViSemAvaliacao = jaVi.filter(item => !votosIds.includes(item.musicalId))
+  const jaViExibidos = (isProprioPerfil && filtroJaVi === "sem-avaliacao") ? jaViSemAvaliacao : jaVi
 
   if (carregando) return <main><p>Carregando...</p></main>
 
@@ -856,20 +860,41 @@ function Perfil() {
 
       {tabAtiva === "ja-vi" && (
         <div>
-          {jaVi.length === 0 ? (
-            <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não marcou nenhum musical como visto."}</p>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
-              {jaVi.map(item => cardJaVi(item))}
+          {isProprioPerfil && jaVi.length > 0 && (
+            <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
+              <button onClick={() => setFiltroJaVi("todos")}
+                style={{
+                  padding: "6px 16px", borderRadius: "20px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600",
+                  border: filtroJaVi === "todos" ? "none" : "1px solid #e8e8e4",
+                  background: filtroJaVi === "todos" ? "#F5C518" : "transparent",
+                  color: filtroJaVi === "todos" ? "#1a1a1a" : "#555",
+                  cursor: "pointer"
+                }}>
+                Todos ({jaVi.length})
+              </button>
+              <button onClick={() => setFiltroJaVi("sem-avaliacao")} disabled={jaViSemAvaliacao.length === 0}
+                style={{
+                  padding: "6px 16px", borderRadius: "20px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600",
+                  border: filtroJaVi === "sem-avaliacao" ? "none" : "1px solid #e8e8e4",
+                  background: filtroJaVi === "sem-avaliacao" ? "#F5C518" : "transparent",
+                  color: filtroJaVi === "sem-avaliacao" ? "#1a1a1a" : (jaViSemAvaliacao.length === 0 ? "#ccc" : "#555"),
+                  cursor: jaViSemAvaliacao.length === 0 ? "not-allowed" : "pointer"
+                }}>
+                Ainda não avaliei ({jaViSemAvaliacao.length})
+              </button>
             </div>
           )}
-          {isProprioPerfil && jaViSemAvaliacao.length > 0 && (
-            <div style={{ marginTop: "32px" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", marginBottom: "8px" }}>Ainda não avaliei ({jaViSemAvaliacao.length})</h3>
-              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Musicais que você marcou como "Já vi" mas ainda não deu uma nota.</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
-                {jaViSemAvaliacao.map(item => cardJaVi(item))}
-              </div>
+          {jaViExibidos.length === 0 ? (
+            <p className="login-aviso">
+              {isProprioPerfil
+                ? (filtroJaVi === "sem-avaliacao"
+                    ? "Você já avaliou tudo que marcou como visto! 🎉"
+                    : <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a>)
+                : "Este usuário ainda não marcou nenhum musical como visto."}
+            </p>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+              {jaViExibidos.map(item => cardJaVi(item))}
             </div>
           )}
         </div>
