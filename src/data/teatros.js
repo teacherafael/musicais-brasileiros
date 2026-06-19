@@ -337,6 +337,14 @@ export const teatros = [
     bairro: "Itaim Bibi",
     cidade: "São Paulo – SP",
   },
+  {
+    id: "itau-cultural",
+    nomeOficial: "Itaú Cultural",
+    aliases: ["Instituto Itaú Cultural"],
+    endereco: "Av. Paulista, 149",
+    bairro: "Bela Vista",
+    cidade: "São Paulo – SP",
+  },
    {
     id: "teatro-jsafra",
     nomeOficial: "Teatro J. Safra",
@@ -378,6 +386,14 @@ export const teatros = [
     cidade: "Rio de Janeiro – RJ",
   },
   {
+    id: "ccbb-rj",
+    nomeOficial: "Centro Cultural Banco do Brasil (CCBB-RJ)",
+    aliases: [],
+    endereco: "R. Primeiro de Março, 66",
+    bairro: "Centro",
+    cidade: "Rio de Janeiro – RJ",
+  },
+  {
     id: "imperator",
     nomeOficial: "Imperator",
     aliases: ["Imperator - Centro Cultural João Nogueira", "Teatro Imperator"],
@@ -391,6 +407,14 @@ export const teatros = [
     aliases: ["Teatro Municipal do Rio de Janeiro"],
     endereco: "Praça Floriano, S/N ",
     bairro: "Centro",
+    cidade: "Rio de Janeiro – RJ",
+  },
+   {
+    id: "teatro-das-artes-rj",
+    nomeOficial: "Teatro das Artes RJ",
+    aliases: [],
+    endereco: "R. Marquês de São Vicente, 52",
+    bairro: "Gávea",
     cidade: "Rio de Janeiro – RJ",
   },
    {
