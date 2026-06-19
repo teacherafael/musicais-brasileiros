@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { setDoc, doc, collection, onSnapshot, updateDoc, getDocs } from "firebase/firestore"
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth"
 import { auth, provider, db } from "../firebase"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 
 // Detecta se o site foi aberto dentro de um navegador de app (WhatsApp, Instagram, etc.)
 function navegadorDeApp() {
@@ -193,14 +193,14 @@ function Header() {
       )}
 
       <header>
-        <div
-          className="logo"
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer", display: "flex", alignItems: "baseline", gap: "10px" }}
-        >
-          <span style={{ color: "#F5C518" }}>MBD<span style={{ color: "#fff" }}>b</span></span>
-          <span className="logo-subtitulo">Musicais Brasileiros Database</span>
-        </div>
+        <Link
+  to="/"
+  className="logo"
+  style={{ cursor: "pointer", display: "flex", alignItems: "baseline", gap: "10px", textDecoration: "none" }}
+>
+  <span style={{ color: "#F5C518" }}>MBD<span style={{ color: "#fff" }}>b</span></span>
+  <span className="logo-subtitulo">Musicais Brasileiros Database</span>
+</Link>
 
         <div className="header-right">
           <span
