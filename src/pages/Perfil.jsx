@@ -50,10 +50,10 @@ function Perfil() {
   const [tabAtiva, setTabAtiva] = useState("avaliacoes")
 
   // Redes sociais e bio
-  const [redesSociais, setRedesSociais] = useState({ instagram: "", tiktok: "", x: "" })
+  const [redesSociais, setRedesSociais] = useState({ instagram: "", tiktok: "", x: "", site: "" })
   const [bio, setBio] = useState("")
   const [editandoRedes, setEditandoRedes] = useState(false)
-  const [redesTemp, setRedesTemp] = useState({ instagram: "", tiktok: "", x: "" })
+  const [redesTemp, setRedesTemp] = useState({ instagram: "", tiktok: "", x: "", site: "" })
   const [bioTemp, setBioTemp] = useState("")
 
   // Mensagem
@@ -135,6 +135,7 @@ function Perfil() {
           instagram: data.instagram || "",
           tiktok: data.tiktok || "",
           x: data.x || "",
+          site: data.site || "",
         })
         setBio(data.bio || "")
       }
@@ -416,6 +417,12 @@ function Perfil() {
     return label
   }
 
+  function normalizarUrlSite(url) {
+    if (!url) return ""
+    if (/^https?:\/\//i.test(url)) return url
+    return `https://${url}`
+  }
+
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = ehAdmin(usuarioLogado)
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
@@ -521,7 +528,7 @@ function Perfil() {
     cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", textDecorationColor: "#ccc"
   }
 
-  const temRedesSociais = redesSociais.instagram || redesSociais.tiktok || redesSociais.x
+  const temRedesSociais = redesSociais.instagram || redesSociais.tiktok || redesSociais.x || redesSociais.site
 
   return (
     <main>
@@ -580,6 +587,12 @@ function Perfil() {
                 𝕏 @{redesSociais.x.replace("@", "")}
               </a>
             )}
+            {redesSociais.site && (
+              <a href={normalizarUrlSite(redesSociais.site)} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "#1a1a1a", textDecoration: "none", background: "#f0f0f0", border: "1px solid #ddd", borderRadius: "99px", padding: "4px 12px" }}>
+                🔗 {redesSociais.site.replace(/^https?:\/\//i, "")}
+              </a>
+            )}
             {isProprioPerfil && !editandoRedes && (
               <button onClick={() => { setRedesTemp({ ...redesSociais }); setBioTemp(bio); setEditandoRedes(true) }}
                 style={{ background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "4px 12px", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
@@ -612,6 +625,7 @@ function Perfil() {
               { chave: "instagram", label: "Instagram", placeholder: "@seunome" },
               { chave: "tiktok", label: "TikTok", placeholder: "@seunome" },
               { chave: "x", label: "X (Twitter)", placeholder: "@seunome" },
+              { chave: "site", label: "Site", placeholder: "seusite.com.br" },
             ].map(({ chave, label, placeholder }) => (
               <div key={chave} style={{ marginBottom: "12px" }}>
                 <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>{label}</label>
@@ -695,6 +709,11 @@ function Perfil() {
         <a href="#top5" style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
           ✦ Top 5
         </a>
+        {isProprioPerfil && (
+          <a href="#zona-risco" style={{ color: '#cc0000', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#fff5f5', border: '1px solid #f0c0c0', borderRadius: '20px' }}>
+          🗑 Excluir minha conta
+          </a>
+        )}
       </div>
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0' }}>
         {[
@@ -889,7 +908,7 @@ function Perfil() {
 
       {/* ZONA DE RISCO — apenas no próprio perfil */}
       {isProprioPerfil && (
-        <div style={{ marginTop: "60px", padding: "20px", border: "1px solid #f0c0c0", borderRadius: "8px", background: "#fff5f5" }}>
+        <div id="zona-risco" style={{ marginTop: "60px", padding: "20px", border: "1px solid #f0c0c0", borderRadius: "8px", background: "#fff5f5", scrollMarginTop: "20px" }}>
           <p style={{ fontSize: "13px", fontWeight: "600", color: "#cc0000", marginBottom: "8px" }}>Zona de risco</p>
           <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px", lineHeight: "1.5" }}>
             Deletar sua conta apaga permanentemente suas avaliações, listas ("já vi", "quero ver", top 5), conexões de seguir e mensagens. Seus comentários são mantidos, mas ficam anônimos ("Usuário removido"). Essa ação não pode ser desfeita.
