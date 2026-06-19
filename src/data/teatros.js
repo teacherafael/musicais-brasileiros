@@ -345,6 +345,22 @@ export const teatros = [
     bairro: "Bela Vista",
     cidade: "São Paulo – SP",
   },
+  {
+    id: "teatro-vivo",
+    nomeOficial: "Teatro Vivo",
+    aliases: [],
+    endereco: "Avenida Doutor Chucri Zaidan, 2460",
+    bairro: "Vila Cordeiro",
+    cidade: "São Paulo – SP",
+  },
+    {
+    id: "ccsp",
+    nomeOficial: "Teatro do CCSP",
+    aliases: ["CCSP"],
+    endereco: "Rua Vergueiro, 1000",
+    bairro: "VLiberdade",
+    cidade: "São Paulo – SP",
+  },
    {
     id: "teatro-jsafra",
     nomeOficial: "Teatro J. Safra",
