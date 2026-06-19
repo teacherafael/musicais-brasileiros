@@ -260,7 +260,8 @@ const [novoTeatro, setNovoTeatro] = useState("")
       musicaOriginal: musical.musicaOriginal || "",
       ano: musical.ano || "",
       teatro: musical.teatro || "",
-      capa: musical.capa || ""
+      capa: musical.capa || "",
+      programaDigital: musical.programaDigital || ""
     })
     let listaTeatros = musical.teatros || []
     if (listaTeatros.length === 0 && musical.teatro) {
@@ -731,6 +732,7 @@ setNovaSessaoPublica(true)
           {campo("Ano", "ano")}
           {campo("Teatro de estreia", "teatro")}
           {campo("URL da capa", "capa")}
+          {campo("Link do programa digital (Google Drive)", "programaDigital")}
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
               Teatros (o primeiro da lista é considerado a estreia)
@@ -917,10 +919,15 @@ setNovaSessaoPublica(true)
             </button>
             <button onClick={toggleQueroVer} title="Adicione à sua lista de musicais para assistir" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               {queroVer ? "✓ Quero ver" : "+ Quero ver"}
-            </button>
+              </button>
             <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copiado!") }} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               🔗 Copiar link
             </button>
+            {musical.programaDigital && (
+              <a href={musical.programaDigital} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#b8960a", color: "#1a1a1a", border: "1px solid #b8960a", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
+                📄 Baixe o programa digital
+              </a>
+            )}
           </div>
 
           {/* BLOCO DE SESSÕES */}

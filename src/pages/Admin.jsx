@@ -197,6 +197,7 @@ function Admin() {
       teatros: teatrosLimpos,
       teatrosAdicionais: [],
       capa: capaNovo || "",
+      programaDigital: formNovo.programaDigital || "",
       totalVotos: 0,
       somaEstrelas: 0,
       dataCriacao: new Date()
@@ -472,6 +473,7 @@ await setDoc(doc(db, "musicais", slug), {
           {campoNovo("Elenco de estreia", "elenco", true)}
           {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Ano", "ano")}
+          {campoNovo("Link do programa digital (Google Drive)", "programaDigital")}
 
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
