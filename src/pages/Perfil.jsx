@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where } from "firebase/firestore"
-import { db, auth } from "../firebase"
+import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where, updateDoc } from "firebase/firestore"
+import { db, auth, provider } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
-import { onAuthStateChanged } from "firebase/auth"
+import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
 import { ehAdmin } from "../admins"
 
 function SeloVerificado() {
@@ -34,6 +34,8 @@ function Perfil() {
   const [top3Selecionado, setTop3Selecionado] = useState([])
   const [buscaTop3, setBuscaTop3] = useState("")
   const [verificado, setVerificado] = useState(false)
+  const [banido, setBanido] = useState(false)
+  const [processandoConta, setProcessandoConta] = useState(false)
 
   const [seguindo, setSeguindo] = useState([])
   const [seguidores, setSeguidores] = useState([])
@@ -126,6 +128,7 @@ function Perfil() {
         const data = usuarioDoc.data()
         setAvaliacoesPublicas(data.avaliacoesPublicas ?? true)
         setVerificado(data.verificado ?? false)
+        setBanido(data.banido ?? false)
         if (data.nome) setNomeUsuario(data.nome)
         if (data.foto) setFotoUsuario(data.foto)
         setRedesSociais({
@@ -269,6 +272,132 @@ function Perfil() {
     await setDoc(doc(db, "usuarios", userId), { verificado: novo }, { merge: true })
   }
 
+  // ===== Banimento (admin, perfil de outra pessoa) =====
+  async function toggleBanir() {
+    const novo = !banido
+    if (novo && !window.confirm(`Banir ${nomeUsuario || "este usuário"}? Isso apaga todos os comentários dele e bloqueia novas ações (votar, comentar, seguir, listas).`)) return
+    if (!novo && !window.confirm(`Desbanir ${nomeUsuario || "este usuário"}?`)) return
+
+    setProcessandoConta(true)
+    try {
+      await setDoc(doc(db, "usuarios", userId), { banido: novo, banidoEm: novo ? serverTimestamp() : null }, { merge: true })
+      setBanido(novo)
+
+      if (novo) {
+        // apaga comentários (cópia top-level + subcoleção do musical)
+        for (const c of comentarios) {
+          try { await deleteDoc(doc(db, "comentarios", c.id)) } catch (e) {}
+          try { await deleteDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id)) } catch (e) {}
+        }
+        setComentarios([])
+
+        // remove do feed de atividade recente
+        try {
+          const ativSnap = await getDocs(query(collection(db, "atividades"), where("userId", "==", userId)))
+          for (const d of ativSnap.docs) await deleteDoc(d.ref)
+        } catch (e) {}
+      }
+    } catch (e) {
+      alert("Erro ao atualizar o banimento. Tente novamente.")
+    }
+    setProcessandoConta(false)
+  }
+
+  // ===== Autodeleção de conta (dono do perfil) =====
+  async function deletarPropriaConta() {
+    if (!usuarioLogado || usuarioLogado.uid !== userId) return
+    if (!window.confirm("Tem certeza que quer deletar sua conta? Suas avaliações, listas, comentários e mensagens serão apagados permanentemente.")) return
+    if (!window.confirm("Última confirmação: essa ação não pode ser desfeita. Deletar mesmo assim?")) return
+
+    setProcessandoConta(true)
+
+    try {
+      await reauthenticateWithPopup(usuarioLogado, provider)
+    } catch (e) {
+      alert("Não foi possível confirmar sua identidade (login cancelado ou expirado). Tente novamente.")
+      setProcessandoConta(false)
+      return
+    }
+
+    try {
+      // 1. Apaga votos e corrige totalVotos/somaEstrelas/distribuicao de cada musical
+      for (const v of votos) {
+        try {
+          await deleteDoc(doc(db, "musicais", v.musicalId, "votos", userId))
+          const mRef = doc(db, "musicais", v.musicalId)
+          const mSnap = await getDoc(mRef)
+          if (mSnap.exists()) {
+            const m = mSnap.data()
+            const totalVotos = Math.max(0, (Number(m.totalVotos) || 0) - 1)
+            const somaEstrelas = Math.max(0, (Number(m.somaEstrelas) || 0) - Number(v.estrelas))
+            const dadosUpdate = { totalVotos, somaEstrelas }
+            if (m.distribuicao) {
+              const faixa = String(Math.floor(Number(v.estrelas)))
+              const distribuicao = { ...m.distribuicao }
+              if (distribuicao[faixa]) distribuicao[faixa] = Math.max(0, Number(distribuicao[faixa]) - 1)
+              dadosUpdate.distribuicao = distribuicao
+            }
+            await updateDoc(mRef, dadosUpdate)
+          }
+        } catch (e) {}
+      }
+
+      // 2. Anonimiza comentários (mantém texto, data e reações)
+      for (const c of comentarios) {
+        const dadosAnon = { nome: "Usuário removido", userId: null, foto: "" }
+        try { await updateDoc(doc(db, "comentarios", c.id), dadosAnon) } catch (e) {}
+        try { await updateDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id), dadosAnon) } catch (e) {}
+      }
+
+      // 3. Apaga subcoleções do usuário
+      const subcolecoes = ["queroVer", "jaVi", "top3", "sessoesAssistidas"]
+      for (const sub of subcolecoes) {
+        const snap = await getDocs(collection(db, "usuarios", userId, sub))
+        for (const d of snap.docs) await deleteDoc(d.ref)
+      }
+
+      // 4. Desfaz relações de seguir nos dois lados
+      for (const s of seguindo) {
+        try { await deleteDoc(doc(db, "usuarios", userId, "seguindo", s.id)) } catch (e) {}
+        try { await deleteDoc(doc(db, "usuarios", s.id, "seguidores", userId)) } catch (e) {}
+      }
+      for (const s of seguidores) {
+        try { await deleteDoc(doc(db, "usuarios", userId, "seguidores", s.id)) } catch (e) {}
+        try { await deleteDoc(doc(db, "usuarios", s.id, "seguindo", userId)) } catch (e) {}
+      }
+
+      // 5. Apaga atividades do feed
+      try {
+        const ativSnap = await getDocs(query(collection(db, "atividades"), where("userId", "==", userId)))
+        for (const d of ativSnap.docs) await deleteDoc(d.ref)
+      } catch (e) {}
+
+      // 6. Apaga notificações
+      try {
+        const notifSnap = await getDocs(collection(db, "notificacoes", userId, "itens"))
+        for (const d of notifSnap.docs) await deleteDoc(d.ref)
+      } catch (e) {}
+
+      // 7. Apaga conversas em que participa
+      // (apaga a conversa inteira — não há Cloud Function pra só remover o participante)
+      try {
+        const conversasSnap = await getDocs(query(collection(db, "conversas"), where("participantes", "array-contains", userId)))
+        for (const d of conversasSnap.docs) await deleteDoc(d.ref)
+      } catch (e) {}
+
+      // 8. Apaga o documento de usuário
+      await deleteDoc(doc(db, "usuarios", userId))
+
+      // 9. Apaga a conta no Firebase Auth
+      await usuarioLogado.delete()
+
+      navigate("/")
+    } catch (e) {
+      alert("Algo deu errado ao deletar a conta. Tente novamente ou entre em contato pelo formulário da Home.")
+      setProcessandoConta(false)
+    }
+  }
+
   function toggleSessoes(musicalId) {
     setSessoesExpandidas(prev => ({ ...prev, [musicalId]: !prev[musicalId] }))
   }
@@ -407,6 +536,11 @@ function Perfil() {
           {verificado && <SeloVerificado />}
         </h1>
         {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
+        {banido && (
+          <p style={{ color: "#cc0000", fontSize: "13px", fontWeight: "600", marginTop: "4px" }}>
+            🚫 Esta conta está banida{isProprioPerfil ? " — você não pode votar, comentar, seguir ou usar listas." : "."}
+          </p>
+        )}
 
         {/* Bio */}
         {bio && (
@@ -414,9 +548,15 @@ function Perfil() {
         )}
 
         {isAdmin && !isProprioPerfil && (
-          <button onClick={toggleVerificado} style={{ marginTop: "8px", padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #1D9BF0", background: verificado ? "#1D9BF0" : "transparent", color: verificado ? "#fff" : "#1D9BF0", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-            {verificado ? "✓ Verificado — Remover selo" : "Verificar usuário"}
-          </button>
+          <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
+            <button onClick={toggleVerificado} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #1D9BF0", background: verificado ? "#1D9BF0" : "transparent", color: verificado ? "#fff" : "#1D9BF0", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              {verificado ? "✓ Verificado — Remover selo" : "Verificar usuário"}
+            </button>
+            <button onClick={toggleBanir} disabled={processandoConta}
+              style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #cc0000", background: banido ? "#cc0000" : "transparent", color: banido ? "#fff" : "#cc0000", cursor: processandoConta ? "not-allowed" : "pointer", opacity: processandoConta ? 0.6 : 1, fontFamily: "'DM Sans', sans-serif" }}>
+              {processandoConta ? "..." : banido ? "🚫 Banido — Desbanir" : "Banir usuário"}
+            </button>
+          </div>
         )}
 
         {/* Redes sociais */}
@@ -744,6 +884,20 @@ function Perfil() {
               )
             })
           )}
+        </div>
+      )}
+
+      {/* ZONA DE RISCO — apenas no próprio perfil */}
+      {isProprioPerfil && (
+        <div style={{ marginTop: "60px", padding: "20px", border: "1px solid #f0c0c0", borderRadius: "8px", background: "#fff5f5" }}>
+          <p style={{ fontSize: "13px", fontWeight: "600", color: "#cc0000", marginBottom: "8px" }}>Zona de risco</p>
+          <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px", lineHeight: "1.5" }}>
+            Deletar sua conta apaga permanentemente suas avaliações, listas ("já vi", "quero ver", top 5), conexões de seguir e mensagens. Seus comentários são mantidos, mas ficam anônimos ("Usuário removido"). Essa ação não pode ser desfeita.
+          </p>
+          <button onClick={deletarPropriaConta} disabled={processandoConta}
+            style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: processandoConta ? "not-allowed" : "pointer", opacity: processandoConta ? 0.6 : 1 }}>
+            {processandoConta ? "Processando..." : "Deletar minha conta"}
+          </button>
         </div>
       )}
     </main>
