@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -50,9 +50,10 @@ function Admin() {
   const [relatos, setRelatos] = useState([])
   const [musicais, setMusicais] = useState([])
   const [mensagens, setMensagens] = useState([])
-  const [comentariosPendentes, setComentariosPendentes] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
+  // Abas cujos dados já foram carregados nesta sessão (evita reler o banco à toa)
+  const [carregadas, setCarregadas] = useState(new Set())
   const [capas, setCapas] = useState({})
   const [editandoSugestao, setEditandoSugestao] = useState(null)
   const [formSugestao, setFormSugestao] = useState({})
@@ -69,30 +70,48 @@ function Admin() {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
 
-  useEffect(() => {
-    async function buscarDados() {
-      const q = query(collection(db, "sugestoes"), where("status", "==", "pendente"), orderBy("data", "desc"))
-      const snap = await getDocs(q)
-      setSugestoes(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-
-      const relatosSnap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
-      setRelatos(relatosSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-
-      const musicaisSnap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
-      setMusicais(musicaisSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-
-      const mensagensSnap = await getDocs(query(collection(db, "mensagens"), orderBy("data", "desc")))
-      setMensagens(mensagensSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-
-      // Comentários de usuários NÃO verificados aguardando aprovação.
-      // Lê da coleção raiz "comentarios" (cada doc já tem musicalId e musicalTitulo).
-      const comentariosSnap = await getDocs(query(collection(db, "comentarios"), where("status", "==", "pendente"), orderBy("data", "desc")))
-      setComentariosPendentes(comentariosSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-
-      setCarregando(false)
+  // Carrega APENAS os dados da aba pedida. Cada busca tem seu próprio try/catch,
+  // então uma falha numa coleção não trava o painel inteiro.
+  async function carregarAba(qual) {
+    // "adicionar" não tem dados pra buscar; abas já carregadas não recarregam.
+    if (qual === "adicionar" || carregadas.has(qual)) return
+    setCarregando(true)
+    try {
+      if (qual === "sugestoes") {
+        const q = query(collection(db, "sugestoes"), where("status", "==", "pendente"), orderBy("data", "desc"))
+        const snap = await getDocs(q)
+        setSugestoes(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } else if (qual === "relatos") {
+        const snap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
+        setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } else if (qual === "musicais") {
+        const snap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
+        setMusicais(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } else if (qual === "mensagens") {
+        const snap = await getDocs(query(collection(db, "mensagens"), orderBy("data", "desc")))
+        setMensagens(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      }
+      setCarregadas(prev => new Set(prev).add(qual))
+    } catch (e) {
+      // Não marca como carregada → ao reabrir a aba, tenta de novo.
+      console.error("Erro ao carregar aba:", qual, e)
     }
-    buscarDados()
-  }, [])
+    setCarregando(false)
+  }
+
+  // Troca de aba: muda a aba ativa e carrega os dados dela (se ainda não tiver).
+  function trocarAba(qual) {
+    setAba(qual)
+    carregarAba(qual)
+  }
+
+  // Ao abrir o painel, carrega só a aba inicial.
+  useEffect(() => {
+    if (usuario && ADMINS.includes(usuario.uid)) {
+      carregarAba(aba)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuario])
 
   // Botão manual: regenera o índice da Home com o que está hoje na coleção musicais.
   async function atualizarIndiceManual() {
@@ -113,43 +132,6 @@ function Admin() {
     const novo = [...teatrosNovo]
     ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
     setTeatrosNovo(novo)
-  }
-
-  // Aprova um comentário pendente: marca como "aprovado" na coleção raiz e na
-  // subcoleção do musical (que é a lida pela página). Depois registra na Atividade recente.
-  async function aprovarComentario(c) {
-    await updateDoc(doc(db, "comentarios", c.id), { status: "aprovado" })
-    try {
-      await updateDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id), { status: "aprovado" })
-    } catch (e) {
-      // Se o autor já tiver apagado a cópia da subcoleção, não trava a aprovação
-    }
-    try {
-      await addDoc(collection(db, "atividades"), {
-        tipo: "comentario",
-        userId: c.userId || null,
-        nome: c.nome || "Anônimo",
-        foto: c.foto || "",
-        musicalId: c.musicalId,
-        musicalTitulo: c.musicalTitulo || "",
-        data: serverTimestamp()
-      })
-    } catch (e) {
-      // Feed é secundário — falha aqui não bloqueia a aprovação
-    }
-    setComentariosPendentes(prev => prev.filter(x => x.id !== c.id))
-  }
-
-  // Rejeita: apaga o comentário nos dois lugares
-  async function rejeitarComentario(c) {
-    if (!window.confirm("Rejeitar e apagar este comentário?")) return
-    await deleteDoc(doc(db, "comentarios", c.id))
-    try {
-      await deleteDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id))
-    } catch (e) {
-      // idem: cópia da subcoleção pode já não existir
-    }
-    setComentariosPendentes(prev => prev.filter(x => x.id !== c.id))
   }
 
   // Publica um musical novo direto na coleção "musicais"
@@ -197,7 +179,6 @@ function Admin() {
       teatros: teatrosLimpos,
       teatrosAdicionais: [],
       capa: capaNovo || "",
-      programaDigital: formNovo.programaDigital || "",
       totalVotos: 0,
       somaEstrelas: 0,
       dataCriacao: new Date()
@@ -210,7 +191,9 @@ function Admin() {
     // Mantém o índice da Home em dia
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
+    // Vai pra aba de musicais e garante que a lista completa esteja carregada
     setAba("musicais")
+    carregarAba("musicais")
   }
 
   function abrirEdicaoSugestao(s) {
@@ -359,23 +342,20 @@ await setDoc(doc(db, "musicais", slug), {
       <h1 className="page-title">Admin</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "32px", flexWrap: "wrap" }}>
-        <button onClick={() => setAba("sugestoes")} className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}>
-          Sugestões pendentes {sugestoes.length > 0 && `(${sugestoes.length})`}
+        <button onClick={() => trocarAba("sugestoes")} className={aba === "sugestoes" ? "btn-comentar" : "btn-sair"}>
+          Sugestões pendentes {carregadas.has("sugestoes") && sugestoes.length > 0 && `(${sugestoes.length})`}
         </button>
-        <button onClick={() => setAba("adicionar")} className={aba === "adicionar" ? "btn-comentar" : "btn-sair"}>
+        <button onClick={() => trocarAba("adicionar")} className={aba === "adicionar" ? "btn-comentar" : "btn-sair"}>
           ➕ Adicionar musical
         </button>
-        <button onClick={() => setAba("comentarios")} className={aba === "comentarios" ? "btn-comentar" : "btn-sair"}>
-          Comentários pendentes {comentariosPendentes.length > 0 && `(${comentariosPendentes.length})`}
+        <button onClick={() => trocarAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
+          Relatos e denúncias {carregadas.has("relatos") && relatos.length > 0 && `(${relatos.length})`}
         </button>
-        <button onClick={() => setAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
-          Relatos e denúncias {relatos.length > 0 && `(${relatos.length})`}
+        <button onClick={() => trocarAba("musicais")} className={aba === "musicais" ? "btn-comentar" : "btn-sair"}>
+          Musicais publicados {carregadas.has("musicais") && `(${musicais.length})`}
         </button>
-        <button onClick={() => setAba("musicais")} className={aba === "musicais" ? "btn-comentar" : "btn-sair"}>
-          Musicais publicados ({musicais.length})
-        </button>
-        <button onClick={() => setAba("mensagens")} className={aba === "mensagens" ? "btn-comentar" : "btn-sair"}>
-          Mensagens {naoLidas > 0 && `(${naoLidas} nova${naoLidas > 1 ? "s" : ""})`}
+        <button onClick={() => trocarAba("mensagens")} className={aba === "mensagens" ? "btn-comentar" : "btn-sair"}>
+          Mensagens {carregadas.has("mensagens") && naoLidas > 0 && `(${naoLidas} nova${naoLidas > 1 ? "s" : ""})`}
         </button>
       </div>
 
@@ -396,7 +376,7 @@ await setDoc(doc(db, "musicais", slug), {
                   {campoSugestao("Direção", "direcao")}
                   {campoSugestao("Direção musical", "direcaoMusical")}
                   {campoSugestao("Produção", "producao")}
-                  {campoSugestao("Elenco de estreia", "elenco")}
+                  {campoSugestao("Elenco", "elenco")}
                   {campoSugestao("Elenco adicional", "elencoAdicional")}
                   {campoSugestao("Versionista", "versionista")}
                   {campoSugestao("Texto original", "textoOriginal")}
@@ -415,7 +395,7 @@ await setDoc(doc(db, "musicais", slug), {
                   {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
                   {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
                   {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
-                 {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco de estreia:</strong> {s.elenco}</p>}
+                  {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
                   {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
                   {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
                   {s.textoOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Texto original:</strong> {s.textoOriginal}</p>}
@@ -467,13 +447,12 @@ await setDoc(doc(db, "musicais", slug), {
           {campoNovo("Direção", "direcao")}
           {campoNovo("Direção musical", "direcaoMusical")}
           {campoNovo("Produção", "producao")}
+          {campoNovo("Elenco", "elenco", true)}
+          {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Versionista", "versionista")}
           {campoNovo("Texto original", "textoOriginal")}
           {campoNovo("Música original", "musicaOriginal")}
-          {campoNovo("Elenco de estreia", "elenco", true)}
-          {campoNovo("Elenco adicional", "elencoAdicional", true)}
           {campoNovo("Ano", "ano")}
-          {campoNovo("Link do programa digital (Google Drive)", "programaDigital")}
 
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
@@ -559,33 +538,6 @@ await setDoc(doc(db, "musicais", slug), {
             <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]) }}>Limpar</button>
           </div>
         </div>
-      ) : aba === "comentarios" ? (
-        comentariosPendentes.length === 0 ? (
-          <p style={{ color: "#888" }}>Nenhum comentário pendente.</p>
-        ) : (
-          comentariosPendentes.map(c => (
-            <div key={c.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", background: "#fff8e1", color: "#8d6e01", borderRadius: "4px", padding: "2px 8px" }}>
-                  Aguardando aprovação
-                </span>
-                <p style={{ fontSize: "13px", fontWeight: "500", color: "#b8960a", margin: 0 }}>{c.musicalTitulo}</p>
-              </div>
-              <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{c.texto}</p>
-              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Por: {c.nome || "Anônimo"}</p>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                <button className="btn-comentar" onClick={() => aprovarComentario(c)}>Aprovar</button>
-                <button className="btn-sair" onClick={() => navigate(`/musical/${c.musicalId}`)}>Ver musical</button>
-                <button
-                  onClick={() => rejeitarComentario(c)}
-                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}
-                >
-                  Rejeitar
-                </button>
-              </div>
-            </div>
-          ))
-        )
       ) : aba === "relatos" ? (
         relatos.length === 0 ? (
           <p style={{ color: "#888" }}>Nenhum relato ou denúncia.</p>
