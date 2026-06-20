@@ -216,20 +216,18 @@ function Home() {
 
   async function enviarContato(e) {
     e.preventDefault()
-    if (!contatoNome.trim() || !contatoMensagem.trim()) return
+    if (!usuario || !contatoMensagem.trim()) return
     setContatoEnviando(true)
     try {
       await addDoc(collection(db, "mensagens"), {
-        nome: contatoNome.trim(),
-        email: contatoEmail.trim(),
+        nome: usuario.displayName || "",
+        email: usuario.email || "",
         mensagem: contatoMensagem.trim(),
-        userId: usuario?.uid || null,
+        userId: usuario.uid,
         data: serverTimestamp(),
         lida: false
       })
       setContatoEnviado(true)
-      setContatoNome("")
-      setContatoEmail("")
       setContatoMensagem("")
     } catch (err) {
       mostrarToast("Erro ao enviar mensagem. Tente novamente.")
@@ -601,7 +599,24 @@ function Home() {
           Sugestões, correções, parcerias ou só um oi — a gente lê tudo.
         </p>
 
-        {contatoEnviado ? (
+        {!usuario ? (
+          <div style={{
+            background: "#f9f9f9",
+            border: "1px solid #e8e8e4",
+            borderRadius: "12px",
+            padding: "32px",
+            textAlign: "center",
+            maxWidth: "560px"
+          }}>
+            <p style={{ fontSize: "32px", marginBottom: "12px" }}>🔒</p>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>
+              Faça login para enviar uma mensagem
+            </p>
+            <p style={{ fontSize: "14px", color: "#888" }}>
+              Isso ajuda a evitar spam e mensagens anônimas.
+            </p>
+          </div>
+        ) : contatoEnviado ? (
           <div style={{
             background: "#f9f9f9",
             border: "1px solid #e8e8e4",
@@ -622,32 +637,6 @@ function Home() {
           </div>
         ) : (
           <div style={{ maxWidth: "560px", display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-              <div style={{ flex: 1, minWidth: "200px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  Nome <span style={{ color: "#cc0000" }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Seu nome"
-                  value={contatoNome}
-                  onChange={e => setContatoNome(e.target.value)}
-                  style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
-                />
-              </div>
-              <div style={{ flex: 1, minWidth: "200px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  E-mail <span style={{ color: "#888", fontWeight: "400", textTransform: "none", letterSpacing: 0 }}>(opcional)</span>
-                </label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={contatoEmail}
-                  onChange={e => setContatoEmail(e.target.value)}
-                  style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
-                />
-              </div>
-            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>
                 Mensagem <span style={{ color: "#cc0000" }}>*</span>
@@ -663,17 +652,17 @@ function Home() {
             <div>
               <button
                 onClick={enviarContato}
-                disabled={contatoEnviando || !contatoNome.trim() || !contatoMensagem.trim()}
+                disabled={contatoEnviando || !contatoMensagem.trim()}
                 style={{
                   padding: "12px 28px",
-                  background: contatoEnviando || !contatoNome.trim() || !contatoMensagem.trim() ? "#ccc" : "#1a1a1a",
+                  background: contatoEnviando || !contatoMensagem.trim() ? "#ccc" : "#1a1a1a",
                   color: "#fff",
                   border: "none",
                   borderRadius: "8px",
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: "15px",
                   fontWeight: "600",
-                  cursor: contatoEnviando || !contatoNome.trim() || !contatoMensagem.trim() ? "not-allowed" : "pointer",
+                  cursor: contatoEnviando || !contatoMensagem.trim() ? "not-allowed" : "pointer",
                   transition: "background 0.15s"
                 }}
               >
