@@ -149,6 +149,7 @@ function Home() {
           const qSeguidos = query(
             collection(db, "atividades"),
             where("userId", "in", [...seguindoIds].slice(0, 10)),
+            orderBy("data", "desc"),
             limit(10)
           )
           const snapSeguidos = await getDocs(qSeguidos)
@@ -161,6 +162,7 @@ function Home() {
         const seguidosUnicos = seguidos.filter(a => !idsGlobais.has(a.id))
         setFeedAtividade([...seguidosUnicos, ...globais])
       } catch (e) {
+        console.error("ERRO NO FEED:", e)
         setFeedAtividade([])
       }
     }
