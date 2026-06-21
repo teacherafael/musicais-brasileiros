@@ -1,7 +1,7 @@
 // src/pages/Teatro.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { teatros, encontrarTeatroPorNome } from "../data/teatros";
 
@@ -31,8 +31,9 @@ export default function Teatro() {
 
     async function buscarMusicais() {
       setCarregando(true);
-      const snapshot = await getDocs(collection(db, "musicais"));
-      const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
+      const indiceSnap = await getDoc(doc(db, "indices", "home"));
+      const todos = indiceSnap.exists() ? (indiceSnap.data().itens || []) : [];
 
       const nomesDoTeatro = [teatro.nomeOficial, ...teatro.aliases].map((n) =>
         n.trim().toLowerCase()
@@ -88,7 +89,7 @@ export default function Teatro() {
         </h1>
 
         {/* Info do teatro */}
-        <div style={{ color: "##1a1a1a", fontSize: 17, lineHeight: 1.7 }}>
+        <div style={{ color: "#1a1a1a", fontSize: 17, lineHeight: 1.7 }}>
           {teatro.endereco && <div>📍 {teatro.endereco}</div>}
           {teatro.bairro && teatro.cidade && (
             <div>
@@ -181,7 +182,7 @@ export default function Teatro() {
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#555",
-                        fontSize: 12,f
+                        fontSize: 12,
                       }}
                     >
                       sem capa
