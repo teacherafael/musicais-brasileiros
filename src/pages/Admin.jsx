@@ -5,6 +5,30 @@ import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 
+// Funções da equipe criativa. As duas primeiras são fixas (sempre aparecem no
+// formulário); as demais entram via "+ Adicionar função".
+const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
+const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Músicos"]
+
+// Estado inicial do editor de equipe criativa (sempre começa com as duas fixas).
+function equipeInicial() {
+  return [
+    { funcao: "Direção", nomesTexto: "" },
+    { funcao: "Direção Musical", nomesTexto: "" },
+  ]
+}
+
+// Constrói o array equipeCriativa a partir das strings antigas direcao/direcaoMusical
+// (usado ao aprovar uma sugestão, que vem só com esses dois campos).
+function montarEquipeDeStrings(direcao, direcaoMusical) {
+  const equipe = []
+  const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
+  const dm = (direcaoMusical || "").split(",").map(n => n.trim()).filter(Boolean)
+  if (d.length > 0) equipe.push({ funcao: "Direção", nomes: d })
+  if (dm.length > 0) equipe.push({ funcao: "Direção Musical", nomes: dm })
+  return equipe
+}
+
 // Campos que a Home usa (busca, filtros, ordenações, carrosséis). A sinopse NÃO entra
 // de propósito: é o campo mais pesado e a Home não usa. Isso mantém o índice pequeno.
 function montarItemIndice(id, m) {
@@ -65,6 +89,7 @@ function Admin() {
   const [formNovo, setFormNovo] = useState({})
   const [capaNovo, setCapaNovo] = useState("")
   const [teatrosNovo, setTeatrosNovo] = useState([])
+  const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -134,6 +159,30 @@ function Admin() {
     setTeatrosNovo(novo)
   }
 
+  // --- Handlers do editor de equipe criativa (aba "Adicionar musical") ---
+  function adicionarFuncao() {
+    const usadas = equipeNovo.map(e => e.funcao)
+    const disponivel = FUNCOES_OPCIONAIS.find(f => !usadas.includes(f))
+    if (!disponivel) return
+    setEquipeNovo([...equipeNovo, { funcao: disponivel, nomesTexto: "" }])
+  }
+
+  function removerFuncao(index) {
+    setEquipeNovo(equipeNovo.filter((_, i) => i !== index))
+  }
+
+  function mudarFuncao(index, novaFuncao) {
+    const novo = [...equipeNovo]
+    novo[index] = { ...novo[index], funcao: novaFuncao }
+    setEquipeNovo(novo)
+  }
+
+  function mudarNomes(index, texto) {
+    const novo = [...equipeNovo]
+    novo[index] = { ...novo[index], nomesTexto: texto }
+    setEquipeNovo(novo)
+  }
+
   // Publica um musical novo direto na coleção "musicais"
   async function publicarNovo() {
     if (!formNovo.titulo || !formNovo.titulo.trim()) {
@@ -163,11 +212,22 @@ function Admin() {
       }))
       .filter(item => item.ano && item.teatros.length > 0)
 
+    // Monta a equipe criativa (só funções com pelo menos um nome)
+    const equipeCriativa = equipeNovo
+      .map(e => ({ funcao: e.funcao, nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
+      .filter(e => e.nomes.length > 0)
+    // Mantém direcao/direcaoMusical em sincronia (compatibilidade com índice, busca, card)
+    const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
+    const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
+    const direcaoSync = dirEntry ? dirEntry.nomes.join(", ") : ""
+    const direcaoMusicalSync = dirMusEntry ? dirMusEntry.nomes.join(", ") : ""
+
     await setDoc(doc(db, "musicais", slug), {
       titulo: formNovo.titulo || "",
       sinopse: formNovo.sinopse || "",
-      direcao: formNovo.direcao || "",
-      direcaoMusical: formNovo.direcaoMusical || "",
+      direcao: direcaoSync,
+      direcaoMusical: direcaoMusicalSync,
+      equipeCriativa,
       producao: formNovo.producao || "",
       elenco: formNovo.elenco || "",
       elencoAdicional: formNovo.elencoAdicional || "",
@@ -184,10 +244,11 @@ function Admin() {
       dataCriacao: new Date()
     })
 
-    setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: formNovo.direcao, ano: formNovo.ano, capa: capaNovo }, ...prev])
+    setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: direcaoSync, ano: formNovo.ano, capa: capaNovo }, ...prev])
     setFormNovo({})
     setCapaNovo("")
     setTeatrosNovo([])
+    setEquipeNovo(equipeInicial())
     // Mantém o índice da Home em dia
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
@@ -236,6 +297,7 @@ await setDoc(doc(db, "musicais", slug), {
       sinopse: sugestao.sinopse || "",
       direcao: sugestao.direcao || "",
       direcaoMusical: sugestao.direcaoMusical || "",
+      equipeCriativa: montarEquipeDeStrings(sugestao.direcao, sugestao.direcaoMusical),
       producao: sugestao.producao || "",
       elenco: sugestao.elenco || "",
       elencoAdicional: sugestao.elencoAdicional || "",
@@ -326,6 +388,60 @@ await setDoc(doc(db, "musicais", slug), {
           onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
           style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
         />
+      )}
+    </div>
+  )
+
+  // Editor da equipe criativa (aba "Adicionar musical")
+  const editorEquipe = (
+    <div style={{ marginBottom: "20px" }}>
+      <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+        Equipe criativa
+      </label>
+      {equipeNovo.map((item, i) => {
+        const fixa = FUNCOES_FIXAS.includes(item.funcao)
+        const usadas = equipeNovo.map(e => e.funcao)
+        return (
+          <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+            {fixa ? (
+              <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
+            ) : (
+              <select
+                value={item.funcao}
+                onChange={e => mudarFuncao(i, e.target.value)}
+                style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}
+              >
+                {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            )}
+            <input
+              type="text"
+              placeholder="Nomes (separados por vírgula)"
+              value={item.nomesTexto}
+              onChange={e => mudarNomes(i, e.target.value)}
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+            />
+            {!fixa && (
+              <button
+                onClick={() => removerFuncao(i)}
+                style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
+                title="Remover"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )
+      })}
+      {equipeNovo.length < FUNCOES_FIXAS.length + FUNCOES_OPCIONAIS.length && (
+        <button
+          onClick={adicionarFuncao}
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
+        >
+          + Adicionar função
+        </button>
       )}
     </div>
   )
@@ -444,8 +560,7 @@ await setDoc(doc(db, "musicais", slug), {
 
           {campoNovo("Título", "titulo")}
           {campoNovo("Sinopse", "sinopse", true)}
-          {campoNovo("Direção", "direcao")}
-          {campoNovo("Direção musical", "direcaoMusical")}
+          {editorEquipe}
           {campoNovo("Produção", "producao")}
           {campoNovo("Elenco", "elenco", true)}
           {campoNovo("Elenco adicional", "elencoAdicional", true)}
@@ -535,7 +650,7 @@ await setDoc(doc(db, "musicais", slug), {
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={publicarNovo}>Publicar musical</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]) }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()) }}>Limpar</button>
           </div>
         </div>
       ) : aba === "relatos" ? (
