@@ -146,7 +146,7 @@ function Musical() {
   const [novaData, setNovaData] = useState("")
   const [novoHorario, setNovoHorario] = useState("")
   const [novoAssento, setNovoAssento] = useState("")
-const [novoTeatro, setNovoTeatro] = useState("")
+  const [novoTeatro, setNovoTeatro] = useState("")
   const [novaSessaoPublica, setNovaSessaoPublica] = useState(true)
   const [salvandoSessao, setSalvandoSessao] = useState(false)
 
@@ -468,7 +468,7 @@ const [novoTeatro, setNovoTeatro] = useState("")
       data: novaData,
       horario: novoHorario.trim(),
       assento: novoAssento.trim(),
-teatro: novoTeatro.trim(),
+      teatro: novoTeatro.trim(),
       publico: novaSessaoPublica,
     }
     const docRef = await addDoc(collection(db, "usuarios", usuario.uid, "sessoesAssistidas"), novaSessao)
@@ -481,8 +481,8 @@ teatro: novoTeatro.trim(),
     )
     setNovaData("")
     setNovoAssento("")
-setNovoTeatro("")
-setNovaSessaoPublica(true)
+    setNovoTeatro("")
+    setNovaSessaoPublica(true)
     setMostrarFormSessao(false)
     setSalvandoSessao(false)
     mostrarToast("Sessão registrada!")
@@ -815,15 +815,28 @@ setNovaSessaoPublica(true)
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
 
-              <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
-                {nomesClicaveis(musical.direcao) || "—"}
-              </p>
-              {musical.direcaoMusical && (
-                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                  <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}
-                  {nomesClicaveis(musical.direcaoMusical)}
-                </p>
+              {musical.equipeCriativa && musical.equipeCriativa.length > 0 ? (
+                musical.equipeCriativa
+                  .filter(item => item.nomes && item.nomes.length > 0)
+                  .map((item, i) => (
+                    <p key={i} style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                      <strong style={{ color: "#1a1a1a" }}>{item.funcao}:</strong>{" "}
+                      {nomesClicaveis(item.nomes.join(", "))}
+                    </p>
+                  ))
+              ) : (
+                <>
+                  <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                    <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
+                    {nomesClicaveis(musical.direcao) || "—"}
+                  </p>
+                  {musical.direcaoMusical && (
+                    <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                      <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}
+                      {nomesClicaveis(musical.direcaoMusical)}
+                    </p>
+                  )}
+                </>
               )}
               {musical.producao && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
