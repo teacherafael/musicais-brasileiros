@@ -31,6 +31,7 @@ function montarEquipeDeStrings(direcao, direcaoMusical) {
 
 // Campos que a Home usa (busca, filtros, ordenações, carrosséis). A sinopse NÃO entra
 // de propósito: é o campo mais pesado e a Home não usa. Isso mantém o índice pequeno.
+// equipeCriativa/teatro/teatros entram para o Pessoa e o Teatro poderem ler daqui.
 function montarItemIndice(id, m) {
   return {
     id,
@@ -45,6 +46,9 @@ function montarItemIndice(id, m) {
     versionista: m.versionista || "",
     textoOriginal: m.textoOriginal || "",
     musicaOriginal: m.musicaOriginal || "",
+    equipeCriativa: Array.isArray(m.equipeCriativa) ? m.equipeCriativa : [],
+    teatro: m.teatro || "",
+    teatros: Array.isArray(m.teatros) ? m.teatros : [],
     totalVotos: Number(m.totalVotos) || 0,
     somaEstrelas: Number(m.somaEstrelas) || 0,
     destaque: m.destaque === true,
