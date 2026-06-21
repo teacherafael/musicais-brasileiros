@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs } from "firebase/firestore"
+import { doc, getDoc } from "firebase/firestore"
 import { db } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 
@@ -51,9 +51,10 @@ function Pessoa() {
   useEffect(() => {
     if (nomeCanonicoDoAlias) return // aguarda o redirect
     async function buscar() {
-      const snap = await getDocs(collection(db, "musicais"))
-      const lista = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
+      // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
+      const indiceSnap = await getDoc(doc(db, "indices", "home"))
+      const itens = indiceSnap.exists() ? (indiceSnap.data().itens || []) : []
+      const lista = itens
         .filter(m => {
           const campos = [
             m.direcao, m.direcaoMusical, m.producao,
