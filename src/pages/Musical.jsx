@@ -36,6 +36,39 @@ function nomesClicaveis(texto) {
   ))
 }
 
+// Funções da equipe criativa. As duas primeiras são fixas (sempre aparecem no
+// formulário); as demais entram via "+ Adicionar função".
+const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
+const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Músicos"]
+
+// Constrói o array equipeCriativa a partir das strings antigas (fallback p/ musicais sem o campo)
+function montarEquipeDeStrings(direcao, direcaoMusical) {
+  const equipe = []
+  const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
+  const dm = (direcaoMusical || "").split(",").map(n => n.trim()).filter(Boolean)
+  if (d.length > 0) equipe.push({ funcao: "Direção", nomes: d })
+  if (dm.length > 0) equipe.push({ funcao: "Direção Musical", nomes: dm })
+  return equipe
+}
+
+// Monta o estado do editor a partir do musical (sempre com Direção e Direção Musical no topo).
+function equipeParaEditor(musical) {
+  const fonte = (musical.equipeCriativa && musical.equipeCriativa.length > 0)
+    ? musical.equipeCriativa
+    : montarEquipeDeStrings(musical.direcao, musical.direcaoMusical)
+  const editor = [
+    { funcao: "Direção", nomesTexto: "" },
+    { funcao: "Direção Musical", nomesTexto: "" },
+  ]
+  fonte.forEach(item => {
+    const nomesTexto = (item.nomes || []).join(", ")
+    const existente = editor.find(e => e.funcao === item.funcao)
+    if (existente) existente.nomesTexto = nomesTexto
+    else editor.push({ funcao: item.funcao, nomesTexto })
+  })
+  return editor
+}
+
 const LABELS = {
   0.5: "Horrível", 1: "Muito ruim", 1.5: "Ruim", 2: "Regular",
   2.5: "Razoável", 3: "Bom", 3.5: "Muito bom", 4: "Ótimo",
@@ -126,6 +159,7 @@ function Musical() {
   const [textoEdicao, setTextoEdicao] = useState("")
   const [editandoMusical, setEditandoMusical] = useState(false)
   const [formEdicao, setFormEdicao] = useState({})
+  const [equipeEdicao, setEquipeEdicao] = useState([])
   const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [gerando, setGerando] = useState(false)
   const [denunciandoComentario, setDenunciandoComentario] = useState(null)
@@ -263,6 +297,7 @@ function Musical() {
       capa: musical.capa || "",
       programaDigital: musical.programaDigital || ""
     })
+    setEquipeEdicao(equipeParaEditor(musical))
     let listaTeatros = musical.teatros || []
     if (listaTeatros.length === 0 && musical.teatro) {
       listaTeatros = [{ ano: musical.ano || "", teatros: [musical.teatro] }]
@@ -277,6 +312,30 @@ function Musical() {
     
   }
 
+  // --- Handlers do editor de equipe criativa ---
+  function adicionarFuncao() {
+    const usadas = equipeEdicao.map(e => e.funcao)
+    const disponivel = FUNCOES_OPCIONAIS.find(f => !usadas.includes(f))
+    if (!disponivel) return
+    setEquipeEdicao([...equipeEdicao, { funcao: disponivel, nomesTexto: "" }])
+  }
+
+  function removerFuncao(index) {
+    setEquipeEdicao(equipeEdicao.filter((_, i) => i !== index))
+  }
+
+  function mudarFuncao(index, novaFuncao) {
+    const novo = [...equipeEdicao]
+    novo[index] = { ...novo[index], funcao: novaFuncao }
+    setEquipeEdicao(novo)
+  }
+
+  function mudarNomes(index, texto) {
+    const novo = [...equipeEdicao]
+    novo[index] = { ...novo[index], nomesTexto: texto }
+    setEquipeEdicao(novo)
+  }
+
   async function salvarEdicaoMusical() {
     const teatrosLimpos = teatrosAdicionais
       .map(item => ({
@@ -284,8 +343,19 @@ function Musical() {
         teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean)
       }))
       .filter(item => item.ano && item.teatros.length > 0)
+
+    // Monta a equipe criativa (só funções com pelo menos um nome) + sincroniza direcao/direcaoMusical
+    const equipeCriativa = equipeEdicao
+      .map(e => ({ funcao: e.funcao, nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
+      .filter(e => e.nomes.length > 0)
+    const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
+    const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
+
     const dadosFinais = {
       ...formEdicao,
+      direcao: dirEntry ? dirEntry.nomes.join(", ") : "",
+      direcaoMusical: dirMusEntry ? dirMusEntry.nomes.join(", ") : "",
+      equipeCriativa,
       teatro: teatrosLimpos[0]?.teatros[0] || "",
       teatros: teatrosLimpos,
       teatrosAdicionais: [],
@@ -721,8 +791,56 @@ function Musical() {
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", marginBottom: "24px" }}>Editar musical</h2>
           {campo("Título", "titulo")}
           {campo("Sinopse", "sinopse", true)}
-          {campo("Direção", "direcao")}
-          {campo("Direção musical", "direcaoMusical")}
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+              Equipe criativa
+            </label>
+            {equipeEdicao.map((item, i) => {
+              const fixa = FUNCOES_FIXAS.includes(item.funcao)
+              const usadas = equipeEdicao.map(e => e.funcao)
+              return (
+                <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                  {fixa ? (
+                    <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
+                  ) : (
+                    <select
+                      value={item.funcao}
+                      onChange={e => mudarFuncao(i, e.target.value)}
+                      style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}
+                    >
+                      {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Nomes (separados por vírgula)"
+                    value={item.nomesTexto}
+                    onChange={e => mudarNomes(i, e.target.value)}
+                    style={{ flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
+                  />
+                  {!fixa && (
+                    <button
+                      onClick={() => removerFuncao(i)}
+                      style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
+                      title="Remover"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+            {equipeEdicao.length < FUNCOES_FIXAS.length + FUNCOES_OPCIONAIS.length && (
+              <button
+                onClick={adicionarFuncao}
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
+              >
+                + Adicionar função
+              </button>
+            )}
+          </div>
           {campo("Produção", "producao")}
           {campo("Elenco de estreia", "elenco")}
           {campo("Elenco adicional", "elencoAdicional")}

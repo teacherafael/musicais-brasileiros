@@ -60,8 +60,12 @@ function Pessoa() {
             m.elenco, m.elencoAdicional, m.versionista,
             m.textoOriginal, m.musicaOriginal
           ]
+          // Nomes da equipe criativa (cobre Direção, Direção Musical e todas as
+          // funções novas: coreografia, cenografia, figurino, etc.)
+          const nomesEquipe = (m.equipeCriativa || []).flatMap(item => item.nomes || [])
+          const todosCampos = [...campos, ...nomesEquipe]
           // Busca pelo nome atual E por todos os aliases
-          return campos.some(c =>
+          return todosCampos.some(c =>
             c && todosOsNomes.some(n => c.toLowerCase().includes(n))
           )
         })
