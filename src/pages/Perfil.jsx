@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where, updateDoc } from "firebase/firestore"
+import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where, updateDoc, increment } from "firebase/firestore"
 import { db, auth, provider } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
@@ -68,101 +68,133 @@ function Perfil() {
 
   useEffect(() => {
     async function buscarDados() {
-      const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
-        getDocs(collection(db, "musicais")),
-        getDocs(collection(db, "usuarios", userId, "queroVer")),
-        getDocs(collection(db, "usuarios", userId, "jaVi")),
-        getDocs(collection(db, "usuarios", userId, "top3")),
-        getDocs(collection(db, "usuarios", userId, "seguindo")),
-        getDocs(collection(db, "usuarios", userId, "seguidores")),
-        getDoc(doc(db, "usuarios", userId)),
-        getDocs(collection(db, "usuarios", userId, "sessoesAssistidas"))
-      ])
+      try {
+        const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
+          getDocs(collection(db, "musicais")),
+          getDocs(collection(db, "usuarios", userId, "queroVer")),
+          getDocs(collection(db, "usuarios", userId, "jaVi")),
+          getDocs(collection(db, "usuarios", userId, "top3")),
+          getDocs(collection(db, "usuarios", userId, "seguindo")),
+          getDocs(collection(db, "usuarios", userId, "seguidores")),
+          getDoc(doc(db, "usuarios", userId)),
+          getDocs(collection(db, "usuarios", userId, "sessoesAssistidas"))
+        ])
 
-      const musicaisMap = {}
-      musicaisSnap.docs.forEach(d => {
-        musicaisMap[d.id] = { id: d.id, ...d.data() }
-      })
-      setMusicais(musicaisMap)
-
-      const musicalIds = Object.keys(musicaisMap)
-      const [todosVotos, todosComentarios] = await Promise.all([
-        Promise.all(musicalIds.map(id => getDocs(collection(db, "musicais", id, "votos")))),
-        Promise.all(musicalIds.map(id => getDocs(query(collection(db, "musicais", id, "comentarios")))))
-      ])
-
-      const votosEncontrados = []
-      const comentariosEncontrados = []
-      let nomeEncontrado = ""
-
-      todosVotos.forEach((snap, i) => {
-        const musicalId = musicalIds[i]
-        snap.docs.forEach(d => {
-          if (d.id === userId) votosEncontrados.push({ musicalId, estrelas: d.data().estrelas })
+        const musicaisMap = {}
+        musicaisSnap.docs.forEach(d => {
+          musicaisMap[d.id] = { id: d.id, ...d.data() }
         })
-      })
+        setMusicais(musicaisMap)
 
-      todosComentarios.forEach((snap, i) => {
-        const musicalId = musicalIds[i]
-        snap.docs.forEach(d => {
-          const dados = d.data()
-          if (dados.userId === userId) {
-            if (!nomeEncontrado && dados.nome) nomeEncontrado = dados.nome
-            comentariosEncontrados.push({ id: d.id, musicalId, ...dados })
-          }
+        const musicalIds = Object.keys(musicaisMap)
+
+        // Comentários continuam com leitura pública.
+        const todosComentarios = await Promise.all(
+          musicalIds.map(id => getDocs(query(collection(db, "musicais", id, "comentarios"))))
+        )
+
+        const comentariosEncontrados = []
+        let nomeEncontrado = ""
+        todosComentarios.forEach((snap, i) => {
+          const musicalId = musicalIds[i]
+          snap.docs.forEach(d => {
+            const dados = d.data()
+            if (dados.userId === userId) {
+              if (!nomeEncontrado && dados.nome) nomeEncontrado = dados.nome
+              comentariosEncontrados.push({ id: d.id, musicalId, ...dados })
+            }
+          })
         })
-      })
 
-      if (nomeEncontrado) setNomeUsuario(nomeEncontrado)
+        if (nomeEncontrado) setNomeUsuario(nomeEncontrado)
 
-      const top3Lista = top3Snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => a.ordem - b.ordem)
+        const top3Lista = top3Snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => a.ordem - b.ordem)
 
-      setTop3(top3Lista)
-      setVotos(votosEncontrados)
-      setComentarios(comentariosEncontrados)
-      setQueroVer(queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setJaVi(jaViSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+        setTop3(top3Lista)
+        setComentarios(comentariosEncontrados)
+        setQueroVer(queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+        setJaVi(jaViSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+        setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+        setSeguidores(seguidoresSnap.docs.map(d => ({ id: d.id, ...d.data() })))
 
-      if (usuarioDoc.exists()) {
-        const data = usuarioDoc.data()
-        setAvaliacoesPublicas(data.avaliacoesPublicas ?? true)
-        setVerificado(data.verificado ?? false)
-        setBanido(data.banido ?? false)
-        if (data.nome) setNomeUsuario(data.nome)
-        if (data.foto) setFotoUsuario(data.foto)
-        setRedesSociais({
-          instagram: data.instagram || "",
-          tiktok: data.tiktok || "",
-          x: data.x || "",
-          site: data.site || "",
+        if (usuarioDoc.exists()) {
+          const data = usuarioDoc.data()
+          setAvaliacoesPublicas(data.avaliacoesPublicas ?? true)
+          setVerificado(data.verificado ?? false)
+          setBanido(data.banido ?? false)
+          if (data.nome) setNomeUsuario(data.nome)
+          if (data.foto) setFotoUsuario(data.foto)
+          setRedesSociais({
+            instagram: data.instagram || "",
+            tiktok: data.tiktok || "",
+            x: data.x || "",
+            site: data.site || "",
+          })
+          setBio(data.bio || "")
+        }
+
+        const sessoesPorId = {}
+        sessoesSnap.docs.forEach(d => {
+          const s = { id: d.id, ...d.data() }
+          if (!sessoesPorId[s.musicalId]) sessoesPorId[s.musicalId] = []
+          sessoesPorId[s.musicalId].push(s)
         })
-        setBio(data.bio || "")
+        Object.keys(sessoesPorId).forEach(mid => {
+          sessoesPorId[mid].sort((a, b) => {
+            const da = a.data + (a.horario || "")
+            const db2 = b.data + (b.horario || "")
+            return da > db2 ? -1 : 1
+          })
+        })
+        setSessoesPorMusical(sessoesPorId)
+      } catch (e) {
+        // Nunca deixa a página presa em "Carregando..." se alguma leitura falhar.
+        console.error("Erro ao carregar perfil:", e)
+      } finally {
+        setCarregando(false)
       }
-
-      const sessoesPorId = {}
-      sessoesSnap.docs.forEach(d => {
-        const s = { id: d.id, ...d.data() }
-        if (!sessoesPorId[s.musicalId]) sessoesPorId[s.musicalId] = []
-        sessoesPorId[s.musicalId].push(s)
-      })
-      Object.keys(sessoesPorId).forEach(mid => {
-        sessoesPorId[mid].sort((a, b) => {
-          const da = a.data + (a.horario || "")
-          const db2 = b.data + (b.horario || "")
-          return da > db2 ? -1 : 1
-        })
-      })
-      setSessoesPorMusical(sessoesPorId)
-
-      setCarregando(false)
     }
 
     buscarDados()
   }, [userId])
+
+  // Votos agora são PRIVADOS (Fase 2): pelas regras, só o dono lê o próprio voto.
+  // Por isso carregamos as avaliações só quando você está vendo o SEU perfil, lendo
+  // diretamente o seu voto em cada musical da sua lista "já vi". Em perfil de outra
+  // pessoa, as avaliações ficam vazias (são privadas).
+  useEffect(() => {
+    async function carregarMeusVotos() {
+      if (!usuarioLogado || usuarioLogado.uid !== userId) {
+        setVotos([])
+        return
+      }
+      const candidatos = jaVi.map(item => item.id)
+      if (candidatos.length === 0) {
+        setVotos([])
+        return
+      }
+      try {
+        const snaps = await Promise.all(
+          candidatos.map(mid =>
+            getDoc(doc(db, "musicais", mid, "votos", userId)).catch(() => null)
+          )
+        )
+        const encontrados = []
+        snaps.forEach((snap, i) => {
+          if (snap && snap.exists()) {
+            encontrados.push({ musicalId: candidatos[i], estrelas: snap.data().estrelas })
+          }
+        })
+        setVotos(encontrados)
+      } catch (e) {
+        console.error("Erro ao carregar avaliações:", e)
+        setVotos([])
+      }
+    }
+    carregarMeusVotos()
+  }, [usuarioLogado, userId, jaVi])
 
   useEffect(() => {
     async function verificarSeguindo() {
@@ -353,9 +385,18 @@ function Perfil() {
         try { await updateDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id), dadosAnon) } catch (e) {}
       }
 
-      // 3. Apaga subcoleções do usuário
-      const subcolecoes = ["queroVer", "jaVi", "top3", "sessoesAssistidas"]
-      for (const sub of subcolecoes) {
+      // 3. Apaga subcoleções do usuário.
+      // Para jaVi e queroVer, decrementa popularidade do musical antes de apagar
+      // (cada uma dessas listas representa +1 na contagem).
+      for (const sub of ["jaVi", "queroVer"]) {
+        const snap = await getDocs(collection(db, "usuarios", userId, sub))
+        for (const d of snap.docs) {
+          const musicalId = d.data().musicalId || d.id
+          try { await updateDoc(doc(db, "musicais", musicalId), { popularidade: increment(-1) }) } catch (e) {}
+          await deleteDoc(d.ref)
+        }
+      }
+      for (const sub of ["top3", "sessoesAssistidas"]) {
         const snap = await getDocs(collection(db, "usuarios", userId, sub))
         for (const d of snap.docs) await deleteDoc(d.ref)
       }
@@ -833,16 +874,13 @@ function Perfil() {
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
             {isProprioPerfil && (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "13px", color: "#888" }}>{avaliacoesPublicas ? "Visíveis para todos" : "Apenas você vê"}</span>
-                <div onClick={toggleAvaliacoesPublicas} style={{ width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer", backgroundColor: avaliacoesPublicas ? "#F5C518" : "#555", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                  <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: avaliacoesPublicas ? "23px" : "3px", transition: "left 0.2s" }} />
-                </div>
+                <span style={{ fontSize: "13px", color: "#888" }}>Suas avaliações são privadas — só você vê.</span>
               </div>
             )}
           </div>
-          {(isProprioPerfil || avaliacoesPublicas) ? (
+          {isProprioPerfil ? (
             votos.length === 0 ? (
-              <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não fez nenhuma avaliação."}</p>
+              <p className="login-aviso"><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></p>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
                 {votos.map(voto => {
@@ -853,7 +891,7 @@ function Perfil() {
               </div>
             )
           ) : (
-            <p className="login-aviso">Este usuário optou por manter suas avaliações privadas.</p>
+            <p className="login-aviso">As avaliações deste usuário são privadas.</p>
           )}
         </div>
       )}

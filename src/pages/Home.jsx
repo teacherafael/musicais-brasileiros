@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { collection, getDocs, getDoc, doc, setDoc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, getDoc, doc, setDoc, deleteDoc, addDoc, serverTimestamp, updateDoc, increment } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -134,18 +134,32 @@ function Home() {
     e.preventDefault()
     e.stopPropagation()
     if (!usuario) return mostrarToast("Faça login para usar esta função.")
-    const ref = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
+    const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
+    const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", musical.id)
+    const mRef = doc(db, "musicais", musical.id)
     if (queroVerSet.has(musical.id)) {
-      await deleteDoc(ref)
+      // saindo da lista → sai da contagem
+      await deleteDoc(refQueroVer)
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) }
+      catch (err) { console.error("popularidade", err) }
       setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     } else {
-      await setDoc(ref, {
+      // se já estava em "já vi", é só troca de lista (não conta); senão, entra na contagem
+      const entrandoNaContagem = !jaViSet.has(musical.id)
+      await setDoc(refQueroVer, {
         musicalId: musical.id,
         titulo: musical.titulo,
         capa: musical.capa || null,
         direcao: musical.direcao || ""
       })
+      // "quero ver" agora remove "já vi" (mesma regra da página do musical)
+      await deleteDoc(refJaVi)
+      if (entrandoNaContagem) {
+        try { await updateDoc(mRef, { popularidade: increment(1) }) }
+        catch (err) { console.error("popularidade", err) }
+      }
       setQueroVerSet(prev => new Set(prev).add(musical.id))
+      setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     }
   }
 
@@ -155,10 +169,16 @@ function Home() {
     if (!usuario) return alert("Faça login para usar esta função.")
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", musical.id)
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
+    const mRef = doc(db, "musicais", musical.id)
     if (jaViSet.has(musical.id)) {
+      // saindo da lista → sai da contagem
       await deleteDoc(refJaVi)
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) }
+      catch (err) { console.error("popularidade", err) }
       setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     } else {
+      // se já estava em "quero ver", é só troca de lista (não conta); senão, entra na contagem
+      const entrandoNaContagem = !queroVerSet.has(musical.id)
       await setDoc(refJaVi, {
         musicalId: musical.id,
         titulo: musical.titulo,
@@ -166,6 +186,10 @@ function Home() {
         direcao: musical.direcao || ""
       })
       await deleteDoc(refQueroVer)
+      if (entrandoNaContagem) {
+        try { await updateDoc(mRef, { popularidade: increment(1) }) }
+        catch (err) { console.error("popularidade", err) }
+      }
       setJaViSet(prev => new Set(prev).add(musical.id))
       setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     }

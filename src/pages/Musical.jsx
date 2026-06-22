@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async"
 import { useEffect, useState, useRef } from "react"
-import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc, increment } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -315,10 +315,14 @@ function Musical() {
     mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
   }
 
-  // Voto agora é 100% privado: grava só a nota individual do dono em votos/{uid}.
-  // Não atualiza mais agregados públicos (totalVotos/somaEstrelas/distribuicao) nem o feed.
+  // Voto é 100% privado: grava só a nota individual do dono em votos/{uid}.
+  // Não atualiza agregados públicos (totalVotos/somaEstrelas/distribuicao) nem o feed.
+  // O contador popularidade só sobe se o usuário ainda não estava em nenhuma das listas
+  // (votar marca "já vi"). Se já estava em "já vi" ou "quero ver", não conta de novo.
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
+
+    const entrandoNaContagem = !jaVi && !queroVer
 
     await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
 
@@ -326,6 +330,11 @@ function Musical() {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
     })
     await deleteDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
+
+    if (entrandoNaContagem) {
+      try { await updateDoc(doc(db, "musicais", id), { popularidade: increment(1) }) }
+      catch (e) { console.error("popularidade", e) }
+    }
 
     setVotoAtual(estrelas)
     setJaVi(true)
@@ -344,12 +353,22 @@ function Musical() {
     if (!usuario) return mostrarToast("Faça login para usar esta função.")
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
+    const mRef = doc(db, "musicais", id)
     if (queroVer) {
+      // saindo da lista: "já vi" já era false (as listas são exclusivas) → sai da contagem
       await deleteDoc(refQueroVer)
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) }
+      catch (e) { console.error("popularidade", e) }
       setQueroVer(false)
     } else {
+      // se já estava em "já vi", é só troca de lista (não conta); senão, entra na contagem
+      const entrandoNaContagem = !jaVi
       await setDoc(refQueroVer, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refJaVi)
+      if (entrandoNaContagem) {
+        try { await updateDoc(mRef, { popularidade: increment(1) }) }
+        catch (e) { console.error("popularidade", e) }
+      }
       setQueroVer(true)
       setJaVi(false)
     }
@@ -359,12 +378,22 @@ function Musical() {
     if (!usuario) return mostrarToast("Faça login para usar esta função.")
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
+    const mRef = doc(db, "musicais", id)
     if (jaVi) {
+      // saindo da lista: "quero ver" já era false (as listas são exclusivas) → sai da contagem
       await deleteDoc(refJaVi)
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) }
+      catch (e) { console.error("popularidade", e) }
       setJaVi(false)
     } else {
+      // se já estava em "quero ver", é só troca de lista (não conta); senão, entra na contagem
+      const entrandoNaContagem = !queroVer
       await setDoc(refJaVi, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refQueroVer)
+      if (entrandoNaContagem) {
+        try { await updateDoc(mRef, { popularidade: increment(1) }) }
+        catch (e) { console.error("popularidade", e) }
+      }
       setJaVi(true)
       setQueroVer(false)
       setTimeout(() => {
