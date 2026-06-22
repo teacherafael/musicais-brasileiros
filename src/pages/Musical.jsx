@@ -25,12 +25,9 @@ function nomesClicaveis(texto) {
   ))
 }
 
-// Funções da equipe criativa. As duas primeiras são fixas (sempre aparecem no
-// formulário); as demais entram via "+ Adicionar função".
 const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
 const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Músicos"]
 
-// Constrói o array equipeCriativa a partir das strings antigas (fallback p/ musicais sem o campo)
 function montarEquipeDeStrings(direcao, direcaoMusical) {
   const equipe = []
   const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
@@ -40,7 +37,6 @@ function montarEquipeDeStrings(direcao, direcaoMusical) {
   return equipe
 }
 
-// Monta o estado do editor a partir do musical (sempre com Direção e Direção Musical no topo).
 function equipeParaEditor(musical) {
   const fonte = (musical.equipeCriativa && musical.equipeCriativa.length > 0)
     ? musical.equipeCriativa
@@ -88,16 +84,9 @@ function Estrelas({ votoAtual, onVotar }) {
               onMouseMove={e => setHover(calcularValor(e, estrela))}
               onMouseLeave={() => setHover(0)}
               style={{
-                position: "relative",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "48px",
-                height: "48px",
-                fontSize: "40px",
-                userSelect: "none",
-                lineHeight: 1,
-                cursor: "pointer",
+                position: "relative", display: "inline-flex", alignItems: "center",
+                justifyContent: "center", width: "48px", height: "48px", fontSize: "40px",
+                userSelect: "none", lineHeight: 1, cursor: "pointer",
                 transition: "transform 0.1s ease",
                 transform: valorAtivo >= estrela - 0.5 ? "scale(1.1)" : "scale(1)"
               }}
@@ -114,7 +103,6 @@ function Estrelas({ votoAtual, onVotar }) {
           )
         })}
       </div>
-
       <div style={{ display: "flex", alignItems: "center", gap: "12px", minHeight: "28px" }}>
         {hover ? (
           <>
@@ -152,7 +140,12 @@ function Musical() {
   const cartaoRef = useRef(null)
   const avaliacaoRef = useRef(null)
 
-  // Estados das sessões
+  // Reações (👍/👎)
+  const [minhaReacao, setMinhaReacao] = useState(null) // "gostei" | "nao_gostei" | null
+  const [totalGostei, setTotalGostei] = useState(0)
+  const [totalNaoGostei, setTotalNaoGostei] = useState(0)
+
+  // Sessões
   const [sessoes, setSessoes] = useState([])
   const [mostrarFormSessao, setMostrarFormSessao] = useState(false)
   const [novaData, setNovaData] = useState("")
@@ -193,6 +186,22 @@ function Musical() {
     buscarEstados()
   }, [usuario, id])
 
+  // Busca reações: totais públicos + reação do usuário logado
+  useEffect(() => {
+    async function buscarReacoes() {
+      const snap = await getDocs(collection(db, "musicais", id, "reacoes"))
+      let g = 0, ng = 0
+      snap.docs.forEach(d => {
+        if (d.data().reacao === "gostei") g++
+        else if (d.data().reacao === "nao_gostei") ng++
+        if (usuario && d.id === usuario.uid) setMinhaReacao(d.data().reacao)
+      })
+      setTotalGostei(g)
+      setTotalNaoGostei(ng)
+    }
+    buscarReacoes()
+  }, [id, usuario])
+
   useEffect(() => {
     async function buscarSessoes() {
       if (!usuario) return
@@ -215,22 +224,40 @@ function Musical() {
     setTimeout(() => setToast(null), 2500)
   }
 
+  // Toggle de reação: clicar na mesma remove; clicar na outra troca
+  async function toggleReacao(tipo) {
+    if (!usuario) return mostrarToast("Faça login para reagir.")
+    const ref = doc(db, "musicais", id, "reacoes", usuario.uid)
+    if (minhaReacao === tipo) {
+      // remove
+      await deleteDoc(ref)
+      setMinhaReacao(null)
+      if (tipo === "gostei") setTotalGostei(p => Math.max(0, p - 1))
+      else setTotalNaoGostei(p => Math.max(0, p - 1))
+    } else {
+      // adiciona ou troca
+      const anterior = minhaReacao
+      await setDoc(ref, { reacao: tipo, uid: usuario.uid })
+      setMinhaReacao(tipo)
+      if (tipo === "gostei") {
+        setTotalGostei(p => p + 1)
+        if (anterior === "nao_gostei") setTotalNaoGostei(p => Math.max(0, p - 1))
+      } else {
+        setTotalNaoGostei(p => p + 1)
+        if (anterior === "gostei") setTotalGostei(p => Math.max(0, p - 1))
+      }
+    }
+  }
+
   function abrirEdicao() {
     setFormEdicao({
-      titulo: musical.titulo || "",
-      sinopse: musical.sinopse || "",
-      direcao: musical.direcao || "",
-      direcaoMusical: musical.direcaoMusical || "",
-      producao: musical.producao || "",
-      elenco: musical.elenco || "",
-      elencoAdicional: musical.elencoAdicional || "",
-      versionista: musical.versionista || "",
-      textoOriginal: musical.textoOriginal || "",
-      musicaOriginal: musical.musicaOriginal || "",
-      ano: musical.ano || "",
-      teatro: musical.teatro || "",
-      capa: musical.capa || "",
-      programaDigital: musical.programaDigital || ""
+      titulo: musical.titulo || "", sinopse: musical.sinopse || "",
+      direcao: musical.direcao || "", direcaoMusical: musical.direcaoMusical || "",
+      producao: musical.producao || "", elenco: musical.elenco || "",
+      elencoAdicional: musical.elencoAdicional || "", versionista: musical.versionista || "",
+      textoOriginal: musical.textoOriginal || "", musicaOriginal: musical.musicaOriginal || "",
+      ano: musical.ano || "", teatro: musical.teatro || "",
+      capa: musical.capa || "", programaDigital: musical.programaDigital || ""
     })
     setEquipeEdicao(equipeParaEditor(musical))
     let listaTeatros = musical.teatros || []
@@ -240,14 +267,10 @@ function Musical() {
         musical.teatrosAdicionais.forEach(item => listaTeatros.push({ ano: item.ano, teatros: item.teatros }))
       }
     }
-    setTeatrosAdicionais(
-      listaTeatros.map(item => ({ ...item, teatrosTexto: item.teatros.join(", ") }))
-    )
+    setTeatrosAdicionais(listaTeatros.map(item => ({ ...item, teatrosTexto: item.teatros.join(", ") })))
     setEditandoMusical(true)
-    
   }
 
-  // --- Handlers do editor de equipe criativa ---
   function adicionarFuncao() {
     const usadas = equipeEdicao.map(e => e.funcao)
     const disponivel = FUNCOES_OPCIONAIS.find(f => !usadas.includes(f))
@@ -273,19 +296,13 @@ function Musical() {
 
   async function salvarEdicaoMusical() {
     const teatrosLimpos = teatrosAdicionais
-      .map(item => ({
-        ano: item.ano.trim(),
-        teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean)
-      }))
+      .map(item => ({ ano: item.ano.trim(), teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean) }))
       .filter(item => item.ano && item.teatros.length > 0)
-
-    // Monta a equipe criativa (só funções com pelo menos um nome) + sincroniza direcao/direcaoMusical
     const equipeCriativa = equipeEdicao
       .map(e => ({ funcao: e.funcao, nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
       .filter(e => e.nomes.length > 0)
     const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
     const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
-
     const dadosFinais = {
       ...formEdicao,
       direcao: dirEntry ? dirEntry.nomes.join(", ") : "",
@@ -315,27 +332,18 @@ function Musical() {
     mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
   }
 
-  // Voto é 100% privado: grava só a nota individual do dono em votos/{uid}.
-  // Não atualiza agregados públicos (totalVotos/somaEstrelas/distribuicao) nem o feed.
-  // O contador popularidade só sobe se o usuário ainda não estava em nenhuma das listas
-  // (votar marca "já vi"). Se já estava em "já vi" ou "quero ver", não conta de novo.
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
-
     const entrandoNaContagem = !jaVi && !queroVer
-
     await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
     })
     await deleteDoc(doc(db, "usuarios", usuario.uid, "queroVer", id))
-
     if (entrandoNaContagem) {
       try { await updateDoc(doc(db, "musicais", id), { popularidade: increment(1) }) }
       catch (e) { console.error("popularidade", e) }
     }
-
     setVotoAtual(estrelas)
     setJaVi(true)
     setQueroVer(false)
@@ -355,19 +363,15 @@ function Musical() {
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", id)
     const mRef = doc(db, "musicais", id)
     if (queroVer) {
-      // saindo da lista: "já vi" já era false (as listas são exclusivas) → sai da contagem
       await deleteDoc(refQueroVer)
-      try { await updateDoc(mRef, { popularidade: increment(-1) }) }
-      catch (e) { console.error("popularidade", e) }
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (e) { console.error("popularidade", e) }
       setQueroVer(false)
     } else {
-      // se já estava em "já vi", é só troca de lista (não conta); senão, entra na contagem
       const entrandoNaContagem = !jaVi
       await setDoc(refQueroVer, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refJaVi)
       if (entrandoNaContagem) {
-        try { await updateDoc(mRef, { popularidade: increment(1) }) }
-        catch (e) { console.error("popularidade", e) }
+        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (e) { console.error("popularidade", e) }
       }
       setQueroVer(true)
       setJaVi(false)
@@ -380,25 +384,19 @@ function Musical() {
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", id)
     const mRef = doc(db, "musicais", id)
     if (jaVi) {
-      // saindo da lista: "quero ver" já era false (as listas são exclusivas) → sai da contagem
       await deleteDoc(refJaVi)
-      try { await updateDoc(mRef, { popularidade: increment(-1) }) }
-      catch (e) { console.error("popularidade", e) }
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (e) { console.error("popularidade", e) }
       setJaVi(false)
     } else {
-      // se já estava em "quero ver", é só troca de lista (não conta); senão, entra na contagem
       const entrandoNaContagem = !queroVer
       await setDoc(refJaVi, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refQueroVer)
       if (entrandoNaContagem) {
-        try { await updateDoc(mRef, { popularidade: increment(1) }) }
-        catch (e) { console.error("popularidade", e) }
+        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (e) { console.error("popularidade", e) }
       }
       setJaVi(true)
       setQueroVer(false)
-      setTimeout(() => {
-        avaliacaoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-      }, 100)
+      setTimeout(() => { avaliacaoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }) }, 100)
     }
   }
 
@@ -407,15 +405,9 @@ function Musical() {
     if (!novaData) return mostrarToast("Informe a data da sessão.")
     setSalvandoSessao(true)
     const novaSessao = {
-      musicalId: id,
-      titulo: musical.titulo,
-      capa: musical.capa || null,
-      direcao: musical.direcao || "",
-      data: novaData,
-      horario: novoHorario.trim(),
-      assento: novoAssento.trim(),
-      teatro: novoTeatro.trim(),
-      publico: novaSessaoPublica,
+      musicalId: id, titulo: musical.titulo, capa: musical.capa || null,
+      direcao: musical.direcao || "", data: novaData, horario: novoHorario.trim(),
+      assento: novoAssento.trim(), teatro: novoTeatro.trim(), publico: novaSessaoPublica,
     }
     const docRef = await addDoc(collection(db, "usuarios", usuario.uid, "sessoesAssistidas"), novaSessao)
     setSessoes(prev =>
@@ -425,12 +417,8 @@ function Musical() {
         return da > db2 ? -1 : 1
       })
     )
-    setNovaData("")
-    setNovoAssento("")
-    setNovoTeatro("")
-    setNovaSessaoPublica(true)
-    setMostrarFormSessao(false)
-    setSalvandoSessao(false)
+    setNovaData(""); setNovoAssento(""); setNovoTeatro(""); setNovaSessaoPublica(true)
+    setMostrarFormSessao(false); setSalvandoSessao(false)
     mostrarToast("Sessão registrada!")
   }
 
@@ -448,12 +436,12 @@ function Musical() {
   }
 
   function labelChip(s) {
-  let label = formatarData(s.data)
-  if (s.horario) label += ` · ${s.horario}`
-  if (s.teatro) label += ` · ${s.teatro}`
-  if (s.assento) label += ` · ${s.assento}`
-  return label
-}
+    let label = formatarData(s.data)
+    if (s.horario) label += ` · ${s.horario}`
+    if (s.teatro) label += ` · ${s.teatro}`
+    if (s.assento) label += ` · ${s.assento}`
+    return label
+  }
 
   async function gerarImagem() {
     if (!cartaoRef.current) return
@@ -464,9 +452,7 @@ function Musical() {
       link.download = `${musical.titulo}-mbdb.png`
       link.href = canvas.toDataURL("image/png")
       link.click()
-    } catch (e) {
-      alert("Erro ao gerar imagem. Tente novamente.")
-    }
+    } catch (e) { alert("Erro ao gerar imagem. Tente novamente.") }
     setGerando(false)
   }
 
@@ -487,18 +473,11 @@ function Musical() {
         {label}
       </label>
       {multiline ? (
-        <textarea
-          value={formEdicao[chave] || ""}
-          onChange={e => setFormEdicao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "100px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical" }}
-        />
+        <textarea value={formEdicao[chave] || ""} onChange={e => setFormEdicao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", height: "100px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical" }} />
       ) : (
-        <input
-          type="text"
-          value={formEdicao[chave] || ""}
-          onChange={e => setFormEdicao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
-        />
+        <input type="text" value={formEdicao[chave] || ""} onChange={e => setFormEdicao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }} />
       )}
     </div>
   )
@@ -516,12 +495,7 @@ function Musical() {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
       {toast && (
-        <div style={{
-          position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
-          background: "#1a1a1a", color: "#F5C518", padding: "12px 24px",
-          borderRadius: "8px", fontSize: "14px", fontWeight: "500",
-          zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
-        }}>
+        <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", color: "#F5C518", padding: "12px 24px", borderRadius: "8px", fontSize: "14px", fontWeight: "500", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
           {toast}
         </div>
       )}
@@ -534,9 +508,7 @@ function Musical() {
           {campo("Título", "titulo")}
           {campo("Sinopse", "sinopse", true)}
           <div style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
-              Equipe criativa
-            </label>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Equipe criativa</label>
             {equipeEdicao.map((item, i) => {
               const fixa = FUNCOES_FIXAS.includes(item.funcao)
               const usadas = equipeEdicao.map(e => e.funcao)
@@ -545,40 +517,21 @@ function Musical() {
                   {fixa ? (
                     <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
                   ) : (
-                    <select
-                      value={item.funcao}
-                      onChange={e => mudarFuncao(i, e.target.value)}
-                      style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}
-                    >
-                      {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => (
-                        <option key={f} value={f}>{f}</option>
-                      ))}
+                    <select value={item.funcao} onChange={e => mudarFuncao(i, e.target.value)}
+                      style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}>
+                      {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => <option key={f} value={f}>{f}</option>)}
                     </select>
                   )}
-                  <input
-                    type="text"
-                    placeholder="Nomes (separados por vírgula)"
-                    value={item.nomesTexto}
-                    onChange={e => mudarNomes(i, e.target.value)}
-                    style={{ flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
-                  />
+                  <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
+                    style={{ flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }} />
                   {!fixa && (
-                    <button
-                      onClick={() => removerFuncao(i)}
-                      style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
-                      title="Remover"
-                    >
-                      ✕
-                    </button>
+                    <button onClick={() => removerFuncao(i)} style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
                   )}
                 </div>
               )
             })}
             {equipeEdicao.length < FUNCOES_FIXAS.length + FUNCOES_OPCIONAIS.length && (
-              <button
-                onClick={adicionarFuncao}
-                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
-              >
+              <button onClick={adicionarFuncao} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                 + Adicionar função
               </button>
             )}
@@ -600,58 +553,23 @@ function Musical() {
             {teatrosAdicionais.map((item, i) => (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <button
-                    onClick={() => moverTeatro(i, -1)}
-                    disabled={i === 0}
-                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }}
-                    title="Mover para cima"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => moverTeatro(i, 1)}
-                    disabled={i === teatrosAdicionais.length - 1}
-                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === teatrosAdicionais.length - 1 ? "default" : "pointer", color: i === teatrosAdicionais.length - 1 ? "#ddd" : "#888", fontSize: "12px" }}
-                    title="Mover para baixo"
-                  >
-                    ▼
-                  </button>
+                  <button onClick={() => moverTeatro(i, -1)} disabled={i === 0}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para cima">▲</button>
+                  <button onClick={() => moverTeatro(i, 1)} disabled={i === teatrosAdicionais.length - 1}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === teatrosAdicionais.length - 1 ? "default" : "pointer", color: i === teatrosAdicionais.length - 1 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para baixo">▼</button>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Ano"
-                  value={item.ano}
-                  onChange={e => {
-                    const novo = [...teatrosAdicionais]
-                    novo[i] = { ...novo[i], ano: e.target.value }
-                    setTeatrosAdicionais(novo)
-                  }}
-                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                />
-                <input
-                  type="text"
-                  placeholder="Teatros (separados por vírgula)"
-                  value={item.teatrosTexto}
-                  onChange={e => {
-                    const novo = [...teatrosAdicionais]
-                    novo[i] = { ...novo[i], teatrosTexto: e.target.value }
-                    setTeatrosAdicionais(novo)
-                  }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                />
-                <button
-                  onClick={() => setTeatrosAdicionais(teatrosAdicionais.filter((_, idx) => idx !== i))}
-                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
-                  title="Remover"
-                >
-                  ✕
-                </button>
+                <input type="text" placeholder="Ano" value={item.ano}
+                  onChange={e => { const novo = [...teatrosAdicionais]; novo[i] = { ...novo[i], ano: e.target.value }; setTeatrosAdicionais(novo) }}
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <input type="text" placeholder="Teatros (separados por vírgula)" value={item.teatrosTexto}
+                  onChange={e => { const novo = [...teatrosAdicionais]; novo[i] = { ...novo[i], teatrosTexto: e.target.value }; setTeatrosAdicionais(novo) }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <button onClick={() => setTeatrosAdicionais(teatrosAdicionais.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
-            <button
-              onClick={() => setTeatrosAdicionais([...teatrosAdicionais, { ano: "", teatrosTexto: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
-            >
+            <button onClick={() => setTeatrosAdicionais([...teatrosAdicionais, { ano: "", teatrosTexto: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar teatro
             </button>
           </div>
@@ -669,53 +587,41 @@ function Musical() {
             <div className="musical-poster">
               {musical.capa
                 ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
-                : musical.titulo
-              }
+                : musical.titulo}
             </div>
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
-
               {musical.equipeCriativa && musical.equipeCriativa.length > 0 ? (
-                musical.equipeCriativa
-                  .filter(item => item.nomes && item.nomes.length > 0)
-                  .map((item, i) => (
-                    <p key={i} style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                      <strong style={{ color: "#1a1a1a" }}>{item.funcao}:</strong>{" "}
-                      {nomesClicaveis(item.nomes.join(", "))}
-                    </p>
-                  ))
+                musical.equipeCriativa.filter(item => item.nomes && item.nomes.length > 0).map((item, i) => (
+                  <p key={i} style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                    <strong style={{ color: "#1a1a1a" }}>{item.funcao}:</strong>{" "}{nomesClicaveis(item.nomes.join(", "))}
+                  </p>
+                ))
               ) : (
                 <>
                   <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                    <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
-                    {nomesClicaveis(musical.direcao) || "—"}
+                    <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}{nomesClicaveis(musical.direcao) || "—"}
                   </p>
                   {musical.direcaoMusical && (
                     <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                      <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}
-                      {nomesClicaveis(musical.direcaoMusical)}
+                      <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}{nomesClicaveis(musical.direcaoMusical)}
                     </p>
                   )}
                 </>
               )}
               {musical.producao && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                  <strong style={{ color: "#1a1a1a" }}>Produção:</strong>{" "}
-                  {nomesClicaveis(musical.producao)}
+                  <strong style={{ color: "#1a1a1a" }}>Produção:</strong>{" "}{nomesClicaveis(musical.producao)}
                 </p>
               )}
-
               <div style={{ marginTop: "4px", marginBottom: "4px" }}>
-                
                 {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
                 {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
                 {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
                 {(musical.teatros?.length > 0 || musical.teatro) && (() => {
                   const listaBase = musical.teatros && musical.teatros.length > 0
                     ? musical.teatros
-                    : musical.teatro
-                      ? [{ ano: musical.ano || "", teatros: [musical.teatro] }, ...(musical.teatrosAdicionais || [])]
-                      : []
+                    : musical.teatro ? [{ ano: musical.ano || "", teatros: [musical.teatro] }, ...(musical.teatrosAdicionais || [])] : []
                   const linhas = listaBase.map((item, i) => ({ ...item, estreia: i === 0 }))
                   return (
                     <div style={{ marginTop: "10px" }}>
@@ -740,9 +646,7 @@ function Musical() {
                                     {lista.map((t, k) => (
                                       <span key={k}>
                                         {k > 0 && ", "}
-                                        {t.id ? (
-                                          <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>{t.nome}</Link>
-                                        ) : t.nome}
+                                        {t.id ? <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>{t.nome}</Link> : t.nome}
                                       </span>
                                     ))}
                                     {cidade !== "?" && <span style={{ color: "#999" }}> — {cidade}</span>}
@@ -758,12 +662,9 @@ function Musical() {
                   )
                 })()}
               </div>
-
               {ehAdmin(usuario) && (
                 <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap" }}>
-                  <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>
-                    ✏️ Editar
-                  </button>
+                  <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>✏️ Editar</button>
                   <button onClick={toggleDestaque} style={{ background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: musical.destaque ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
                     {musical.destaque ? "★ Em destaque" : "☆ Destaque"}
                   </button>
@@ -773,17 +674,21 @@ function Musical() {
           </div>
 
           <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
-            <button onClick={toggleJaVi} title="Marque se você já assistiu este musical" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: jaVi ? "#1a1a1a" : "transparent", color: jaVi ? "#F5C518" : "#888", border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+            <button onClick={toggleJaVi} title="Marque se você já assistiu este musical"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: jaVi ? "#1a1a1a" : "transparent", color: jaVi ? "#F5C518" : "#888", border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               {jaVi ? "✓ Já vi" : "Já vi"}
             </button>
-            <button onClick={toggleQueroVer} title="Adicione à sua lista de musicais para assistir" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+            <button onClick={toggleQueroVer} title="Adicione à sua lista de musicais para assistir"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               {queroVer ? "✓ Quero ver" : "+ Quero ver"}
-              </button>
-            <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copiado!") }} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+            </button>
+            <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copiado!") }}
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               🔗 Copiar link
             </button>
             {musical.programaDigital && (
-              <a href={musical.programaDigital} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#b8960a", color: "#1a1a1a", border: "1px solid #b8960a", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
+              <a href={musical.programaDigital} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#b8960a", color: "#1a1a1a", border: "1px solid #b8960a", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
                 📄 Baixe o programa digital
               </a>
             )}
@@ -792,110 +697,56 @@ function Musical() {
           {/* BLOCO DE SESSÕES */}
           {usuario && jaVi && (
             <div style={{ marginBottom: "24px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px 20px" }}>
-              <p style={{ fontSize: "11px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
-                📅 Suas sessões
-              </p>
-
+              <p style={{ fontSize: "11px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>📅 Suas sessões</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: mostrarFormSessao ? "16px" : "0" }}>
                 {sessoes.map(s => (
                   <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#fff", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "6px 14px" }}>
-                    <span style={{ fontSize: "13px", fontWeight: "500", color: "#1a1a1a" }}>
-                      {labelChip(s)}
-                    </span>
-                    <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>
-                      {s.publico ? "🌐" : "🔒"}
-                    </span>
-                    <button
-                      onClick={() => deletarSessao(s.id)}
-                      style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: "13px", padding: "0", lineHeight: 1, display: "flex", alignItems: "center" }}
-                      title="Remover sessão"
-                    >
-                      ✕
-                    </button>
+                    <span style={{ fontSize: "13px", fontWeight: "500", color: "#1a1a1a" }}>{labelChip(s)}</span>
+                    <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>{s.publico ? "🌐" : "🔒"}</span>
+                    <button onClick={() => deletarSessao(s.id)} style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: "13px", padding: "0", lineHeight: 1, display: "flex", alignItems: "center" }} title="Remover sessão">✕</button>
                   </div>
                 ))}
-
                 {!mostrarFormSessao && (
-                  <button
-                    onClick={() => setMostrarFormSessao(true)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
-                  >
+                  <button onClick={() => setMostrarFormSessao(true)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                     + Nova sessão
                   </button>
                 )}
               </div>
-
               {mostrarFormSessao && (
                 <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "14px 16px" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "12px" }}>
                     <div style={{ flex: "1 1 130px" }}>
                       <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Data</label>
-                      <input
-                        type="date"
-                        value={novaData}
-                        onChange={e => setNovaData(e.target.value)}
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                      />
+                      <input type="date" value={novaData} onChange={e => setNovaData(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
                     </div>
                     <div style={{ flex: "1 1 100px" }}>
                       <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Horário (opcional)</label>
-                      <input
-                        type="time"
-                        value={novoHorario}
-                        onChange={e => setNovoHorario(e.target.value)}
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                      />
+                      <input type="time" value={novoHorario} onChange={e => setNovoHorario(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
                     </div>
                     <div style={{ flex: "2 1 180px" }}>
-  <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Teatro (opcional)</label>
-  <input
-    type="text"
-    value={novoTeatro}
-    onChange={e => setNovoTeatro(e.target.value)}
-    placeholder="ex: Teatro Santander"
-    style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-  />
-</div>
-<div style={{ flex: "2 1 180px" }}>
-  <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
-  <input
-    type="text"
-    value={novoAssento}
-    onChange={e => setNovoAssento(e.target.value)}
-    placeholder="ex: Plateia A, fileira 10, cadeira 5"
-    style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-  />
-</div>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-                    <span style={{ fontSize: "13px", color: "#666" }}>
-                      {novaSessaoPublica ? "🌐 Público — visível no seu perfil" : "🔒 Privado — só você vê"}
-                    </span>
-                    <div
-                      onClick={() => setNovaSessaoPublica(prev => !prev)}
-                      style={{
-                        width: "40px", height: "22px", borderRadius: "11px", cursor: "pointer",
-                        backgroundColor: novaSessaoPublica ? "#F5C518" : "#ccc",
-                        position: "relative", transition: "background 0.2s", flexShrink: 0
-                      }}
-                    >
-                      <div style={{
-                        width: "16px", height: "16px", borderRadius: "50%", backgroundColor: "#fff",
-                        position: "absolute", top: "3px",
-                        left: novaSessaoPublica ? "21px" : "3px",
-                        transition: "left 0.2s"
-                      }} />
+                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Teatro (opcional)</label>
+                      <input type="text" value={novoTeatro} onChange={e => setNovoTeatro(e.target.value)} placeholder="ex: Teatro Santander"
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                    </div>
+                    <div style={{ flex: "2 1 180px" }}>
+                      <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
+                      <input type="text" value={novoAssento} onChange={e => setNovoAssento(e.target.value)} placeholder="ex: Plateia A, fileira 10, cadeira 5"
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
                     </div>
                   </div>
-
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+                    <span style={{ fontSize: "13px", color: "#666" }}>{novaSessaoPublica ? "🌐 Público — visível no seu perfil" : "🔒 Privado — só você vê"}</span>
+                    <div onClick={() => setNovaSessaoPublica(prev => !prev)}
+                      style={{ width: "40px", height: "22px", borderRadius: "11px", cursor: "pointer", backgroundColor: novaSessaoPublica ? "#F5C518" : "#ccc", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                      <div style={{ width: "16px", height: "16px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: novaSessaoPublica ? "21px" : "3px", transition: "left 0.2s" }} />
+                    </div>
+                  </div>
                   <div style={{ display: "flex", gap: "10px" }}>
-                    <button onClick={salvarSessao} disabled={salvandoSessao} className="btn-comentar" style={{ fontSize: "13px", padding: "7px 16px" }}>
-                      {salvandoSessao ? "Salvando..." : "Salvar"}
-                    </button>
-                    <button onClick={() => { setMostrarFormSessao(false); setNovaData(""); setNovoHorario(""); setNovoAssento(""); setNovaSessaoPublica(true) }} className="btn-sair" style={{ fontSize: "13px", padding: "7px 16px" }}>
-                      Cancelar
-                    </button>
+                    <button onClick={salvarSessao} disabled={salvandoSessao} className="btn-comentar" style={{ fontSize: "13px", padding: "7px 16px" }}>{salvandoSessao ? "Salvando..." : "Salvar"}</button>
+                    <button onClick={() => { setMostrarFormSessao(false); setNovaData(""); setNovoHorario(""); setNovoAssento(""); setNovaSessaoPublica(true) }} className="btn-sair" style={{ fontSize: "13px", padding: "7px 16px" }}>Cancelar</button>
                   </div>
                 </div>
               )}
@@ -913,13 +764,9 @@ function Musical() {
             <div style={{ marginBottom: "24px" }}>
               <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco de estreia</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {musical.elenco.split(",").map((nome) => {
+                {musical.elenco.split(",").map(nome => {
                   const n = nome.trim()
-                  return (
-                    <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
-                      {n}
-                    </a>
-                  )
+                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
                 })}
               </div>
             </div>
@@ -929,13 +776,9 @@ function Musical() {
             <div style={{ marginBottom: "24px" }}>
               <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {musical.elencoAdicional.split(",").map((nome) => {
+                {musical.elencoAdicional.split(",").map(nome => {
                   const n = nome.trim()
-                  return (
-                    <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>
-                      {n}
-                    </a>
-                  )
+                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
                 })}
               </div>
             </div>
@@ -944,13 +787,8 @@ function Musical() {
           <hr className="divider" />
 
           <div ref={avaliacaoRef}>
-            <p className="avaliacao-titulo">
-              {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
-            </p>
-            <p style={{ fontSize: "13px", color: "#999", marginTop: "-4px", marginBottom: "12px" }}>
-              Sua nota é privada — só você vê.
-            </p>
-
+            <p className="avaliacao-titulo">{votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}</p>
+            <p style={{ fontSize: "13px", color: "#999", marginTop: "-4px", marginBottom: "12px" }}>Sua nota é privada — só você vê.</p>
             <Estrelas votoAtual={votoAtual} onVotar={votar} />
           </div>
 
@@ -959,23 +797,55 @@ function Musical() {
               {confirmandoRemocao ? (
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <span style={{ fontSize: "13px", color: "#888" }}>Remover sua avaliação?</span>
-                  <button onClick={removerVoto} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0, fontWeight: "600" }}>
-                    Sim, remover
-                  </button>
-                  <button onClick={() => setConfirmandoRemocao(false)} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>
-                    Cancelar
-                  </button>
+                  <button onClick={removerVoto} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0, fontWeight: "600" }}>Sim, remover</button>
+                  <button onClick={() => setConfirmandoRemocao(false)} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>Cancelar</button>
                 </div>
               ) : (
-                <button onClick={() => setConfirmandoRemocao(true)} style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, textDecoration: "underline" }}>
-                  Remover avaliação
-                </button>
+                <button onClick={() => setConfirmandoRemocao(true)} style={{ background: "none", border: "none", fontSize: "12px", color: "#bbb", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Remover avaliação</button>
               )}
             </div>
           )}
 
+          {/* BLOCO DE REAÇÕES 👍/👎 */}
+          <div style={{ marginTop: "24px", marginBottom: "8px" }}>
+            <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>O que você achou?</p>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <button
+                onClick={() => toggleReacao("gostei")}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                  background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent",
+                  color: minhaReacao === "gostei" ? "#F5C518" : "#888",
+                  border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc",
+                  borderRadius: "6px", padding: "8px 18px",
+                  fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer",
+                  transition: "all 0.15s"
+                }}
+              >
+                👍 <span style={{ fontWeight: "600" }}>{totalGostei}</span>
+              </button>
+              <button
+                onClick={() => toggleReacao("nao_gostei")}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                  background: minhaReacao === "nao_gostei" ? "#1a1a1a" : "transparent",
+                  color: minhaReacao === "nao_gostei" ? "#F5C518" : "#888",
+                  border: "1px solid", borderColor: minhaReacao === "nao_gostei" ? "#1a1a1a" : "#ccc",
+                  borderRadius: "6px", padding: "8px 18px",
+                  fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer",
+                  transition: "all 0.15s"
+                }}
+              >
+                👎 <span style={{ fontWeight: "600" }}>{totalNaoGostei}</span>
+              </button>
+            </div>
+            {!usuario && (
+              <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Faça login para reagir.</p>
+            )}
+          </div>
+
           {votoAtual && (
-            <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+            <div style={{ marginTop: "16px", marginBottom: "8px" }}>
               <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "#2b2b2b", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", width: "270px", minHeight: "420px", justifyContent: "flex-start", paddingTop: "48px" }}>
                 {musical.capa ? (
                   <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "160px", height: "220px", objectFit: "cover", borderRadius: "8px", marginBottom: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }} />
@@ -1000,7 +870,6 @@ function Musical() {
           )}
 
           <hr className="divider" />
-
           <ReportarErro musicalId={id} musicalTitulo={musical.titulo} usuario={usuario} />
         </>
       )}

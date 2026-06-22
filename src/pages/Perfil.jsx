@@ -62,6 +62,11 @@ function Perfil() {
   // Mensagem
   const [enviandoMensagem, setEnviandoMensagem] = useState(false)
 
+  // Listas personalizadas
+  const [listas, setListas] = useState([]) // [{ id, nome, itens:[] }]
+  const [editandoListaId, setEditandoListaId] = useState(null)
+  const [editandoListaNome, setEditandoListaNome] = useState("")
+
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
   }, [])
@@ -149,6 +154,17 @@ function Perfil() {
           })
         })
         setSessoesPorMusical(sessoesPorId)
+
+        // Listas personalizadas
+        const listasSnap = await getDocs(collection(db, "usuarios", userId, "listas"))
+        const listasDados = await Promise.all(
+          listasSnap.docs.map(async listaDoc => {
+            const itensSnap = await getDocs(collection(db, "usuarios", userId, "listas", listaDoc.id, "itens"))
+            const itens = itensSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+            return { id: listaDoc.id, nome: listaDoc.data().nome, itens }
+          })
+        )
+        setListas(listasDados)
       } catch (e) {
         // Nunca deixa a página presa em "Carregando..." se alguma leitura falhar.
         console.error("Erro ao carregar perfil:", e)
@@ -766,6 +782,7 @@ function Perfil() {
           { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
           { id: 'quero-ver', label: `Quero ver (${queroVer.length})` },
           { id: 'comentarios', label: `Comentários (${comentarios.length})` },
+          { id: 'listas', label: `Listas (${listas.length})` },
         ].map(tab => (
           <button key={tab.id} onClick={() => setTabAtiva(tab.id)} style={{
             background: 'none', border: 'none', borderBottom: tabAtiva === tab.id ? '2px solid #F5C518' : '2px solid transparent',
@@ -965,6 +982,110 @@ function Perfil() {
                 </a>
               )
             })
+          )}
+        </div>
+      )}
+
+      {/* LISTAS PERSONALIZADAS */}
+      {tabAtiva === "listas" && (
+        <div>
+          {listas.length === 0 ? (
+            <p className="login-aviso">
+              {isProprioPerfil
+                ? 'Você ainda não criou nenhuma lista. Use o botão "+ Listas" nos cards da Home para criar.'
+                : 'Este usuário ainda não criou nenhuma lista.'}
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {listas.map(lista => (
+                <div key={lista.id} style={{ border: "1px solid #e8e8e4", borderRadius: "12px", overflow: "hidden" }}>
+                  {/* Cabeçalho da lista */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", background: "#f9f9f9", borderBottom: lista.itens.length > 0 ? "1px solid #e8e8e4" : "none" }}>
+                    {isProprioPerfil && editandoListaId === lista.id ? (
+                      <div style={{ display: "flex", gap: "8px", flex: 1 }}>
+                        <input
+                          autoFocus
+                          type="text"
+                          value={editandoListaNome}
+                          onChange={e => setEditandoListaNome(e.target.value)}
+                          onKeyDown={async e => {
+                            if (e.key === "Enter") {
+                              const nome = editandoListaNome.trim()
+                              if (!nome) return
+                              await setDoc(doc(db, "usuarios", userId, "listas", lista.id), { nome }, { merge: true })
+                              setListas(prev => prev.map(l => l.id === lista.id ? { ...l, nome } : l))
+                              setEditandoListaId(null)
+                            }
+                            if (e.key === "Escape") setEditandoListaId(null)
+                          }}
+                          style={{ flex: 1, padding: "6px 10px", border: "1px solid #F5C518", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", outline: "none" }}
+                        />
+                        <button
+                          onClick={async () => {
+                            const nome = editandoListaNome.trim()
+                            if (!nome) return
+                            await setDoc(doc(db, "usuarios", userId, "listas", lista.id), { nome }, { merge: true })
+                            setListas(prev => prev.map(l => l.id === lista.id ? { ...l, nome } : l))
+                            setEditandoListaId(null)
+                          }}
+                          style={{ background: "#F5C518", border: "none", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+                          Salvar
+                        </button>
+                        <button onClick={() => setEditandoListaId(null)} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "6px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer", color: "#888" }}>Cancelar</button>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "17px", fontWeight: "700", margin: 0, color: "#1a1a1a" }}>{lista.nome}</p>
+                          <p style={{ fontSize: "12px", color: "#888", margin: "2px 0 0" }}>{lista.itens.length} {lista.itens.length === 1 ? "musical" : "musicais"}</p>
+                        </div>
+                        {isProprioPerfil && (
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <button
+                              onClick={() => { setEditandoListaId(lista.id); setEditandoListaNome(lista.nome) }}
+                              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer" }}>
+                              ✏️ Renomear
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!window.confirm(`Deletar a lista "${lista.nome}"? Os musicais não serão apagados.`)) return
+                                // Apaga todos os itens e depois a lista
+                                for (const item of lista.itens) {
+                                  await deleteDoc(doc(db, "usuarios", userId, "listas", lista.id, "itens", item.id))
+                                }
+                                await deleteDoc(doc(db, "usuarios", userId, "listas", lista.id))
+                                setListas(prev => prev.filter(l => l.id !== lista.id))
+                              }}
+                              style={{ background: "none", border: "1px solid #f0c0c0", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#cc0000", cursor: "pointer" }}>
+                              🗑 Deletar
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Musicais da lista */}
+                  {lista.itens.length === 0 ? (
+                    <p style={{ fontSize: "13px", color: "#aaa", padding: "16px", fontStyle: "italic" }}>Nenhum musical nesta lista ainda.</p>
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "12px", padding: "16px" }}>
+                      {lista.itens.map(item => (
+                        <a key={item.id} href={"/musical/" + item.musicalId}
+                          style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column" }}>
+                          <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "6px" }}>
+                            {item.capa
+                              ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+                              : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "10px", padding: "6px", textAlign: "center" }}>{item.titulo}</div>}
+                          </div>
+                          <p style={{ fontSize: "12px", fontWeight: "600", margin: 0, lineHeight: "1.3", color: "#1a1a1a" }}>{item.titulo}</p>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
