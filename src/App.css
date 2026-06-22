@@ -6,7 +6,7 @@
   --cor-fundo: #f7f4ef;
   --cor-fundo-card: #ffffff;
   --cor-fundo-alternativo: #f5f5f0;
-  --cor-fundo-escuro: #1a1a1a;
+  --cor-fundo-escuro: #0a2c59;
 
   --cor-borda: #e8e8e4;
   --cor-borda-escura: #444;
@@ -187,7 +187,7 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: var(--cor-fundo-escuro);
+  background: #0a2c59;
   color: var(--cor-primaria);
   border-radius: 5px;
   padding: 3px 10px;

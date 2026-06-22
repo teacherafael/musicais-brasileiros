@@ -196,10 +196,13 @@ function Header() {
         <Link
   to="/"
   className="logo"
-  style={{ cursor: "pointer", display: "flex", alignItems: "baseline", gap: "10px", textDecoration: "none" }}
+  style={{ cursor: "pointer", display: "flex", alignItems: "center", textDecoration: "none" }}
 >
-  <span style={{ color: "#F5C518" }}>MBD<span style={{ color: "#fff" }}>b</span></span>
-  <span className="logo-subtitulo">Musicais Brasileiros Database</span>
+  <img
+    src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171268/mcdb_sembirlho_utr4xp.png"
+    alt="MCDb — Musical Cast Database"
+    style={{ height: "56px", width: "auto", display: "block" }}
+  />
 </Link>
 
         <div className="header-right">
