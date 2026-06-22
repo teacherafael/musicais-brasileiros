@@ -66,6 +66,9 @@ function Perfil() {
   const [listas, setListas] = useState([]) // [{ id, nome, itens:[] }]
   const [editandoListaId, setEditandoListaId] = useState(null)
   const [editandoListaNome, setEditandoListaNome] = useState("")
+  const [dropdownListasAberto, setDropdownListasAberto] = useState(null)
+  const [novaListaNome, setNovaListaNome] = useState("")
+  const [criandoListaNoPerfil, setCriandoListaNoPerfil] = useState(false)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
@@ -297,6 +300,32 @@ function Perfil() {
     setBuscaTop3("")
   }
 
+  async function toggleMusicalNaListaPerfil(musicalId, titulo, capa, direcao, listaId) {
+    const ref = doc(db, "usuarios", userId, "listas", listaId, "itens", musicalId)
+    const jaEsta = listas.find(l => l.id === listaId)?.itens.some(i => i.id === musicalId)
+    if (jaEsta) {
+      await deleteDoc(ref)
+      setListas(prev => prev.map(l => l.id === listaId ? { ...l, itens: l.itens.filter(i => i.id !== musicalId) } : l))
+    } else {
+      await setDoc(ref, { musicalId, titulo, capa: capa || null, direcao: direcao || "", adicionadoEm: serverTimestamp() })
+      setListas(prev => prev.map(l => l.id === listaId ? { ...l, itens: [...l.itens, { id: musicalId, musicalId, titulo, capa: capa || null, direcao: direcao || "" }] } : l))
+    }
+  }
+
+  async function criarListaEAdicionarPerfil(musicalId, titulo, capa, direcao, nome) {
+    const nomeLimpo = nome.trim()
+    if (!nomeLimpo) return
+    const listaRef = await addDoc(collection(db, "usuarios", userId, "listas"), { nome: nomeLimpo, criadaEm: serverTimestamp() })
+    const listaId = listaRef.id
+    await setDoc(doc(db, "usuarios", userId, "listas", listaId, "itens", musicalId), {
+      musicalId, titulo, capa: capa || null, direcao: direcao || "", adicionadoEm: serverTimestamp()
+    })
+    setListas(prev => [...prev, { id: listaId, nome: nomeLimpo, itens: [{ id: musicalId, musicalId, titulo, capa: capa || null, direcao: direcao || "" }] }])
+    setNovaListaNome("")
+    setCriandoListaNoPerfil(false)
+    setDropdownListasAberto(null)
+  }
+
   function toggleTop3(musicalId) {
     if (top3Selecionado.includes(musicalId)) {
       setTop3Selecionado(prev => prev.filter(id => id !== musicalId))
@@ -502,22 +531,74 @@ function Perfil() {
     m.titulo.toLowerCase().includes(buscaTop3.toLowerCase())
   )
 
-  const cardMusical = (item, extra) => (
-    <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
-      style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "12px" }}>
-        {item.capa
-          ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-          : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
-        }
+  const cardMusical = (item, extra) => {
+    const emAlgumaLista = listas.some(l => l.itens.some(i => i.id === item.musicalId))
+    const ddAberto = dropdownListasAberto === item.musicalId
+    return (
+      <div key={item.id} style={{ position: "relative" }}>
+        <a href={"/musical/" + item.musicalId} className="card-musical"
+          style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "12px" }}>
+            {item.capa
+              ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
+              : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
+            }
+          </div>
+          <div style={{ width: "100%" }}>
+            <p className="card-titulo">{item.titulo}</p>
+            {extra}
+          </div>
+        </a>
+        {isProprioPerfil && (
+          <div style={{ position: "relative" }}>
+            <button
+              data-btn-listas-perfil={item.musicalId}
+              onClick={e => { e.preventDefault(); setDropdownListasAberto(prev => prev === item.musicalId ? null : item.musicalId); setCriandoListaNoPerfil(false); setNovaListaNome("") }}
+              style={{ marginTop: "6px", width: "100%", background: emAlgumaLista ? "#1a1a1a" : "transparent", color: emAlgumaLista ? "#F5C518" : "#888", border: "1px solid", borderColor: emAlgumaLista ? "#1a1a1a" : "#e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer", textAlign: "center" }}>
+              {emAlgumaLista ? "✓ Nas listas" : "+ Adicionar à lista"}
+            </button>
+            {ddAberto && (
+              <div data-listas-dropdown-perfil style={{ position: "absolute", bottom: "calc(100% + 4px)", left: 0, right: 0, background: "#fff", border: "1px solid #e8e8e4", borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, padding: "8px 0", minWidth: "160px" }}>
+                <p style={{ fontSize: "11px", fontWeight: "700", color: "#aaa", textTransform: "uppercase", letterSpacing: "1px", padding: "4px 12px 8px" }}>Minhas listas</p>
+                {listas.length === 0 && !criandoListaNoPerfil && <p style={{ fontSize: "13px", color: "#888", padding: "0 12px 8px", fontStyle: "italic" }}>Nenhuma lista ainda.</p>}
+                {listas.map(lista => {
+                  const marcado = lista.itens.some(i => i.id === item.musicalId)
+                  return (
+                    <div key={lista.id} onClick={() => toggleMusicalNaListaPerfil(item.musicalId, item.titulo, item.capa, item.direcao, lista.id)}
+                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 12px", cursor: "pointer", background: marcado ? "#fffbe6" : "transparent" }}
+                      onMouseEnter={e => e.currentTarget.style.background = marcado ? "#fff8d6" : "#f9f9f9"}
+                      onMouseLeave={e => e.currentTarget.style.background = marcado ? "#fffbe6" : "transparent"}>
+                      <span style={{ width: "14px", height: "14px", border: "2px solid", borderColor: marcado ? "#F5C518" : "#ccc", borderRadius: "3px", background: marcado ? "#F5C518" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "9px", color: "#1a1a1a" }}>{marcado ? "✓" : ""}</span>
+                      <span style={{ fontSize: "12px", color: "#1a1a1a" }}>{lista.nome}</span>
+                    </div>
+                  )
+                })}
+                <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "4px", paddingTop: "4px" }}>
+                  {criandoListaNoPerfil ? (
+                    <div style={{ padding: "4px 8px", display: "flex", gap: "4px" }} onClick={e => e.stopPropagation()}>
+                      <input autoFocus type="text" placeholder="Nome da lista" value={novaListaNome} onChange={e => setNovaListaNome(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") criarListaEAdicionarPerfil(item.musicalId, item.titulo, item.capa, item.direcao, novaListaNome); if (e.key === "Escape") setCriandoListaNoPerfil(false) }}
+                        style={{ flex: 1, padding: "4px 6px", border: "1px solid #e8e8e4", borderRadius: "4px", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", outline: "none" }} />
+                      <button onClick={() => criarListaEAdicionarPerfil(item.musicalId, item.titulo, item.capa, item.direcao, novaListaNome)}
+                        style={{ background: "#F5C518", border: "none", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", fontWeight: "600", cursor: "pointer" }}>OK</button>
+                    </div>
+                  ) : (
+                    <div onClick={() => setCriandoListaNoPerfil(true)}
+                      style={{ padding: "6px 12px", cursor: "pointer", color: "#b8960a", fontSize: "12px", fontWeight: "600" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#fffbe6"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                      + Nova lista
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <div style={{ width: "100%" }}>
-        <p className="card-titulo">{item.titulo}</p>
-        {extra}
-      </div>
-    </a>
-  )
+    )
+  }
 
   const cardJaVi = (item) => {
     const sessoes = sessoesPorMusical[item.musicalId] || []
