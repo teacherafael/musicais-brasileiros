@@ -26,13 +26,6 @@ function Footer() {
         >
           Termos de Uso
         </button>
-        <span style={{ color: "#444", fontSize: "12px" }}>·</span>
-        <button
-          onClick={() => navigate("/politica")}
-          style={{ background: "none", border: "none", fontSize: "12px", color: "#888", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
-        >
-          Política de Comentários
-        </button>
       </div>
       <p style={{ fontSize: "11px", color: "#444" }}>© 2026 MBDb</p>
     </footer>

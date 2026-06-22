@@ -9,7 +9,6 @@ import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
-import Politica from "./pages/Politica"
 import Pessoa from "./pages/Pessoa"
 import Teatro from "./pages/Teatro"
 import Mensagens from "./pages/Mensagens"
@@ -72,7 +71,6 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/termos" element={<Termos />} />
-        <Route path="/politica" element={<Politica />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
         <Route path="/teatro/:id" element={<Teatro />} />
