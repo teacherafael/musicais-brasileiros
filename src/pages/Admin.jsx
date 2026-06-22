@@ -112,7 +112,9 @@ function Admin() {
         setSugestoes(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       } else if (qual === "relatos") {
         const snap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
-        setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+        // Mostra só relatos de erro. Denúncias de comentário antigas (tipo
+        // "denuncia_comentario") não aparecem mais — não há mais comentários.
+        setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.tipo !== "denuncia_comentario"))
       } else if (qual === "musicais") {
         const snap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
         setMusicais(snap.docs.map(d => ({ id: d.id, ...d.data() })))
@@ -469,7 +471,7 @@ await setDoc(doc(db, "musicais", slug), {
           ➕ Adicionar musical
         </button>
         <button onClick={() => trocarAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
-          Relatos e denúncias {carregadas.has("relatos") && relatos.length > 0 && `(${relatos.length})`}
+          Relatos de erro {carregadas.has("relatos") && relatos.length > 0 && `(${relatos.length})`}
         </button>
         <button onClick={() => trocarAba("musicais")} className={aba === "musicais" ? "btn-comentar" : "btn-sair"}>
           Musicais publicados {carregadas.has("musicais") && `(${musicais.length})`}
@@ -659,25 +661,19 @@ await setDoc(doc(db, "musicais", slug), {
         </div>
       ) : aba === "relatos" ? (
         relatos.length === 0 ? (
-          <p style={{ color: "#888" }}>Nenhum relato ou denúncia.</p>
+          <p style={{ color: "#888" }}>Nenhum relato de erro.</p>
         ) : (
           relatos.map(r => (
             <div key={r.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                <span style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", background: r.tipo === "denuncia_comentario" ? "#fff0f0" : "#fffbe6", color: r.tipo === "denuncia_comentario" ? "#cc0000" : "#888", borderRadius: "4px", padding: "2px 8px" }}>
-                  {r.tipo === "denuncia_comentario" ? "Denúncia de comentário" : "Relato de erro"}
+                <span style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", background: "#fffbe6", color: "#888", borderRadius: "4px", padding: "2px 8px" }}>
+                  Relato de erro
                 </span>
                 <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518" }}>{r.musicalTitulo}</p>
               </div>
-              {r.tipo === "denuncia_comentario" && r.comentarioTexto && (
-                <div style={{ background: "#f9f9f9", borderLeft: "3px solid #e8e8e4", padding: "8px 12px", marginBottom: "10px", borderRadius: "4px" }}>
-                  <p style={{ fontSize: "12px", color: "#888", marginBottom: "2px" }}>Comentário denunciado de {r.comentarioAutor}:</p>
-                  <p style={{ fontSize: "13px", color: "#555", fontStyle: "italic" }}>"{r.comentarioTexto}"</p>
-                </div>
-              )}
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
               <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                {r.tipo === "denuncia_comentario" ? "Denunciado por" : "Reportado por"}: {r.nome}
+                Reportado por: {r.nome}
               </p>
               <div style={{ display: "flex", gap: "12px" }}>
                 <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>Ver musical</button>
