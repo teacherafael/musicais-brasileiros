@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async"
 import { useEffect, useState, useRef } from "react"
-import { doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, deleteDoc, orderBy, query, serverTimestamp } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -9,17 +9,6 @@ import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
-
-function SeloVerificado() {
-  return (
-    <span title="Usuário verificado" style={{ marginLeft: "5px", verticalAlign: "middle", display: "inline-flex" }}>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
-        <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </span>
-  )
-}
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -153,24 +142,13 @@ function Musical() {
   const [votoAtual, setVotoAtual] = useState(null)
   const [queroVer, setQueroVer] = useState(false)
   const [jaVi, setJaVi] = useState(false)
-  const [comentarios, setComentarios] = useState([])
-  const [textoComentario, setTextoComentario] = useState("")
-  const [editandoComentario, setEditandoComentario] = useState(null)
-  const [textoEdicao, setTextoEdicao] = useState("")
   const [editandoMusical, setEditandoMusical] = useState(false)
   const [formEdicao, setFormEdicao] = useState({})
   const [equipeEdicao, setEquipeEdicao] = useState([])
   const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [gerando, setGerando] = useState(false)
-  const [denunciandoComentario, setDenunciandoComentario] = useState(null)
-  const [textoDenuncia, setTextoDenuncia] = useState("")
-  const [denunciaEnviada, setDenunciaEnviada] = useState(null)
   const [toast, setToast] = useState(null)
-  const [usuariosVerificados, setUsuariosVerificados] = useState({})
-  const [reacoes, setReacoes] = useState({})
-  const [minhaReacao, setMinhaReacao] = useState({})
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
-  const [tooltipHistograma, setTooltipHistograma] = useState(null)
   const cartaoRef = useRef(null)
   const avaliacaoRef = useRef(null)
 
@@ -190,10 +168,7 @@ function Musical() {
 
   useEffect(() => {
     if (!musical) return
-    const media = musical.totalVotos > 0
-      ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
-      : null
-    document.title = `${musical.titulo}${media ? ` — ★ ${media}` : ""} | MBDb`
+    document.title = `${musical.titulo} | MBDb`
     return () => { document.title = "MBDb" }
   }, [musical])
 
@@ -202,47 +177,7 @@ function Musical() {
       const docSnap = await getDoc(doc(db, "musicais", id))
       if (docSnap.exists()) setMusical({ id: docSnap.id, ...docSnap.data() })
     }
-    async function buscarComentarios() {
-      const q = query(collection(db, "musicais", id, "comentarios"), orderBy("data", "desc"))
-      const snap = await getDocs(q)
-      const lista = await Promise.all(snap.docs.map(async d => {
-        const dados = { id: d.id, ...d.data() }
-        if (dados.userId) {
-          const votoSnap = await getDoc(doc(db, "musicais", id, "votos", dados.userId))
-          if (votoSnap.exists()) dados.estrelasComentario = votoSnap.data().estrelas
-        }
-        return dados
-      }))
-      setComentarios(lista)
-
-      const userIds = [...new Set(lista.map(c => c.userId).filter(Boolean))]
-      const verificados = {}
-      await Promise.all(userIds.map(async uid => {
-        const userSnap = await getDoc(doc(db, "usuarios", uid))
-        if (userSnap.exists()) verificados[uid] = userSnap.data().verificado ?? false
-      }))
-      setUsuariosVerificados(verificados)
-
-      const reacoesPorComentario = {}
-      const minhaReacaoPorComentario = {}
-      await Promise.all(lista.map(async c => {
-        const reacoesSnap = await getDocs(collection(db, "musicais", id, "comentarios", c.id, "reacoes"))
-        const contagem = {}
-        reacoesSnap.docs.forEach(r => {
-          const emoji = r.data().emoji
-          contagem[emoji] = (contagem[emoji] || 0) + 1
-        })
-        reacoesPorComentario[c.id] = contagem
-        if (usuario) {
-          const minhaSnap = reacoesSnap.docs.find(r => r.id === usuario?.uid)
-          if (minhaSnap) minhaReacaoPorComentario[c.id] = minhaSnap.data().emoji
-        }
-      }))
-      setReacoes(reacoesPorComentario)
-      setMinhaReacao(minhaReacaoPorComentario)
-    }
     buscarMusical()
-    buscarComentarios()
   }, [id])
 
   useEffect(() => {
@@ -380,75 +315,12 @@ function Musical() {
     mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
   }
 
+  // Voto agora é 100% privado: grava só a nota individual do dono em votos/{uid}.
+  // Não atualiza mais agregados públicos (totalVotos/somaEstrelas/distribuicao) nem o feed.
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
 
-    const chaveNova = String(estrelas)
-
-    if (votoAtual) {
-      const chaveAntiga = String(votoAtual)
-
-      const musicalRef = doc(db, "musicais", id)
-      const snap = await getDoc(musicalRef)
-      const dist = snap.data()?.distribuicao || {}
-
-      const novaDistribuicao = {}
-      for (const k of Object.keys(dist)) {
-        novaDistribuicao[k] = Number(dist[k]) || 0
-      }
-      novaDistribuicao[chaveAntiga] = Math.max((novaDistribuicao[chaveAntiga] || 0) - 1, 0)
-      novaDistribuicao[chaveNova] = (novaDistribuicao[chaveNova] || 0) + 1
-
-      await updateDoc(musicalRef, {
-        somaEstrelas: increment(estrelas - votoAtual),
-        distribuicao: novaDistribuicao,
-      })
-      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-
-      setMusical(prev => ({
-        ...prev,
-        somaEstrelas: prev.somaEstrelas + (estrelas - votoAtual),
-        distribuicao: novaDistribuicao,
-      }))
-    } else {
-      const musicalRef = doc(db, "musicais", id)
-      const snap = await getDoc(musicalRef)
-      const dist = snap.data()?.distribuicao || {}
-
-      const novaDistribuicao = {}
-      for (const k of Object.keys(dist)) {
-        novaDistribuicao[k] = Number(dist[k]) || 0
-      }
-      novaDistribuicao[chaveNova] = (novaDistribuicao[chaveNova] || 0) + 1
-
-      await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
-      await updateDoc(musicalRef, {
-        totalVotos: increment(1),
-        somaEstrelas: increment(estrelas),
-        distribuicao: novaDistribuicao,
-      })
-      const perfilSnap = await getDoc(doc(db, "usuarios", usuario.uid))
-      const avaliacoesPublicas = perfilSnap.exists() ? (perfilSnap.data().avaliacoesPublicas ?? true) : true
-      if (avaliacoesPublicas) {
-        await setDoc(doc(db, "atividades", `${usuario.uid}_${id}`), {
-          tipo: "avaliacao",
-          userId: usuario.uid,
-          nome: usuario.displayName || "Anônimo",
-          foto: usuario.photoURL || "",
-          musicalId: id,
-          musicalTitulo: musical.titulo,
-          estrelas,
-          data: serverTimestamp()
-        })
-      }
-
-      setMusical(prev => ({
-        ...prev,
-        totalVotos: prev.totalVotos + 1,
-        somaEstrelas: prev.somaEstrelas + estrelas,
-        distribuicao: novaDistribuicao,
-      }))
-    }
+    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
 
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
@@ -462,32 +334,7 @@ function Musical() {
   }
 
   async function removerVoto() {
-    const chave = String(votoAtual)
-
-    const musicalRef = doc(db, "musicais", id)
-    const snap = await getDoc(musicalRef)
-    const dist = snap.data()?.distribuicao || {}
-
-    const novaDistribuicao = {}
-    for (const k of Object.keys(dist)) {
-      novaDistribuicao[k] = Number(dist[k]) || 0
-    }
-    novaDistribuicao[chave] = Math.max((novaDistribuicao[chave] || 0) - 1, 0)
-
     await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
-    await deleteDoc(doc(db, "atividades", `${usuario.uid}_${id}`))
-    await updateDoc(musicalRef, {
-      totalVotos: increment(-1),
-      somaEstrelas: increment(-votoAtual),
-      distribuicao: novaDistribuicao,
-    })
-
-    setMusical(prev => ({
-      ...prev,
-      totalVotos: prev.totalVotos - 1,
-      somaEstrelas: prev.somaEstrelas - votoAtual,
-      distribuicao: novaDistribuicao,
-    }))
     setVotoAtual(null)
     setConfirmandoRemocao(false)
     mostrarToast("Avaliação removida.")
@@ -594,141 +441,7 @@ function Musical() {
     setGerando(false)
   }
 
-  async function enviarComentario() {
-    if (!usuario) return alert("Faça login para comentar.")
-    if (!textoComentario.trim()) return
-    const confirmado = window.confirm("Lembre-se de manter sua crítica respeitosa e sem ataques à produção. Deseja publicar o comentário?")
-    if (!confirmado) return
-
-    const novoComentario = {
-      nome: usuario.displayName || "Anônimo",
-      userId: usuario.uid,
-      texto: textoComentario,
-      data: new Date()
-    }
-
-    const docRef = await addDoc(collection(db, "musicais", id, "comentarios"), novoComentario)
-
-    await setDoc(doc(db, "comentarios", docRef.id), {
-      ...novoComentario,
-      musicalId: id,
-      musicalTitulo: musical.titulo,
-      musicalCapa: musical.capa || null,
-      data: serverTimestamp()
-    })
-    await addDoc(collection(db, "atividades"), {
-      tipo: "comentario",
-      userId: usuario.uid,
-      nome: usuario.displayName || "Anônimo",
-      foto: usuario.photoURL || "",
-      musicalId: id,
-      musicalTitulo: musical.titulo,
-      data: serverTimestamp()
-    })
-
-    const votoSnap = await getDoc(doc(db, "musicais", id, "votos", usuario.uid))
-    const estrelasComentario = votoSnap.exists() ? votoSnap.data().estrelas : null
-
-    const userSnap = await getDoc(doc(db, "usuarios", usuario.uid))
-    const eVerificado = userSnap.exists() ? (userSnap.data().verificado ?? false) : false
-    setUsuariosVerificados(prev => ({ ...prev, [usuario.uid]: eVerificado }))
-
-    setComentarios(prev => [{ id: docRef.id, ...novoComentario, estrelasComentario }, ...prev])
-    setTextoComentario("")
-  }
-
-  async function deletarComentario(comentarioId) {
-    if (!window.confirm("Apagar este comentário?")) return
-    await deleteDoc(doc(db, "musicais", id, "comentarios", comentarioId))
-    await deleteDoc(doc(db, "comentarios", comentarioId))
-    setComentarios(prev => prev.filter(c => c.id !== comentarioId))
-  }
-
-  async function salvarEdicao(comentarioId) {
-    if (!textoEdicao.trim()) return
-    await updateDoc(doc(db, "musicais", id, "comentarios", comentarioId), { texto: textoEdicao })
-    await updateDoc(doc(db, "comentarios", comentarioId), { texto: textoEdicao })
-    setComentarios(prev => prev.map(c => c.id === comentarioId ? { ...c, texto: textoEdicao } : c))
-    setEditandoComentario(null)
-    setTextoEdicao("")
-  }
-
-  async function reagir(comentarioId, emoji) {
-    if (!usuario) return alert("Faça login para reagir.")
-    const ref = doc(db, "musicais", id, "comentarios", comentarioId, "reacoes", usuario.uid)
-    const jaReagiu = minhaReacao[comentarioId]
-
-    if (jaReagiu === emoji) {
-      // Remove reação existente — sem notificação
-      await deleteDoc(ref)
-      setMinhaReacao(prev => { const next = { ...prev }; delete next[comentarioId]; return next })
-      setReacoes(prev => {
-        const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
-        next[comentarioId][emoji] = Math.max((next[comentarioId][emoji] || 1) - 1, 0)
-        return next
-      })
-    } else {
-      // Troca ou adiciona reação
-      if (jaReagiu) {
-        setReacoes(prev => {
-          const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
-          next[comentarioId][jaReagiu] = Math.max((next[comentarioId][jaReagiu] || 1) - 1, 0)
-          return next
-        })
-      }
-      await setDoc(ref, { emoji })
-      setMinhaReacao(prev => ({ ...prev, [comentarioId]: emoji }))
-      setReacoes(prev => {
-        const next = { ...prev, [comentarioId]: { ...prev[comentarioId] } }
-        next[comentarioId][emoji] = (next[comentarioId][emoji] || 0) + 1
-        return next
-      })
-
-      // Notifica o dono do comentário (só se não for a própria pessoa)
-      const comentario = comentarios.find(c => c.id === comentarioId)
-      if (comentario && comentario.userId && comentario.userId !== usuario.uid) {
-        try {
-          await addDoc(collection(db, "notificacoes", comentario.userId, "itens"), {
-            tipo: "reacao",
-            emoji,
-            de: usuario.displayName || "Alguém",
-            texto: `${usuario.displayName || "Alguém"} reagiu ${emoji} ao seu comentário em ${musical.titulo}`,
-            link: `/musical/${id}`,
-            lida: false,
-            data: serverTimestamp(),
-          })
-        } catch (e) {
-          // Notificação é silenciosa — falha não bloqueia a reação
-        }
-      }
-    }
-  }
-
-  async function enviarDenuncia(comentario) {
-    if (!textoDenuncia.trim()) return
-    await addDoc(collection(db, "relatorios"), {
-      tipo: "denuncia_comentario",
-      musicalId: id,
-      musicalTitulo: musical.titulo,
-      comentarioId: comentario.id,
-      comentarioTexto: comentario.texto,
-      comentarioAutor: comentario.nome,
-      texto: textoDenuncia,
-      nome: usuario ? (usuario.displayName || "Anônimo") : "Anônimo",
-      userId: usuario ? usuario.uid : null,
-      data: serverTimestamp()
-    })
-    setDenunciaEnviada(comentario.id)
-    setDenunciandoComentario(null)
-    setTextoDenuncia("")
-    setTimeout(() => setDenunciaEnviada(null), 3000)
-  }
-
   if (!musical) return <main><p>Carregando...</p></main>
-
-  const media = musical.totalVotos > 0
-    ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
-    : null
 
   const estrelasSVG = (nota) => {
     return [1, 2, 3, 4, 5].map(i => {
@@ -765,9 +478,9 @@ function Musical() {
     <main>
       <Helmet>
         <title>{musical.titulo} — MBDb</title>
-        <meta name="description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
+        <meta name="description" content={musical.sinopse || `Veja informações sobre ${musical.titulo} no MBDb.`} />
         <meta property="og:title" content={musical.titulo} />
-        <meta property="og:description" content={musical.sinopse || `Veja avaliações e informações sobre ${musical.titulo} no MBDb.`} />
+        <meta property="og:description" content={musical.sinopse || `Veja informações sobre ${musical.titulo} no MBDb.`} />
         {musical.capa && <meta property="og:image" content={musical.capa} />}
         <meta property="og:url" content={`https://musicais-brasileiros.vercel.app/musical/${id}`} />
         <meta property="og:type" content="website" />
@@ -1017,22 +730,8 @@ function Musical() {
                 })()}
               </div>
 
-              <div style={{ margin: "16px 0 12px" }}>
-                {media ? (
-                  <div style={{ display: "inline-flex", alignItems: "baseline", gap: "10px", background: "#1a1a1a", borderRadius: "10px", padding: "10px 20px" }}>
-                    <span style={{ fontSize: "32px", fontWeight: "700", color: "#F5C518", lineHeight: 1 }}>★ {media}</span>
-                    <span style={{ fontSize: "13px", color: "#888" }}>{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
-                  </div>
-                ) : (
-                  <div style={{ display: "inline-flex", alignItems: "baseline", gap: "10px", background: "#1a1a1a", borderRadius: "10px", padding: "10px 20px" }}>
-                    <span style={{ fontSize: "24px", fontWeight: "700", color: "#555", lineHeight: 1 }}>—</span>
-                    <span style={{ fontSize: "13px", color: "#888" }}>sem votos ainda</span>
-                  </div>
-                )}
-              </div>
-
               {ehAdmin(usuario) && (
-                <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap" }}>
                   <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>
                     ✏️ Editar
                   </button>
@@ -1215,59 +914,12 @@ function Musical() {
 
           <hr className="divider" />
 
-          {musical.totalVotos > 0 && musical.distribuicao && Object.keys(musical.distribuicao).length > 0 && (
-            <div style={{ marginBottom: "24px", background: "#1a1a1a", borderRadius: "8px", padding: "16px 20px", display: "inline-block", minWidth: "280px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <span style={{ fontSize: "11px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.08em", color: "#888" }}>Avaliações</span>
-                <span style={{ fontSize: "11px", color: "#888" }}>{musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}</span>
-              </div>
-              <div style={{ position: "relative" }}>
-                {tooltipHistograma && (
-                  <div style={{
-                    position: "absolute", bottom: "calc(100% + 6px)", left: "50%",
-                    transform: "translateX(-50%)", background: "#1a1a1a", color: "#fff",
-                    padding: "5px 10px", borderRadius: "6px", fontSize: "12px", whiteSpace: "nowrap",
-                    pointerEvents: "none", zIndex: 10, border: "1px solid #333"
-                  }}>
-                    <span style={{ color: "#F5C518" }}>{tooltipHistograma.chave}★</span>
-                    {" — "}
-                    {tooltipHistograma.val} {tooltipHistograma.val === 1 ? "voto" : "votos"}
-                    {" (" + tooltipHistograma.pct + "%)"}
-                  </div>
-                )}
-                <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "32px", marginBottom: "6px" }}>
-                  {["0.5","1","1.5","2","2.5","3","3.5","4","4.5","5"].map((chave, i, arr) => {
-                    const d = musical.distribuicao || {}
-                    const val = Number(d[chave]) || 0
-                    const maxVal = Math.max(...arr.map(k => Number(d[k]) || 0), 1)
-                    const altura = Math.max(Math.round((val / maxVal) * 100), val > 0 ? 5 : 0)
-                    const pct = musical.totalVotos > 0 ? Math.round((val / musical.totalVotos) * 100) : 0
-                    const posX = `${(i / (arr.length - 1)) * 100}%`
-                    return (
-                      <div key={chave} style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", cursor: "pointer", position: "relative" }}
-                        onMouseEnter={() => setTooltipHistograma({ chave, val, pct, x: posX })}
-                        onMouseLeave={() => setTooltipHistograma(null)}
-                      >
-                        <div style={{
-                          width: "100%", height: altura + "%",
-                          background: Number(chave) % 1 !== 0 ? "#b8960a" : "#F5C518",
-                          borderRadius: "2px 2px 0 0", minHeight: val > 0 ? "2px" : "0"
-                        }} />
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#888" }}>
-                <span>★</span>
-                <span>★★★★★</span>
-              </div>
-            </div>
-          )}
-
           <div ref={avaliacaoRef}>
             <p className="avaliacao-titulo">
               {votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}
+            </p>
+            <p style={{ fontSize: "13px", color: "#999", marginTop: "-4px", marginBottom: "12px" }}>
+              Sua nota é privada — só você vê.
             </p>
 
             <Estrelas votoAtual={votoAtual} onVotar={votar} />
@@ -1321,88 +973,6 @@ function Musical() {
           <hr className="divider" />
 
           <ReportarErro musicalId={id} musicalTitulo={musical.titulo} usuario={usuario} />
-          <hr className="divider" />
-
-          <h2 className="comentarios-titulo">Comentários</h2>
-
-          {usuario ? (
-            <div className="comentario-form">
-              <textarea value={textoComentario} onChange={e => setTextoComentario(e.target.value)} placeholder="Escreva um comentário..." />
-              <p style={{ fontSize: "16px", color: "#8d6e01", marginBottom: "8px" }}>
-                Lembre-se de manter sua crítica respeitosa e sem ataques gratuitos ao espetáculo.
-              </p>
-              <button className="btn-comentar" onClick={enviarComentario}>Enviar comentário</button>
-            </div>
-          ) : (
-            <p className="login-aviso">Faça login para comentar.</p>
-          )}
-
-          {!usuario ? (
-            <p className="login-aviso" style={{ marginTop: "16px" }}>Faça login para ver os comentários.</p>
-          ) : comentarios.length === 0 ? (
-            <p className="login-aviso" style={{ marginTop: "16px" }}>Nenhum comentário ainda.</p>
-          ) : (
-            comentarios.map(c => (
-              <div key={c.id} className="comentario-item">
-                <a href={`/perfil/${c.userId}`} className="comentario-nome" style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center" }}>
-                  {c.nome || "Anônimo"}
-                  {usuariosVerificados[c.userId] && <SeloVerificado />}
-                  {c.estrelasComentario && (
-                    <span style={{ marginLeft: "8px", color: "#b8960a", fontSize: "13px" }}>{c.estrelasComentario} ★</span>
-                  )}
-                </a>
-                {editandoComentario !== null && editandoComentario === c.id ? (
-                  <div>
-                    <textarea value={textoEdicao} onChange={e => setTextoEdicao(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginBottom: "8px" }} />
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <button className="btn-comentar" onClick={() => salvarEdicao(c.id)}>Salvar</button>
-                      <button className="btn-sair" onClick={() => setEditandoComentario(null)}>Cancelar</button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <p className="comentario-texto">{c.texto}</p>
-                    <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
-                      {["👍", "❤️", "😂", "😢"].map(emoji => {
-                        const count = reacoes[c.id]?.[emoji] || 0
-                        const ativo = minhaReacao[c.id] === emoji
-                        return (
-                          <button key={emoji} onClick={() => reagir(c.id, emoji)} style={{ background: ativo ? "#F5C518" : "#e0e0e0", border: ativo ? "1px solid #F5C518" : "1px solid #e8e8e4", borderRadius: "99px", padding: "3px 10px", fontSize: "13px", cursor: "pointer", color: "#1a1a1a", fontFamily: "'DM Sans', sans-serif", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            {emoji} {count > 0 && <span>{count}</span>}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    <div style={{ display: "flex", gap: "12px", marginTop: "8px", flexWrap: "wrap" }}>
-                      {usuario && usuario.uid === c.userId && (
-                        <>
-                          <button onClick={() => { setEditandoComentario(c.id); setTextoEdicao(c.texto) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#888", cursor: "pointer", padding: 0 }}>Editar</button>
-                          <button onClick={() => deletarComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#cc0000", cursor: "pointer", padding: 0 }}>Apagar</button>
-                        </>
-                      )}
-                      {usuario && usuario.uid !== c.userId && (
-                        <>
-                          {denunciaEnviada === c.id ? (
-                            <span style={{ fontSize: "13px", color: "#888" }}>Denúncia enviada!</span>
-                          ) : denunciandoComentario === c.id ? (
-                            <div style={{ width: "100%", marginTop: "8px" }}>
-                              <textarea value={textoDenuncia} onChange={e => setTextoDenuncia(e.target.value)} placeholder="Descreva o motivo da denúncia..." style={{ width: "100%", height: "70px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", marginBottom: "8px", resize: "none" }} />
-                              <div style={{ display: "flex", gap: "8px" }}>
-                                <button className="btn-comentar" onClick={() => enviarDenuncia(c)} style={{ fontSize: "13px", padding: "6px 14px" }}>Enviar</button>
-                                <button className="btn-sair" onClick={() => { setDenunciandoComentario(null); setTextoDenuncia("") }} style={{ fontSize: "13px", padding: "6px 14px" }}>Cancelar</button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button onClick={() => setDenunciandoComentario(c.id)} style={{ background: "none", border: "none", fontSize: "13px", color: "#bbb", cursor: "pointer", padding: 0 }}>Denunciar</button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))
-          )}
         </>
       )}
     </main>
