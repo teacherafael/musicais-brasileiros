@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs } from "firebase/firestore"
+import { getDoc, doc } from "firebase/firestore"
 import { db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
@@ -9,33 +9,38 @@ function Ranking() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    async function buscarMusicais() {
-      const snapshot = await getDocs(collection(db, "musicais"))
-      const lista = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(m => m.totalVotos > 5)
-        .map(m => ({ ...m, media: m.somaEstrelas / m.totalVotos }))
-        .sort((a, b) => b.media - a.media)
-        .slice(0, 15)
-      setMusicais(lista)
+    async function buscarRanking() {
+      try {
+        // 1 leitura: lê o índice já construído pelo admin
+        const indiceSnap = await getDoc(doc(db, "indices", "home"))
+        if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
+          const lista = indiceSnap.data().itens
+            .filter(m => (m.popularidade || 0) > 0)
+            .sort((a, b) => (b.popularidade || 0) - (a.popularidade || 0))
+            .slice(0, 15)
+          setMusicais(lista)
+        }
+      } catch (e) {
+        console.error("Erro ao carregar ranking:", e)
+      }
       setCarregando(false)
     }
-    buscarMusicais()
+    buscarRanking()
   }, [])
 
   return (
     <main>
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
       <p className="section-label">Musicais Brasileiros Database</p>
-<h1 className="page-title">Top 15</h1>
-<p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
-  Os 15 musicais mais bem avaliados
-</p>
+      <h1 className="page-title">Ranking</h1>
+      <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
+        Os 15 musicais mais populares — por número de pessoas que já viram ou querem ver
+      </p>
 
       {carregando ? (
         <p style={{ color: "#888" }}>Carregando...</p>
       ) : musicais.length === 0 ? (
-        <p style={{ color: "#888" }}>Nenhum musical avaliado ainda.</p>
+        <p style={{ color: "#888" }}>Nenhum musical com votos ainda.</p>
       ) : (
         musicais.map((musical, index) => (
           <div
@@ -56,6 +61,7 @@ function Ranking() {
             onMouseEnter={e => e.currentTarget.style.borderColor = "#F5C518"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "#e8e8e4"}
           >
+            {/* Posição */}
             <div style={{
               width: "40px",
               height: "40px",
@@ -73,6 +79,7 @@ function Ranking() {
               {index + 1}
             </div>
 
+            {/* Capa */}
             {musical.capa ? (
               <img
                 src={musical.capa}
@@ -85,11 +92,13 @@ function Ranking() {
               </div>
             )}
 
+            {/* Título e direção */}
             <div style={{ flex: 1 }}>
               <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "19px", fontWeight: "700", marginBottom: "4px" }}>{musical.titulo}</p>
               <p style={{ fontSize: "13px", color: "#888" }}>Direção: {musical.direcao || "—"}</p>
             </div>
 
+            {/* Contador de popularidade */}
             <div style={{
               background: "#1a1a1a",
               color: "#F5C518",
@@ -98,9 +107,9 @@ function Ranking() {
               textAlign: "center",
               flexShrink: 0
             }}>
-              <p style={{ fontSize: "20px", fontWeight: "700", lineHeight: 1 }}>★ {musical.media.toFixed(1)}</p>
+              <p style={{ fontSize: "20px", fontWeight: "700", lineHeight: 1 }}>{musical.popularidade}</p>
               <p style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>
-                {musical.totalVotos} {musical.totalVotos === 1 ? "voto" : "votos"}
+                {musical.popularidade === 1 ? "pessoa" : "pessoas"}
               </p>
             </div>
           </div>

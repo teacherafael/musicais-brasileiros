@@ -51,6 +51,7 @@ function montarItemIndice(id, m) {
     teatros: Array.isArray(m.teatros) ? m.teatros : [],
     totalVotos: Number(m.totalVotos) || 0,
     somaEstrelas: Number(m.somaEstrelas) || 0,
+    popularidade: Number(m.popularidade) || 0,
     destaque: m.destaque === true,
     dataCriacao: m.dataCriacao?.seconds
       ? { seconds: m.dataCriacao.seconds }
