@@ -4,7 +4,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth"
 
 const firebaseConfig = {
   apiKey: "AIzaSyADT9WkCY6E-G2pUpV5ueb3RS_Cs8G3Ob4",
-  authDomain: "musicais-br-database.firebaseapp.com",
+  authDomain: "mcdb.musicalcast.com.br",
   projectId: "musicais-br-database",
   storageBucket: "musicais-br-database.firebasestorage.app",
   messagingSenderId: "956563854948",
