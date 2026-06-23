@@ -76,6 +76,7 @@ function Perfil() {
   const [musicaisNasListas, setMusicaisNasListas] = useState({})    // {musicalId: Set(listaId)}
   const [dropdownCardAberto, setDropdownCardAberto] = useState(null)
   const [toast, setToast] = useState(null)
+  const [reacoesUsuario, setReacoesUsuario] = useState({ gostei: [], naoGostei: [] })
 
   function mostrarToast(msg) {
     setToast(msg)
@@ -169,6 +170,22 @@ function Perfil() {
           })
         })
         setSessoesPorMusical(sessoesPorId)
+
+        // Reações do usuário (gostei / não gostei)
+        try {
+          const reacoesSnap = await getDocs(collection(db, "usuarios", userId, "reacoes"))
+          const gostei = []
+          const naoGostei = []
+          reacoesSnap.docs.forEach(d => {
+            const dados = d.data()
+            const item = { musicalId: d.id, titulo: dados.titulo || d.id, capa: dados.capa || "" }
+            if (dados.reacao === "gostei") gostei.push(item)
+            else if (dados.reacao === "nao_gostei") naoGostei.push(item)
+          })
+          setReacoesUsuario({ gostei, naoGostei })
+        } catch (e) {
+          console.error("Erro ao carregar reações:", e)
+        }
 
         // Listas personalizadas DO DONO DO PERFIL (aba "Listas")
         const listasSnap = await getDocs(collection(db, "usuarios", userId, "listas"))
@@ -907,6 +924,52 @@ function Perfil() {
           </a>
         )}
       </div>
+
+      {/* GOSTEI / NÃO GOSTEI */}
+      {(reacoesUsuario.gostei.length > 0 || reacoesUsuario.naoGostei.length > 0) && (
+        <div style={{ marginBottom: "40px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+            <div>
+              <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
+                👍 Gostei ({reacoesUsuario.gostei.length})
+              </h3>
+              {reacoesUsuario.gostei.length === 0
+                ? <p style={{ fontSize: "13px", color: "#bbb", fontStyle: "italic" }}>Nenhum ainda.</p>
+                : <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {reacoesUsuario.gostei.map((item, i) => (
+                      <li key={item.musicalId}>
+                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
+                          onMouseOver={e => e.currentTarget.style.textDecoration = "underline"}
+                          onMouseOut={e => e.currentTarget.style.textDecoration = "none"}>
+                          {item.titulo || item.musicalId}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+              }
+            </div>
+            <div>
+              <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
+                👎 Não gostei ({reacoesUsuario.naoGostei.length})
+              </h3>
+              {reacoesUsuario.naoGostei.length === 0
+                ? <p style={{ fontSize: "13px", color: "#bbb", fontStyle: "italic" }}>Nenhum ainda.</p>
+                : <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {reacoesUsuario.naoGostei.map((item, i) => (
+                      <li key={item.musicalId}>
+                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
+                          onMouseOver={e => e.currentTarget.style.textDecoration = "underline"}
+                          onMouseOut={e => e.currentTarget.style.textDecoration = "none"}>
+                          {item.titulo || item.musicalId}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+              }
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ABAS — agora deslizáveis no mobile */}
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>

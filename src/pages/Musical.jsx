@@ -238,15 +238,20 @@ function Musical() {
 
   async function toggleReacao(tipo) {
     if (!usuario) return mostrarToast("Faça login para reagir.")
-    const ref = doc(db, "musicais", id, "reacoes", usuario.uid)
+    const refMusical = doc(db, "musicais", id, "reacoes", usuario.uid)
+    const refUsuario = doc(db, "usuarios", usuario.uid, "reacoes", id)
     if (minhaReacao === tipo) {
-      await deleteDoc(ref)
+      await Promise.all([deleteDoc(refMusical), deleteDoc(refUsuario)])
       setMinhaReacao(null)
       if (tipo === "gostei") setTotalGostei(p => Math.max(0, p - 1))
       else setTotalNaoGostei(p => Math.max(0, p - 1))
     } else {
       const anterior = minhaReacao
-      await setDoc(ref, { reacao: tipo, uid: usuario.uid })
+      const dadosReacao = { reacao: tipo, uid: usuario.uid, musicalId: id, titulo: musical?.titulo || "", capa: musical?.capa || "" }
+      await Promise.all([
+        setDoc(refMusical, { reacao: tipo, uid: usuario.uid }),
+        setDoc(refUsuario, dadosReacao)
+      ])
       setMinhaReacao(tipo)
       if (tipo === "gostei") {
         setTotalGostei(p => p + 1)
