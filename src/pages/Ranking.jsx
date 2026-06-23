@@ -34,7 +34,7 @@ function Ranking() {
       <p className="section-label">Musicais Brasileiros Database</p>
       <h1 className="page-title">Ranking</h1>
       <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
-        Os 15 musicais mais populares — por número de pessoas que já viram ou querem ver
+        Os 15 musicais mais populares — por número de pessoas que marcaram que já viram ou querem ver
       </p>
 
       {carregando ? (
