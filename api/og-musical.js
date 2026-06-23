@@ -12,15 +12,15 @@ module.exports = async function handler(req, res) {
     const titulo = data.fields.titulo?.stringValue || "Musical"
     const sinopse = data.fields.sinopse?.stringValue || ""
     const capa = data.fields.capa?.stringValue || ""
-    const descricao = sinopse || `Veja avaliações e informações sobre ${titulo} no MBDb.`
-    const ogUrl = `https://musicais-brasileiros.vercel.app/musical/${id}`
+    const descricao = sinopse || `Veja avaliações e informações sobre ${titulo} no MCDb.`
+    const ogUrl = `https://mcdb.musicalcast.com.br/musical/${id}`
 
     res.setHeader("Content-Type", "text/html")
     res.send(`<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>${titulo} — MBDb</title>
+  <title>${titulo} — MCDb</title>
   <meta name="description" content="${descricao}" />
   <meta property="og:title" content="${titulo}" />
   <meta property="og:description" content="${descricao}" />

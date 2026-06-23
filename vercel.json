@@ -1,6 +1,17 @@
 {
   "rewrites": [
     { "source": "/__/auth/:path*", "destination": "https://musicais-br-database.firebaseapp.com/__/auth/:path*" },
+    {
+      "source": "/musical/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|WhatsApp|Twitterbot|Slackbot|TelegramBot|LinkedInBot|Discordbot|Pinterest|redditbot|Googlebot|bingbot).*"
+        }
+      ],
+      "destination": "/api/og-musical?id=:id"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
