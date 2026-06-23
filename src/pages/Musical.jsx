@@ -470,7 +470,7 @@ function Musical() {
     try {
       const canvas = await html2canvas(cartaoRef.current, { useCORS: true, scale: 2, backgroundColor: null })
       const link = document.createElement("a")
-      link.download = `${musical.titulo}-mbdb.png`
+      link.download = `${musical.titulo}-mcdb.png`
       link.href = canvas.toDataURL("image/png")
       link.click()
     } catch (e) { alert("Erro ao gerar imagem. Tente novamente.") }
@@ -940,8 +940,8 @@ function Musical() {
                 <p style={{ fontSize: "10px", color: "#aaaaaa", textAlign: "center", marginBottom: "16px" }}>Dir. {musical.direcao || "—"}</p>
                 <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>{estrelasSVG(votoAtual)}</div>
                 <div style={{ width: "40px", height: "1px", background: "#ffffff", opacity: 0.15, marginBottom: "12px" }} />
-                <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "700", color: "#F5C518", letterSpacing: "2px", textTransform: "uppercase", textAlign: "center", marginBottom: "4px" }}>Musicais Brasileiros Database</p>
-                <p style={{ fontSize: "11px", color: "#aaaaaa", textAlign: "center", letterSpacing: "1px" }}>mbdb.com.br</p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: "700", color: "#F5C518", letterSpacing: "2px", textTransform: "uppercase", textAlign: "center", marginBottom: "4px" }}>MCDb - Musical Cast Database</p>
+                <p style={{ fontSize: "11px", color: "#aaaaaa", textAlign: "center", letterSpacing: "1px" }}>mbdb.musicalcast.com.br</p>
               </div>
               <div style={{ marginTop: "12px" }}>
                 <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
