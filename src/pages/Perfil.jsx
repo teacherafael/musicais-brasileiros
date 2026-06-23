@@ -77,6 +77,8 @@ function Perfil() {
   const [dropdownCardAberto, setDropdownCardAberto] = useState(null)
   const [toast, setToast] = useState(null)
   const [reacoesUsuario, setReacoesUsuario] = useState({ gostei: [], naoGostei: [] })
+  const [verMaisGostei, setVerMaisGostei] = useState(false)
+  const [verMaisNaoGostei, setVerMaisNaoGostei] = useState(false)
 
   function mostrarToast(msg) {
     setToast(msg)
@@ -1043,7 +1045,7 @@ function Perfil() {
                   👍 Gostei ({reacoesUsuario.gostei.length})
                 </h3>
                 <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {reacoesUsuario.gostei.map(item => (
+                  {(verMaisGostei ? reacoesUsuario.gostei : reacoesUsuario.gostei.slice(0, 10)).map(item => (
                     <li key={item.musicalId}>
                       <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
                         onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
@@ -1053,6 +1055,11 @@ function Perfil() {
                     </li>
                   ))}
                 </ol>
+                {reacoesUsuario.gostei.length > 10 && (
+                  <button onClick={() => setVerMaisGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                    {verMaisGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.gostei.length - 10} musicais`}
+                  </button>
+                )}
               </div>
               <div>
                 <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
@@ -1060,17 +1067,24 @@ function Perfil() {
                 </h3>
                 {reacoesUsuario.naoGostei.length === 0
                   ? <p style={{ fontSize: "13px", color: "#555", fontStyle: "italic" }}>Nenhum ainda.</p>
-                  : <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      {reacoesUsuario.naoGostei.map(item => (
-                        <li key={item.musicalId}>
-                          <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
-                            onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
-                            onMouseOut={e => e.currentTarget.style.color = "#e8e8e4"}>
-                            {item.titulo || item.musicalId}
-                          </a>
-                        </li>
-                      ))}
-                    </ol>
+                  : <>
+                      <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {(verMaisNaoGostei ? reacoesUsuario.naoGostei : reacoesUsuario.naoGostei.slice(0, 10)).map(item => (
+                          <li key={item.musicalId}>
+                            <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
+                              onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
+                              onMouseOut={e => e.currentTarget.style.color = "#e8e8e4"}>
+                              {item.titulo || item.musicalId}
+                            </a>
+                          </li>
+                        ))}
+                      </ol>
+                      {reacoesUsuario.naoGostei.length > 10 && (
+                        <button onClick={() => setVerMaisNaoGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                          {verMaisNaoGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.naoGostei.length - 10} musicais`}
+                        </button>
+                      )}
+                    </>
                 }
               </div>
             </div>
