@@ -443,12 +443,12 @@ function Home() {
           {toast}
         </div>
       )}
-      <p className="section-label">Musicais Brasileiros Database</p>
+      <p className="section-label">Musical Cast Database</p>
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>{musicais.length}</span>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>musicais brasileiros<br />catalogados</h1>
       </div>
-      <p style={{ fontSize: "14px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo colaborativo do teatro musical brasileiro.</p>
+      <p style={{ fontSize: "15px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo digital colaborativo do teatro musical brasileiro.</p>
       <div style={{ marginBottom: "32px" }}>
         <button className="btn-comentar" onClick={() => navigate("/sugestao")}>+ Sugerir um musical</button>
       </div>

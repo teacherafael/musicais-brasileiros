@@ -12,7 +12,7 @@ body {
 }
 
 header {
-  background: #0a2c59;
+  background: #191E3B;
   padding: 6px 32px;
   display: flex;
   align-items: center;
@@ -190,7 +190,7 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: #0a2c59;
+  background: #191E3B;
   color: #F5C518;
   border-radius: 5px;
   padding: 3px 10px;
@@ -273,7 +273,7 @@ main {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
-  background: #0a2c59;
+  background: #191E3B;
   color: #F5C518;
   border-radius: 8px;
   padding: 8px 16px;
