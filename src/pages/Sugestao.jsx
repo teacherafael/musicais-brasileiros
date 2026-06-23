@@ -21,7 +21,16 @@ function Sugestao() {
     textoOriginal: "",
     musicaOriginal: "",
     ano: "",
-    teatro: ""
+    teatro: "",
+    coreografia: "",
+    cenografia: "",
+    designDeLuz: "",
+    designDeSom: "",
+    visagismo: "",
+    perucaria: "",
+    figurino: "",
+    regencia: "",
+    musicos: "",
   })
 
   useEffect(() => {
@@ -44,7 +53,7 @@ function Sugestao() {
     setEnviado(true)
   }
 
-  const campo = (label, chave, obrigatorio = false) => (
+  const campo = (label, chave, obrigatorio = false, placeholder = "") => (
     <div style={{ marginBottom: "16px" }}>
       <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
         {label} {obrigatorio && <span style={{ color: "#cc0000" }}>*</span>}
@@ -53,12 +62,13 @@ function Sugestao() {
         type="text"
         value={form[chave]}
         onChange={e => atualizar(chave, e.target.value)}
+        placeholder={placeholder}
         style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
       />
     </div>
   )
 
-  const campoTexto = (label, chave) => (
+  const campoTexto = (label, chave, placeholder = "") => (
     <div style={{ marginBottom: "16px" }}>
       <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
         {label}
@@ -66,6 +76,7 @@ function Sugestao() {
       <textarea
         value={form[chave]}
         onChange={e => atualizar(chave, e.target.value)}
+        placeholder={placeholder}
         rows={4}
         style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical" }}
       />
@@ -80,13 +91,21 @@ function Sugestao() {
     </main>
   )
 
+  const divisoria = (titulo) => (
+    <div style={{ marginTop: "8px", marginBottom: "24px" }}>
+      <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px", borderBottom: "1px solid #e8e8e4", paddingBottom: "8px" }}>
+        {titulo}
+      </p>
+    </div>
+  )
+
   return (
     <main>
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
       <p className="section-label">Musicais Brasileiros Database</p>
       <h1 className="page-title">Sugerir um musical</h1>
       <p style={{ color: "#888", fontSize: "14px", marginBottom: "32px" }}>
-        Preencha as informações do musical que você quer ver na database. Campos com * são obrigatórios.
+        Preencha as informações do musical que você quer ver na database. Campos com <span style={{ color: "#cc0000" }}>*</span> são obrigatórios. Não se preocupe se não souber tudo — preencha o que tiver.
       </p>
 
       {campo("Título", "titulo", true)}
@@ -103,16 +122,30 @@ function Sugestao() {
         />
       </div>
 
+      {divisoria("Ficha técnica principal")}
       {campo("Direção", "direcao")}
       {campo("Direção musical", "direcaoMusical")}
-      {campo("Produção", "producao")}
       {campo("Versionista", "versionista")}
       {campo("Texto original", "textoOriginal")}
       {campo("Música original", "musicaOriginal")}
-      {campoTexto("Elenco de estreia (nomes separados por vírgula)", "elenco")}
-      {campoTexto("Elenco adicional (que entraram durante a temporada ou em novas temporadas) (nomes separados por vírgula)", "elencoAdicional")}
+      {campo("Produção", "producao")}
       {campo("Ano de estreia", "ano")}
       {campo("Teatro de estreia", "teatro")}
+
+      {divisoria("Elenco")}
+      {campoTexto("Elenco de estreia (nomes separados por vírgula)", "elenco")}
+      {campoTexto("Elenco adicional (nomes separados por vírgula)", "elencoAdicional")}
+
+      {divisoria("Equipe criativa")}
+      {campo("Coreografia", "coreografia", false, "Nomes separados por vírgula")}
+      {campo("Cenografia", "cenografia", false, "Nomes separados por vírgula")}
+      {campo("Design de luz", "designDeLuz", false, "Nomes separados por vírgula")}
+      {campo("Design de som", "designDeSom", false, "Nomes separados por vírgula")}
+      {campo("Visagismo", "visagismo", false, "Nomes separados por vírgula")}
+      {campo("Perucaria", "perucaria", false, "Nomes separados por vírgula")}
+      {campo("Figurino", "figurino", false, "Nomes separados por vírgula")}
+      {campo("Regência", "regencia", false, "Nomes separados por vírgula")}
+      {campoTexto("Músicos", "musicos", "Nomes separados por vírgula. Se houver bandas diferentes por cidade, indique: ex: São Paulo: Nome1, Nome2 / Rio de Janeiro: Nome3, Nome4")}
 
       <button className="btn-comentar" onClick={enviar} style={{ marginTop: "8px" }}>
         Enviar sugestão
