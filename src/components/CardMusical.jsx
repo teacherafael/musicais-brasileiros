@@ -1,9 +1,6 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { createPortal } from "react-dom"
 
-// CardMusical compartilhado entre Home e Perfil.
-// No mobile (≤600px): "+ Listas" abre um modal centralizado (não sofre clipping do carrossel).
-// No desktop: dropdown normal posicionado abaixo do card.
 export default function CardMusical({
   musical, tamanho,
   usuario, jaViSet, queroVerSet, listas, musicaisNasListas,
@@ -15,7 +12,11 @@ export default function CardMusical({
   const [criandoLista, setCriandoLista] = useState(false)
   const [novaListaNome, setNovaListaNome] = useState("")
   const [usandoModal, setUsandoModal] = useState(false)
+  const [posDropdown, setPosDropdown] = useState({ top: 0, left: 0, width: 200 })
+  const btnListasRef = useRef(null)
+
   const emAlgumaLista = (musicaisNasListas[musical.id]?.size || 0) > 0
+  const pequeno = tamanho === "pequeno"
 
   useEffect(() => {
     if (!dropdownAberto) {
@@ -25,7 +26,7 @@ export default function CardMusical({
     }
   }, [dropdownAberto])
 
-  // Bloqueia scroll do body quando modal está aberto
+  // Bloqueia scroll do body quando modal mobile está aberto
   useEffect(() => {
     if (dropdownAberto && usandoModal) {
       document.body.style.overflow = "hidden"
@@ -35,9 +36,34 @@ export default function CardMusical({
     return () => { document.body.style.overflow = "" }
   }, [dropdownAberto, usandoModal])
 
-  const pequeno = tamanho === "pequeno"
+  // Atualiza posição do dropdown portal se a janela for redimensionada ou scrollada
+  useEffect(() => {
+    if (!dropdownAberto || usandoModal || !pequeno) return
+    function atualizar() {
+      if (!btnListasRef.current) return
+      const r = btnListasRef.current.getBoundingClientRect()
+      setPosDropdown({ top: r.bottom + 8, left: r.left, width: Math.max(r.width, 200) })
+    }
+    atualizar()
+    window.addEventListener("scroll", atualizar, true)
+    window.addEventListener("resize", atualizar)
+    return () => {
+      window.removeEventListener("scroll", atualizar, true)
+      window.removeEventListener("resize", atualizar)
+    }
+  }, [dropdownAberto, usandoModal, pequeno])
 
-  // Conteúdo interno do painel de listas (igual no dropdown e no modal)
+  function handleAbrirListas(e) {
+    const mobile = window.innerWidth <= 600
+    if (!mobile && pequeno && btnListasRef.current) {
+      const r = btnListasRef.current.getBoundingClientRect()
+      setPosDropdown({ top: r.bottom + 8, left: r.left, width: Math.max(r.width, 200) })
+    }
+    setUsandoModal(mobile)
+    onAbrirDropdown(e, musical.id)
+  }
+
+  // Conteúdo interno reutilizado no modal e nos dois tipos de dropdown
   const conteudoListas = (
     <>
       <p style={{ fontSize: "11px", fontWeight: "700", color: "#aaa", textTransform: "uppercase", letterSpacing: "1px", padding: "4px 14px 8px" }}>Minhas listas</p>
@@ -54,16 +80,16 @@ export default function CardMusical({
             onMouseEnter={e => e.currentTarget.style.background = marcado ? "#fff8d6" : "#f9f9f9"}
             onMouseLeave={e => e.currentTarget.style.background = marcado ? "#fffbe6" : "transparent"}
           >
-            <span style={{ width: "18px", height: "18px", border: "2px solid", borderColor: marcado ? "#b8960a" : "#ccc", borderRadius: "4px", background: marcado ? "#b8960a" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "11px", color: "#fff" }}>
+            <span style={{ width: "16px", height: "16px", border: "2px solid", borderColor: marcado ? "#b8960a" : "#ccc", borderRadius: "4px", background: marcado ? "#b8960a" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "10px", color: "#fff" }}>
               {marcado ? "✓" : ""}
             </span>
-            <span style={{ fontSize: "14px", color: "#1a1a1a", fontFamily: "'DM Sans', sans-serif" }}>{lista.nome}</span>
+            <span style={{ fontSize: "13px", color: "#1a1a1a", fontFamily: "'DM Sans', sans-serif" }}>{lista.nome}</span>
           </div>
         )
       })}
       <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "4px", paddingTop: "4px" }}>
         {criandoLista ? (
-          <div style={{ padding: "8px 12px", display: "flex", gap: "6px" }} onClick={e => { e.preventDefault(); e.stopPropagation() }}>
+          <div style={{ padding: "6px 10px", display: "flex", gap: "6px" }} onClick={e => { e.preventDefault(); e.stopPropagation() }}>
             <input
               autoFocus
               type="text"
@@ -74,11 +100,11 @@ export default function CardMusical({
                 if (e.key === "Enter") { onCriarLista(e, musical, novaListaNome, () => { setCriandoLista(false); setNovaListaNome("") }) }
                 if (e.key === "Escape") setCriandoLista(false)
               }}
-              style={{ flex: 1, padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
+              style={{ flex: 1, padding: "5px 8px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", outline: "none" }}
             />
             <button
               onClick={e => onCriarLista(e, musical, novaListaNome, () => { setCriandoLista(false); setNovaListaNome("") })}
-              style={{ background: "#b8960a", border: "none", borderRadius: "6px", padding: "8px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer", color: "#fff" }}>
+              style={{ background: "#b8960a", border: "none", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer", color: "#fff" }}>
               OK
             </button>
           </div>
@@ -86,7 +112,7 @@ export default function CardMusical({
           <div
             role="button" tabIndex={0}
             onClick={e => { e.preventDefault(); e.stopPropagation(); setCriandoLista(true) }}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "11px 14px", cursor: "pointer", color: "#b8960a", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", WebkitTapHighlightColor: "transparent" }}
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "9px 14px", cursor: "pointer", color: "#b8960a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", WebkitTapHighlightColor: "transparent" }}
             onMouseEnter={e => e.currentTarget.style.background = "#fffbe6"}
             onMouseLeave={e => e.currentTarget.style.background = "transparent"}
           >
@@ -97,15 +123,14 @@ export default function CardMusical({
     </>
   )
 
-  // Modal centralizado (mobile)
-  const modalListas = dropdownAberto && usandoModal && createPortal(
+  // Modal bottom sheet — mobile, qualquer tamanho de card
+  const modalMobile = dropdownAberto && usandoModal && createPortal(
     <div
       data-listas-dropdown
       onClick={e => { if (e.target === e.currentTarget) onAbrirDropdown(e, musical.id) }}
       style={{
         position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-        zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center",
-        padding: "0 0 env(safe-area-inset-bottom, 0px)"
+        zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center"
       }}
     >
       <div style={{
@@ -113,11 +138,9 @@ export default function CardMusical({
         paddingBottom: "24px", maxHeight: "70vh", overflowY: "auto",
         boxShadow: "0 -4px 24px rgba(0,0,0,0.15)"
       }}>
-        {/* Alça visual */}
         <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
           <div style={{ width: "40px", height: "4px", borderRadius: "2px", background: "#e0e0e0" }} />
         </div>
-        {/* Título do musical */}
         <p style={{ fontSize: "13px", fontWeight: "700", color: "#1a1a1a", padding: "4px 14px 8px", margin: 0, borderBottom: "1px solid #f0f0f0" }}>
           {musical.titulo}
         </p>
@@ -127,13 +150,32 @@ export default function CardMusical({
     document.body
   )
 
-  // Dropdown normal (desktop)
-  const dropdownListas = dropdownAberto && !usandoModal && (
+  // Dropdown via portal — desktop + card pequeno (carrossel)
+  // Renderiza no body com posição fixa calculada via getBoundingClientRect
+  const dropdownPortal = dropdownAberto && !usandoModal && pequeno && createPortal(
+    <div
+      data-listas-dropdown
+      style={{
+        position: "fixed",
+        top: posDropdown.top,
+        left: posDropdown.left,
+        minWidth: posDropdown.width,
+        background: "#fff", border: "1px solid #e8e8e4", borderRadius: "10px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.14)", zIndex: 9999, padding: "8px 0"
+      }}
+    >
+      {conteudoListas}
+    </div>,
+    document.body
+  )
+
+  // Dropdown normal relativo — desktop + card grande (grid e perfil)
+  const dropdownRelativo = dropdownAberto && !usandoModal && !pequeno && (
     <div
       data-listas-dropdown
       style={{
         position: "absolute",
-        top: "calc(100% + 6px)", left: "0",
+        top: "calc(100% + 6px)", left: "0", right: "0",
         background: "#fff", border: "1px solid #e8e8e4", borderRadius: "10px",
         boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 200, padding: "8px 0", minWidth: "200px"
       }}
@@ -141,13 +183,6 @@ export default function CardMusical({
       {conteudoListas}
     </div>
   )
-
-  // Handler do botão "+ Listas": decide modal ou dropdown conforme largura da tela
-  function handleAbrirListas(e) {
-    const mobile = window.innerWidth <= 600
-    setUsandoModal(mobile)
-    onAbrirDropdown(e, musical.id)
-  }
 
   const barraBotoes = usuario && (
     <div style={{
@@ -169,6 +204,7 @@ export default function CardMusical({
         {queroVerSet.has(musical.id) ? "★ Quero ver" : "☆ Quero ver"}
       </button>
       <button
+        ref={btnListasRef}
         data-btn-listas={musical.id}
         onClick={handleAbrirListas}
         style={{ background: emAlgumaLista ? "#F5C518" : "rgba(255,255,255,0.15)", border: emAlgumaLista ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: emAlgumaLista ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
@@ -197,8 +233,8 @@ export default function CardMusical({
             {metaExtra}
           </div>
         </a>
-        {modalListas}
-        {dropdownListas}
+        {modalMobile}
+        {dropdownPortal}
       </div>
     )
   }
@@ -231,8 +267,8 @@ export default function CardMusical({
             : (!esconderDirecao && <p style={{ fontSize: "12px", color: "#888", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{musical.direcao || "—"}</p>)}
         </div>
       </a>
-      {modalListas}
-      {dropdownListas}
+      {modalMobile}
+      {dropdownRelativo}
     </div>
   )
 }
