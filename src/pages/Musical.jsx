@@ -28,6 +28,17 @@ function nomesClicaveis(texto) {
 const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
 const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Músicos"]
 
+// Ordem fixa de exibição do bloco secundário, independente da ordem salva no banco
+const FUNCOES_SECUNDARIAS = ["Coreografia", "Cenografia", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Figurino", "Regência", "Músicos"]
+
+// Retorna funções secundárias na ordem fixa, só as que têm nomes preenchidos
+function equipeSecundariaOrdenada(equipeCriativa) {
+  if (!equipeCriativa || equipeCriativa.length === 0) return []
+  return FUNCOES_SECUNDARIAS
+    .map(funcao => equipeCriativa.find(item => item.funcao === funcao && item.nomes && item.nomes.length > 0))
+    .filter(Boolean)
+}
+
 function montarEquipeDeStrings(direcao, direcaoMusical) {
   const equipe = []
   const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
@@ -140,12 +151,10 @@ function Musical() {
   const cartaoRef = useRef(null)
   const avaliacaoRef = useRef(null)
 
-  // Reações (👍/👎)
-  const [minhaReacao, setMinhaReacao] = useState(null) // "gostei" | "nao_gostei" | null
+  const [minhaReacao, setMinhaReacao] = useState(null)
   const [totalGostei, setTotalGostei] = useState(0)
   const [totalNaoGostei, setTotalNaoGostei] = useState(0)
 
-  // Sessões
   const [sessoes, setSessoes] = useState([])
   const [mostrarFormSessao, setMostrarFormSessao] = useState(false)
   const [novaData, setNovaData] = useState("")
@@ -186,7 +195,6 @@ function Musical() {
     buscarEstados()
   }, [usuario, id])
 
-  // Busca reações: totais públicos + reação do usuário logado
   useEffect(() => {
     async function buscarReacoes() {
       const snap = await getDocs(collection(db, "musicais", id, "reacoes"))
@@ -224,18 +232,15 @@ function Musical() {
     setTimeout(() => setToast(null), 2500)
   }
 
-  // Toggle de reação: clicar na mesma remove; clicar na outra troca
   async function toggleReacao(tipo) {
     if (!usuario) return mostrarToast("Faça login para reagir.")
     const ref = doc(db, "musicais", id, "reacoes", usuario.uid)
     if (minhaReacao === tipo) {
-      // remove
       await deleteDoc(ref)
       setMinhaReacao(null)
       if (tipo === "gostei") setTotalGostei(p => Math.max(0, p - 1))
       else setTotalNaoGostei(p => Math.max(0, p - 1))
     } else {
-      // adiciona ou troca
       const anterior = minhaReacao
       await setDoc(ref, { reacao: tipo, uid: usuario.uid })
       setMinhaReacao(tipo)
@@ -458,6 +463,9 @@ function Musical() {
 
   if (!musical) return <main><p>Carregando...</p></main>
 
+  // Calcula equipe secundária uma vez só, usada na exibição abaixo
+  const equipeSecundaria = equipeSecundariaOrdenada(musical.equipeCriativa)
+
   const estrelasSVG = (nota) => {
     return [1, 2, 3, 4, 5].map(i => {
       const cheia = nota >= i
@@ -482,6 +490,13 @@ function Musical() {
     </div>
   )
 
+  // Extrai direção e direção musical para o bloco principal (com fallback para campos legados)
+  const equipeBase = (musical.equipeCriativa && musical.equipeCriativa.length > 0)
+    ? musical.equipeCriativa
+    : montarEquipeDeStrings(musical.direcao, musical.direcaoMusical)
+  const itemDirecao = equipeBase.find(e => e.funcao === "Direção")
+  const itemDirecaoMusical = equipeBase.find(e => e.funcao === "Direção Musical")
+
   return (
     <main>
       <Helmet>
@@ -494,6 +509,7 @@ function Musical() {
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
+
       {toast && (
         <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", color: "#F5C518", padding: "12px 24px", borderRadius: "8px", fontSize: "14px", fontWeight: "500", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
           {toast}
@@ -583,6 +599,7 @@ function Musical() {
         </div>
       ) : (
         <>
+          {/* ── BLOCO PRINCIPAL: pôster + ficha técnica ── */}
           <div className="musical-header">
             <div className="musical-poster">
               {musical.capa
@@ -591,77 +608,90 @@ function Musical() {
             </div>
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
-              {musical.equipeCriativa && musical.equipeCriativa.length > 0 ? (
-                musical.equipeCriativa.filter(item => item.nomes && item.nomes.length > 0).map((item, i) => (
-                  <p key={i} style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                    <strong style={{ color: "#1a1a1a" }}>{item.funcao}:</strong>{" "}{nomesClicaveis(item.nomes.join(", "))}
-                  </p>
-                ))
-              ) : (
-                <>
-                  <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                    <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}{nomesClicaveis(musical.direcao) || "—"}
-                  </p>
-                  {musical.direcaoMusical && (
-                    <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                      <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}{nomesClicaveis(musical.direcaoMusical)}
-                    </p>
-                  )}
-                </>
+
+              {/* Direção e Direção Musical — vêm da equipeCriativa */}
+              <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
+                {itemDirecao ? nomesClicaveis(itemDirecao.nomes.join(", ")) : (nomesClicaveis(musical.direcao) || "—")}
+              </p>
+              {(itemDirecaoMusical || musical.direcaoMusical) && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Direção musical:</strong>{" "}
+                  {itemDirecaoMusical ? nomesClicaveis(itemDirecaoMusical.nomes.join(", ")) : nomesClicaveis(musical.direcaoMusical)}
+                </p>
               )}
+
+              {/* Versionista — campo solto */}
+              {musical.versionista && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Versionista:</strong>{" "}{nomesClicaveis(musical.versionista)}
+                </p>
+              )}
+
+              {/* Texto e música originais — campos soltos */}
+              {musical.textoOriginal && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Texto original:</strong>{" "}{nomesClicaveis(musical.textoOriginal)}
+                </p>
+              )}
+              {musical.musicaOriginal && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Música original:</strong>{" "}{nomesClicaveis(musical.musicaOriginal)}
+                </p>
+              )}
+
+              {/* Produção — campo solto */}
               {musical.producao && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
                   <strong style={{ color: "#1a1a1a" }}>Produção:</strong>{" "}{nomesClicaveis(musical.producao)}
                 </p>
               )}
-              <div style={{ marginTop: "4px", marginBottom: "4px" }}>
-                {musical.versionista && <p className="musical-meta"><strong>Versionista:</strong> {nomesClicaveis(musical.versionista)}</p>}
-                {musical.textoOriginal && <p className="musical-meta"><strong>Texto original:</strong> {nomesClicaveis(musical.textoOriginal)}</p>}
-                {musical.musicaOriginal && <p className="musical-meta"><strong>Música original:</strong> {nomesClicaveis(musical.musicaOriginal)}</p>}
-                {(musical.teatros?.length > 0 || musical.teatro) && (() => {
-                  const listaBase = musical.teatros && musical.teatros.length > 0
-                    ? musical.teatros
-                    : musical.teatro ? [{ ano: musical.ano || "", teatros: [musical.teatro] }, ...(musical.teatrosAdicionais || [])] : []
-                  const linhas = listaBase.map((item, i) => ({ ...item, estreia: i === 0 }))
-                  return (
-                    <div style={{ marginTop: "10px" }}>
-                      <p className="musical-meta" style={{ marginBottom: "6px" }}><strong>Teatros:</strong></p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingLeft: "4px" }}>
-                        {linhas.map((item, i) => {
-                          const porCidade = {}
-                          item.teatros.forEach(nomeTeatro => {
-                            const t = encontrarTeatroPorNome(nomeTeatro)
-                            const cidade = t ? t.cidade.split(" – ")[0] : null
-                            const chave = cidade || "?"
-                            if (!porCidade[chave]) porCidade[chave] = []
-                            porCidade[chave].push({ nome: nomeTeatro, id: t?.id })
-                          })
-                          return (
-                            <div key={i} style={{ display: "flex", gap: "14px", alignItems: "baseline", fontSize: "14px" }}>
-                              <span style={{ fontWeight: "500", color: "#1a1a1a", minWidth: "40px" }}>{item.ano}</span>
-                              <span style={{ color: "#666" }}>
-                                {Object.entries(porCidade).map(([cidade, lista], j) => (
-                                  <span key={cidade}>
-                                    {j > 0 && " / "}
-                                    {lista.map((t, k) => (
-                                      <span key={k}>
-                                        {k > 0 && ", "}
-                                        {t.id ? <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>{t.nome}</Link> : t.nome}
-                                      </span>
-                                    ))}
-                                    {cidade !== "?" && <span style={{ color: "#999" }}> — {cidade}</span>}
-                                  </span>
-                                ))}
-                                {item.estreia && <span style={{ fontSize: "12px", color: "#999" }}> (estreia)</span>}
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
+
+              {/* Teatros */}
+              {(musical.teatros?.length > 0 || musical.teatro) && (() => {
+                const listaBase = musical.teatros && musical.teatros.length > 0
+                  ? musical.teatros
+                  : musical.teatro ? [{ ano: musical.ano || "", teatros: [musical.teatro] }, ...(musical.teatrosAdicionais || [])] : []
+                const linhas = listaBase.map((item, i) => ({ ...item, estreia: i === 0 }))
+                return (
+                  <div style={{ marginTop: "10px" }}>
+                    <p className="musical-meta" style={{ marginBottom: "6px" }}><strong>Teatros:</strong></p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingLeft: "4px" }}>
+                      {linhas.map((item, i) => {
+                        const porCidade = {}
+                        item.teatros.forEach(nomeTeatro => {
+                          const t = encontrarTeatroPorNome(nomeTeatro)
+                          const cidade = t ? t.cidade.split(" – ")[0] : null
+                          const chave = cidade || "?"
+                          if (!porCidade[chave]) porCidade[chave] = []
+                          porCidade[chave].push({ nome: nomeTeatro, id: t?.id })
+                        })
+                        return (
+                          <div key={i} style={{ display: "flex", gap: "14px", alignItems: "baseline", fontSize: "14px" }}>
+                            <span style={{ fontWeight: "500", color: "#1a1a1a", minWidth: "40px" }}>{item.ano}</span>
+                            <span style={{ color: "#666" }}>
+                              {Object.entries(porCidade).map(([cidade, lista], j) => (
+                                <span key={cidade}>
+                                  {j > 0 && " / "}
+                                  {lista.map((t, k) => (
+                                    <span key={k}>
+                                      {k > 0 && ", "}
+                                      {t.id ? <Link to={`/teatro/${t.id}`} style={{ color: "#b8960a", textDecoration: "none" }}>{t.nome}</Link> : t.nome}
+                                    </span>
+                                  ))}
+                                  {cidade !== "?" && <span style={{ color: "#999" }}> — {cidade}</span>}
+                                </span>
+                              ))}
+                              {item.estreia && <span style={{ fontSize: "12px", color: "#999" }}> (estreia)</span>}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                })()}
-              </div>
+                  </div>
+                )
+              })()}
+
               {ehAdmin(usuario) && (
                 <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap" }}>
                   <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>✏️ Editar</button>
@@ -673,6 +703,7 @@ function Musical() {
             </div>
           </div>
 
+          {/* ── BOTÕES DE AÇÃO ── */}
           <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
             <button onClick={toggleJaVi} title="Marque se você já assistiu este musical"
               style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: jaVi ? "#1a1a1a" : "transparent", color: jaVi ? "#F5C518" : "#888", border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
@@ -694,7 +725,7 @@ function Musical() {
             )}
           </div>
 
-          {/* BLOCO DE SESSÕES */}
+          {/* ── SESSÕES ── */}
           {usuario && jaVi && (
             <div style={{ marginBottom: "24px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px 20px" }}>
               <p style={{ fontSize: "11px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>📅 Suas sessões</p>
@@ -753,6 +784,7 @@ function Musical() {
             </div>
           )}
 
+          {/* ── SINOPSE ── */}
           {musical.sinopse && (
             <div style={{ marginBottom: "24px" }}>
               <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Sinopse</p>
@@ -760,6 +792,9 @@ function Musical() {
             </div>
           )}
 
+          <hr className="divider" />
+
+          {/* ── ELENCO (chips) ── */}
           {musical.elenco && (
             <div style={{ marginBottom: "24px" }}>
               <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco de estreia</p>
@@ -784,8 +819,24 @@ function Musical() {
             </div>
           )}
 
+          {/* ── EQUIPE CRIATIVA SECUNDÁRIA (lista) ── */}
+          {equipeSecundaria.length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Equipe criativa</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                {equipeSecundaria.map((item, i) => (
+                  <p key={i} style={{ fontSize: "14px", color: "#444", marginBottom: 0 }}>
+                    <strong style={{ color: "#1a1a1a" }}>{item.funcao}:</strong>{" "}{nomesClicaveis(item.nomes.join(", "))}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
           <hr className="divider" />
 
+          {/* ── AVALIAÇÃO ── */}
           <div ref={avaliacaoRef}>
             <p className="avaliacao-titulo">{votoAtual ? `Sua avaliação: ${votoAtual} ★ (clique para mudar)` : "Avalie este musical"}</p>
             <p style={{ fontSize: "13px", color: "#999", marginTop: "-4px", marginBottom: "12px" }}>Sua nota é privada — só você vê.</p>
@@ -806,36 +857,16 @@ function Musical() {
             </div>
           )}
 
-          {/* BLOCO DE REAÇÕES 👍/👎 */}
+          {/* ── REAÇÕES 👍/👎 ── */}
           <div style={{ marginTop: "24px", marginBottom: "8px" }}>
             <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>O que você achou?</p>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <button
-                onClick={() => toggleReacao("gostei")}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "8px",
-                  background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent",
-                  color: minhaReacao === "gostei" ? "#F5C518" : "#888",
-                  border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc",
-                  borderRadius: "6px", padding: "8px 18px",
-                  fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer",
-                  transition: "all 0.15s"
-                }}
-              >
+              <button onClick={() => toggleReacao("gostei")}
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", transition: "all 0.15s" }}>
                 👍 <span style={{ fontWeight: "600" }}>{totalGostei}</span>
               </button>
-              <button
-                onClick={() => toggleReacao("nao_gostei")}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "8px",
-                  background: minhaReacao === "nao_gostei" ? "#1a1a1a" : "transparent",
-                  color: minhaReacao === "nao_gostei" ? "#F5C518" : "#888",
-                  border: "1px solid", borderColor: minhaReacao === "nao_gostei" ? "#1a1a1a" : "#ccc",
-                  borderRadius: "6px", padding: "8px 18px",
-                  fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer",
-                  transition: "all 0.15s"
-                }}
-              >
+              <button onClick={() => toggleReacao("nao_gostei")}
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "nao_gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "nao_gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "nao_gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", transition: "all 0.15s" }}>
                 👎 <span style={{ fontWeight: "600" }}>{totalNaoGostei}</span>
               </button>
             </div>
@@ -844,6 +875,7 @@ function Musical() {
             )}
           </div>
 
+          {/* ── CARTÃO PARA COMPARTILHAR ── */}
           {votoAtual && (
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
               <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "#2b2b2b", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", width: "270px", minHeight: "420px", justifyContent: "flex-start", paddingTop: "48px" }}>
