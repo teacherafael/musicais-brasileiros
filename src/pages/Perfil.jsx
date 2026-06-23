@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where, updateDoc, increment } from "firebase/firestore"
 import { db, auth, provider } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
 import { ehAdmin } from "../admins"
+import CardMusical from "../components/CardMusical"
 
 function SeloVerificado() {
   return (
@@ -62,13 +63,24 @@ function Perfil() {
   // Mensagem
   const [enviandoMensagem, setEnviandoMensagem] = useState(false)
 
-  // Listas personalizadas
+  // Listas personalizadas DO DONO DO PERFIL (exibidas na aba "Listas")
   const [listas, setListas] = useState([]) // [{ id, nome, itens:[] }]
   const [editandoListaId, setEditandoListaId] = useState(null)
   const [editandoListaNome, setEditandoListaNome] = useState("")
-  const [dropdownListasAberto, setDropdownListasAberto] = useState(null)
-  const [novaListaNome, setNovaListaNome] = useState("")
-  const [criandoListaNoPerfil, setCriandoListaNoPerfil] = useState(false)
+
+  // ── Estado para a barra de cartaz (Já vi / Quero ver / + Listas) ──
+  // Sempre referente a QUEM ESTÁ LOGADO, não ao dono do perfil.
+  const [jaViSet, setJaViSet] = useState(new Set())
+  const [queroVerSet, setQueroVerSet] = useState(new Set())
+  const [minhasListas, setMinhasListas] = useState([])              // listas de quem está logado
+  const [musicaisNasListas, setMusicaisNasListas] = useState({})    // {musicalId: Set(listaId)}
+  const [dropdownCardAberto, setDropdownCardAberto] = useState(null)
+  const [toast, setToast] = useState(null)
+
+  function mostrarToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuarioLogado(user))
@@ -158,7 +170,7 @@ function Perfil() {
         })
         setSessoesPorMusical(sessoesPorId)
 
-        // Listas personalizadas
+        // Listas personalizadas DO DONO DO PERFIL (aba "Listas")
         const listasSnap = await getDocs(collection(db, "usuarios", userId, "listas"))
         const listasDados = await Promise.all(
           listasSnap.docs.map(async listaDoc => {
@@ -179,10 +191,43 @@ function Perfil() {
     buscarDados()
   }, [userId])
 
-  // Votos agora são PRIVADOS (Fase 2): pelas regras, só o dono lê o próprio voto.
-  // Por isso carregamos as avaliações só quando você está vendo o SEU perfil, lendo
-  // diretamente o seu voto em cada musical da sua lista "já vi". Em perfil de outra
-  // pessoa, as avaliações ficam vazias (são privadas).
+  // ── Carrega o "já vi", "quero ver" e as listas de QUEM ESTÁ LOGADO ──
+  // É o que alimenta a barra de cartaz, independente de qual perfil você está vendo.
+  useEffect(() => {
+    async function carregarMeuEstado() {
+      if (!usuarioLogado) {
+        setJaViSet(new Set()); setQueroVerSet(new Set()); setMinhasListas([]); setMusicaisNasListas({})
+        return
+      }
+      const uid = usuarioLogado.uid
+      try {
+        const [jvSnap, qvSnap, listasSnap] = await Promise.all([
+          getDocs(collection(db, "usuarios", uid, "jaVi")),
+          getDocs(collection(db, "usuarios", uid, "queroVer")),
+          getDocs(collection(db, "usuarios", uid, "listas")),
+        ])
+        setJaViSet(new Set(jvSnap.docs.map(d => d.id)))
+        setQueroVerSet(new Set(qvSnap.docs.map(d => d.id)))
+
+        const listasDados = listasSnap.docs.map(d => ({ id: d.id, nome: d.data().nome }))
+        setMinhasListas(listasDados)
+        const mapa = {}
+        for (const lista of listasDados) {
+          const itensSnap = await getDocs(collection(db, "usuarios", uid, "listas", lista.id, "itens"))
+          itensSnap.docs.forEach(d => {
+            if (!mapa[d.id]) mapa[d.id] = new Set()
+            mapa[d.id].add(lista.id)
+          })
+        }
+        setMusicaisNasListas(mapa)
+      } catch (e) {
+        console.error("Erro ao carregar seu estado:", e)
+      }
+    }
+    carregarMeuEstado()
+  }, [usuarioLogado])
+
+  // Votos PRIVADOS (Fase 2): só o dono lê o próprio voto.
   useEffect(() => {
     async function carregarMeusVotos() {
       if (!usuarioLogado || usuarioLogado.uid !== userId) {
@@ -215,6 +260,18 @@ function Perfil() {
     carregarMeusVotos()
   }, [usuarioLogado, userId, jaVi])
 
+  // Fecha o dropdown de listas do cartaz ao clicar fora
+  useEffect(() => {
+    if (!dropdownCardAberto) return
+    function handler(e) {
+      if (e.target.closest("[data-listas-dropdown]")) return
+      if (e.target.closest(`[data-btn-listas="${dropdownCardAberto}"]`)) return
+      setDropdownCardAberto(null)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [dropdownCardAberto])
+
   useEffect(() => {
     async function verificarSeguindo() {
       if (!usuarioLogado || usuarioLogado.uid === userId) return
@@ -224,6 +281,133 @@ function Perfil() {
     }
     verificarSeguindo()
   }, [usuarioLogado, userId])
+
+  // ── Handlers da barra de cartaz (gravam sempre na conta de quem está logado) ──
+  const handleToggleJaVi = useCallback(async (e, musical) => {
+    e.preventDefault(); e.stopPropagation()
+    if (!usuarioLogado) return mostrarToast("Faça login para usar esta função.")
+    const uid = usuarioLogado.uid
+    const refJaVi = doc(db, "usuarios", uid, "jaVi", musical.id)
+    const refQueroVer = doc(db, "usuarios", uid, "queroVer", musical.id)
+    const mRef = doc(db, "musicais", musical.id)
+    if (jaViSet.has(musical.id)) {
+      await deleteDoc(refJaVi)
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (err) { console.error("popularidade", err) }
+      setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
+    } else {
+      const entrandoNaContagem = !queroVerSet.has(musical.id)
+      await setDoc(refJaVi, { musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
+      await deleteDoc(refQueroVer)
+      if (entrandoNaContagem) {
+        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (err) { console.error("popularidade", err) }
+      }
+      setJaViSet(prev => new Set(prev).add(musical.id))
+      setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
+    }
+  }, [usuarioLogado, jaViSet, queroVerSet])
+
+  const handleToggleQueroVer = useCallback(async (e, musical) => {
+    e.preventDefault(); e.stopPropagation()
+    if (!usuarioLogado) return mostrarToast("Faça login para usar esta função.")
+    const uid = usuarioLogado.uid
+    const refQueroVer = doc(db, "usuarios", uid, "queroVer", musical.id)
+    const refJaVi = doc(db, "usuarios", uid, "jaVi", musical.id)
+    const mRef = doc(db, "musicais", musical.id)
+    if (queroVerSet.has(musical.id)) {
+      await deleteDoc(refQueroVer)
+      try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (err) { console.error("popularidade", err) }
+      setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
+    } else {
+      const entrandoNaContagem = !jaViSet.has(musical.id)
+      await setDoc(refQueroVer, { musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
+      await deleteDoc(refJaVi)
+      if (entrandoNaContagem) {
+        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (err) { console.error("popularidade", err) }
+      }
+      setQueroVerSet(prev => new Set(prev).add(musical.id))
+      setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
+    }
+  }, [usuarioLogado, queroVerSet, jaViSet])
+
+  const handleAbrirDropdown = useCallback((e, musicalId) => {
+    e.preventDefault(); e.stopPropagation()
+    if (!usuarioLogado) return mostrarToast("Faça login para usar listas.")
+    setDropdownCardAberto(prev => prev === musicalId ? null : musicalId)
+  }, [usuarioLogado])
+
+  const handleToggleNaLista = useCallback(async (e, musical, listaId) => {
+    e.preventDefault(); e.stopPropagation()
+    const uid = usuarioLogado.uid
+    const ref = doc(db, "usuarios", uid, "listas", listaId, "itens", musical.id)
+    const jaEsta = musicaisNasListas[musical.id]?.has(listaId)
+    if (jaEsta) {
+      await deleteDoc(ref)
+      setMusicaisNasListas(prev => {
+        const novo = { ...prev }
+        const set = new Set(novo[musical.id])
+        set.delete(listaId)
+        novo[musical.id] = set
+        return novo
+      })
+    } else {
+      await setDoc(ref, { musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "", adicionadoEm: serverTimestamp() })
+      setMusicaisNasListas(prev => {
+        const novo = { ...prev }
+        const set = new Set(novo[musical.id] || [])
+        set.add(listaId)
+        novo[musical.id] = set
+        return novo
+      })
+    }
+    // Se estou no MEU perfil, mantém a aba "Listas" em sincronia
+    if (usuarioLogado.uid === userId) {
+      setListas(prev => prev.map(l => {
+        if (l.id !== listaId) return l
+        const jaEstaNaAba = l.itens.some(i => i.id === musical.id)
+        if (jaEsta && jaEstaNaAba) return { ...l, itens: l.itens.filter(i => i.id !== musical.id) }
+        if (!jaEsta && !jaEstaNaAba) return { ...l, itens: [...l.itens, { id: musical.id, musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" }] }
+        return l
+      }))
+    }
+  }, [usuarioLogado, musicaisNasListas, userId])
+
+  const handleCriarLista = useCallback(async (e, musical, nome, onDone) => {
+    e.preventDefault(); e.stopPropagation()
+    const nomeLimpo = nome.trim()
+    if (!nomeLimpo) return
+    const uid = usuarioLogado.uid
+    const listaRef = await addDoc(collection(db, "usuarios", uid, "listas"), { nome: nomeLimpo, criadaEm: serverTimestamp() })
+    const listaId = listaRef.id
+    await setDoc(doc(db, "usuarios", uid, "listas", listaId, "itens", musical.id), {
+      musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "", adicionadoEm: serverTimestamp()
+    })
+    setMinhasListas(prev => [...prev, { id: listaId, nome: nomeLimpo }])
+    setMusicaisNasListas(prev => {
+      const novo = { ...prev }
+      const set = new Set(novo[musical.id] || [])
+      set.add(listaId)
+      novo[musical.id] = set
+      return novo
+    })
+    if (usuarioLogado.uid === userId) {
+      setListas(prev => [...prev, { id: listaId, nome: nomeLimpo, itens: [{ id: musical.id, musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" }] }])
+    }
+    onDone()
+    mostrarToast(`Adicionado a "${nomeLimpo}"`)
+  }, [usuarioLogado, userId])
+
+  // Props compartilhadas passadas a cada CardMusical
+  const cardProps = {
+    usuario: usuarioLogado,
+    jaViSet, queroVerSet,
+    listas: minhasListas,
+    musicaisNasListas,
+    onToggleJaVi: handleToggleJaVi,
+    onToggleQueroVer: handleToggleQueroVer,
+    onAbrirDropdown: handleAbrirDropdown,
+    onToggleNaLista: handleToggleNaLista,
+    onCriarLista: handleCriarLista,
+  }
 
   async function toggleSeguir() {
     if (!usuarioLogado) return alert("Voce precisa estar logado para seguir alguem.")
@@ -300,32 +484,6 @@ function Perfil() {
     setBuscaTop3("")
   }
 
-  async function toggleMusicalNaListaPerfil(musicalId, titulo, capa, direcao, listaId) {
-    const ref = doc(db, "usuarios", userId, "listas", listaId, "itens", musicalId)
-    const jaEsta = listas.find(l => l.id === listaId)?.itens.some(i => i.id === musicalId)
-    if (jaEsta) {
-      await deleteDoc(ref)
-      setListas(prev => prev.map(l => l.id === listaId ? { ...l, itens: l.itens.filter(i => i.id !== musicalId) } : l))
-    } else {
-      await setDoc(ref, { musicalId, titulo, capa: capa || null, direcao: direcao || "", adicionadoEm: serverTimestamp() })
-      setListas(prev => prev.map(l => l.id === listaId ? { ...l, itens: [...l.itens, { id: musicalId, musicalId, titulo, capa: capa || null, direcao: direcao || "" }] } : l))
-    }
-  }
-
-  async function criarListaEAdicionarPerfil(musicalId, titulo, capa, direcao, nome) {
-    const nomeLimpo = nome.trim()
-    if (!nomeLimpo) return
-    const listaRef = await addDoc(collection(db, "usuarios", userId, "listas"), { nome: nomeLimpo, criadaEm: serverTimestamp() })
-    const listaId = listaRef.id
-    await setDoc(doc(db, "usuarios", userId, "listas", listaId, "itens", musicalId), {
-      musicalId, titulo, capa: capa || null, direcao: direcao || "", adicionadoEm: serverTimestamp()
-    })
-    setListas(prev => [...prev, { id: listaId, nome: nomeLimpo, itens: [{ id: musicalId, musicalId, titulo, capa: capa || null, direcao: direcao || "" }] }])
-    setNovaListaNome("")
-    setCriandoListaNoPerfil(false)
-    setDropdownListasAberto(null)
-  }
-
   function toggleTop3(musicalId) {
     if (top3Selecionado.includes(musicalId)) {
       setTop3Selecionado(prev => prev.filter(id => id !== musicalId))
@@ -365,14 +523,12 @@ function Perfil() {
       setBanido(novo)
 
       if (novo) {
-        // apaga comentários (cópia top-level + subcoleção do musical)
         for (const c of comentarios) {
           try { await deleteDoc(doc(db, "comentarios", c.id)) } catch (e) {}
           try { await deleteDoc(doc(db, "musicais", c.musicalId, "comentarios", c.id)) } catch (e) {}
         }
         setComentarios([])
 
-        // remove do feed de atividade recente
         try {
           const ativSnap = await getDocs(query(collection(db, "atividades"), where("userId", "==", userId)))
           for (const d of ativSnap.docs) await deleteDoc(d.ref)
@@ -431,8 +587,6 @@ function Perfil() {
       }
 
       // 3. Apaga subcoleções do usuário.
-      // Para jaVi e queroVer, decrementa popularidade do musical antes de apagar
-      // (cada uma dessas listas representa +1 na contagem).
       for (const sub of ["jaVi", "queroVer"]) {
         const snap = await getDocs(collection(db, "usuarios", userId, sub))
         for (const d of snap.docs) {
@@ -469,7 +623,6 @@ function Perfil() {
       } catch (e) {}
 
       // 7. Apaga conversas em que participa
-      // (apaga a conversa inteira — não há Cloud Function pra só remover o participante)
       try {
         const conversasSnap = await getDocs(query(collection(db, "conversas"), where("participantes", "array-contains", userId)))
         for (const d of conversasSnap.docs) await deleteDoc(d.ref)
@@ -531,118 +684,10 @@ function Perfil() {
     m.titulo.toLowerCase().includes(buscaTop3.toLowerCase())
   )
 
-  const cardMusical = (item, extra) => {
-    const emAlgumaLista = listas.some(l => l.itens.some(i => i.id === item.musicalId))
-    const ddAberto = dropdownListasAberto === item.musicalId
-    return (
-      <div key={item.id} style={{ position: "relative" }}>
-        <a href={"/musical/" + item.musicalId} className="card-musical"
-          style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
-        >
-          <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "12px" }}>
-            {item.capa
-              ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-              : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
-            }
-          </div>
-          <div style={{ width: "100%" }}>
-            <p className="card-titulo">{item.titulo}</p>
-            {extra}
-          </div>
-        </a>
-        {isProprioPerfil && (
-          <div style={{ position: "relative" }}>
-            <button
-              data-btn-listas-perfil={item.musicalId}
-              onClick={e => { e.preventDefault(); setDropdownListasAberto(prev => prev === item.musicalId ? null : item.musicalId); setCriandoListaNoPerfil(false); setNovaListaNome("") }}
-              style={{ marginTop: "6px", width: "100%", background: emAlgumaLista ? "#1a1a1a" : "transparent", color: emAlgumaLista ? "#F5C518" : "#888", border: "1px solid", borderColor: emAlgumaLista ? "#1a1a1a" : "#e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer", textAlign: "center" }}>
-              {emAlgumaLista ? "✓ Nas listas" : "+ Adicionar à lista"}
-            </button>
-            {ddAberto && (
-              <div data-listas-dropdown-perfil style={{ position: "absolute", bottom: "calc(100% + 4px)", left: 0, right: 0, background: "#fff", border: "1px solid #e8e8e4", borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, padding: "8px 0", minWidth: "160px" }}>
-                <p style={{ fontSize: "11px", fontWeight: "700", color: "#aaa", textTransform: "uppercase", letterSpacing: "1px", padding: "4px 12px 8px" }}>Minhas listas</p>
-                {listas.length === 0 && !criandoListaNoPerfil && <p style={{ fontSize: "13px", color: "#888", padding: "0 12px 8px", fontStyle: "italic" }}>Nenhuma lista ainda.</p>}
-                {listas.map(lista => {
-                  const marcado = lista.itens.some(i => i.id === item.musicalId)
-                  return (
-                    <div key={lista.id} role="button" tabIndex={0}
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleMusicalNaListaPerfil(item.musicalId, item.titulo, item.capa, item.direcao, lista.id) }}
-                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", cursor: "pointer", background: marcado ? "#fffbe6" : "transparent", WebkitTapHighlightColor: "transparent" }}
-                      onMouseEnter={e => e.currentTarget.style.background = marcado ? "#fff8d6" : "#f9f9f9"}
-                      onMouseLeave={e => e.currentTarget.style.background = marcado ? "#fffbe6" : "transparent"}>
-                      <span style={{ width: "14px", height: "14px", border: "2px solid", borderColor: marcado ? "#F5C518" : "#ccc", borderRadius: "3px", background: marcado ? "#F5C518" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "9px", color: "#1a1a1a" }}>{marcado ? "✓" : ""}</span>
-                      <span style={{ fontSize: "12px", color: "#1a1a1a" }}>{lista.nome}</span>
-                    </div>
-                  )
-                })}
-                <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "4px", paddingTop: "4px" }}>
-                  {criandoListaNoPerfil ? (
-                    <div style={{ padding: "4px 8px", display: "flex", gap: "4px" }} onClick={e => e.stopPropagation()}>
-                      <input autoFocus type="text" placeholder="Nome da lista" value={novaListaNome} onChange={e => setNovaListaNome(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") criarListaEAdicionarPerfil(item.musicalId, item.titulo, item.capa, item.direcao, novaListaNome); if (e.key === "Escape") setCriandoListaNoPerfil(false) }}
-                        style={{ flex: 1, padding: "4px 6px", border: "1px solid #e8e8e4", borderRadius: "4px", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", outline: "none" }} />
-                      <button onClick={() => criarListaEAdicionarPerfil(item.musicalId, item.titulo, item.capa, item.direcao, novaListaNome)}
-                        style={{ background: "#F5C518", border: "none", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", fontWeight: "600", cursor: "pointer" }}>OK</button>
-                    </div>
-                  ) : (
-                    <div onClick={() => setCriandoListaNoPerfil(true)}
-                      style={{ padding: "6px 12px", cursor: "pointer", color: "#b8960a", fontSize: "12px", fontWeight: "600" }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#fffbe6"}
-                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                      + Nova lista
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  const cardJaVi = (item) => {
-    const sessoes = sessoesPorMusical[item.musicalId] || []
-    const sessoesVisiveis = isProprioPerfil ? sessoes : sessoes.filter(s => s.publico)
-    const expandido = sessoesExpandidas[item.musicalId]
-    const temSessoes = sessoesVisiveis.length > 0
-
-    return (
-      <div key={item.id} style={{ display: "flex", flexDirection: "column" }}>
-        <a href={"/musical/" + item.musicalId} className="card-musical"
-          style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center" }}
-        >
-          <div style={{ width: "100%", height: "280px", marginBottom: "12px" }}>
-            {item.capa
-              ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-              : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
-            }
-          </div>
-          <div style={{ width: "100%" }}>
-            <p className="card-titulo">{item.titulo}</p>
-            <p className="card-meta">Direção: {item.direcao || "—"}</p>
-          </div>
-        </a>
-        {temSessoes && (
-          <button onClick={() => toggleSessoes(item.musicalId)}
-            style={{ marginTop: "6px", background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer", textAlign: "left" }}>
-            📅 {sessoesVisiveis.length} {sessoesVisiveis.length === 1 ? "sessão" : "sessões"} {expandido ? "▲" : "▼"}
-          </button>
-        )}
-        {temSessoes && expandido && (
-          <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            {sessoesVisiveis.map(s => (
-              <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "5px 12px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "500", color: "#1a1a1a" }}>{labelChip(s)}</span>
-                {isProprioPerfil && (
-                  <span style={{ fontSize: "11px", color: s.publico ? "#5a9e6f" : "#aaa" }}>{s.publico ? "🌐" : "🔒"}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
+  // Monta o objeto "musical" completo a partir de um item de lista (que tem dados resumidos)
+  const musicalDoItem = (item) => {
+    const id = item.musicalId || item.id
+    return musicais[id] || { id, titulo: item.titulo, capa: item.capa, direcao: item.direcao }
   }
 
   const cardUsuario = (pessoa) => (
@@ -675,6 +720,12 @@ function Perfil() {
 
   return (
     <main>
+      {toast && (
+        <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", color: "#F5C518", padding: "12px 24px", borderRadius: "8px", fontSize: "14px", fontWeight: "500", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+          {toast}
+        </div>
+      )}
+
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
 
       <div style={{ marginBottom: "32px" }}>
@@ -748,7 +799,6 @@ function Perfil() {
         {/* Formulário de redes sociais e bio */}
         {editandoRedes && (
           <div style={{ marginTop: "14px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px", maxWidth: "360px" }}>
-            {/* Bio */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Bio</label>
               <textarea
@@ -763,7 +813,6 @@ function Perfil() {
               </p>
             </div>
 
-            {/* Redes */}
             {[
               { chave: "instagram", label: "Instagram", placeholder: "@seunome" },
               { chave: "tiktok", label: "TikTok", placeholder: "@seunome" },
@@ -858,6 +907,8 @@ function Perfil() {
           </a>
         )}
       </div>
+
+      {/* ABAS — agora deslizáveis no mobile */}
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
           { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
@@ -943,7 +994,7 @@ function Perfil() {
             {isProprioPerfil ? "Clique em editar para escolher seus 5 musicais favoritos." : "Nenhum favorito definido ainda."}
           </p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "12px", overflowX: "auto" }} className="top5-grid">
+          <div className="top5-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "12px" }}>
             {top3.map((item, i) => (
               <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
                 style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518", padding: "8px" }}
@@ -981,11 +1032,19 @@ function Perfil() {
             votos.length === 0 ? (
               <p className="login-aviso"><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></p>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
                 {votos.map(voto => {
                   const musical = musicais[voto.musicalId]
                   if (!musical) return null
-                  return cardMusical({ id: voto.musicalId, musicalId: voto.musicalId, ...musical }, <div className="rating-badge">★ {voto.estrelas}</div>)
+                  return (
+                    <CardMusical
+                      key={voto.musicalId}
+                      musical={musical}
+                      dropdownAberto={dropdownCardAberto === musical.id}
+                      metaExtra={<p style={{ fontSize: "12px", color: "#b8960a", fontWeight: "700", margin: 0 }}>★ {voto.estrelas}</p>}
+                      {...cardProps}
+                    />
+                  )
                 })}
               </div>
             )
@@ -1030,8 +1089,26 @@ function Perfil() {
                 : "Este usuário ainda não marcou nenhum musical como visto."}
             </p>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
-              {jaViExibidos.map(item => cardJaVi(item))}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
+              {jaViExibidos.map(item => {
+                const m = musicalDoItem(item)
+                const sessoes = sessoesPorMusical[item.musicalId] || []
+                const sessoesVisiveis = isProprioPerfil ? sessoes : sessoes.filter(s => s.publico)
+                const temSessoes = sessoesVisiveis.length > 0
+                return (
+                  <CardMusical
+                    key={item.id}
+                    musical={m}
+                    dropdownAberto={dropdownCardAberto === m.id}
+                    metaExtra={
+                      temSessoes
+                        ? <p style={{ fontSize: "12px", color: "#888", margin: 0 }}>📅 {sessoesVisiveis.length} {sessoesVisiveis.length === 1 ? "sessão" : "sessões"}</p>
+                        : <p style={{ fontSize: "12px", color: "#888", margin: 0 }}>Direção: {m.direcao || "—"}</p>
+                    }
+                    {...cardProps}
+                  />
+                )
+              })}
             </div>
           )}
         </div>
@@ -1042,8 +1119,19 @@ function Perfil() {
           {queroVer.length === 0 ? (
             <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não tem musicais na lista."}</p>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
-              {queroVer.map(item => cardMusical(item, <p className="card-meta">Direção: {item.direcao || "—"}</p>))}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
+              {queroVer.map(item => {
+                const m = musicalDoItem(item)
+                return (
+                  <CardMusical
+                    key={item.id}
+                    musical={m}
+                    dropdownAberto={dropdownCardAberto === m.id}
+                    metaExtra={<p style={{ fontSize: "12px", color: "#888", margin: 0 }}>Direção: {m.direcao || "—"}</p>}
+                    {...cardProps}
+                  />
+                )
+              })}
             </div>
           )}
         </div>
@@ -1068,20 +1156,19 @@ function Perfil() {
         </div>
       )}
 
-      {/* LISTAS PERSONALIZADAS */}
+      {/* LISTAS PERSONALIZADAS (do dono do perfil) */}
       {tabAtiva === "listas" && (
         <div>
           {listas.length === 0 ? (
             <p className="login-aviso">
               {isProprioPerfil
-                ? 'Você ainda não criou nenhuma lista. Use o botão "+ Listas" nos cards da Home para criar.'
+                ? 'Você ainda não criou nenhuma lista. Use o botão "+ Listas" nos cartazes para criar.'
                 : 'Este usuário ainda não criou nenhuma lista.'}
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               {listas.map(lista => (
                 <div key={lista.id} style={{ border: "1px solid #e8e8e4", borderRadius: "12px", overflow: "hidden" }}>
-                  {/* Cabeçalho da lista */}
                   <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", background: "#f9f9f9", borderBottom: lista.itens.length > 0 ? "1px solid #e8e8e4" : "none" }}>
                     {isProprioPerfil && editandoListaId === lista.id ? (
                       <div style={{ display: "flex", gap: "8px", flex: 1 }}>
@@ -1131,12 +1218,12 @@ function Perfil() {
                             <button
                               onClick={async () => {
                                 if (!window.confirm(`Deletar a lista "${lista.nome}"? Os musicais não serão apagados.`)) return
-                                // Apaga todos os itens e depois a lista
                                 for (const item of lista.itens) {
                                   await deleteDoc(doc(db, "usuarios", userId, "listas", lista.id, "itens", item.id))
                                 }
                                 await deleteDoc(doc(db, "usuarios", userId, "listas", lista.id))
                                 setListas(prev => prev.filter(l => l.id !== lista.id))
+                                setMinhasListas(prev => prev.filter(l => l.id !== lista.id))
                               }}
                               style={{ background: "none", border: "1px solid #f0c0c0", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#cc0000", cursor: "pointer" }}>
                               🗑 Deletar
@@ -1147,22 +1234,22 @@ function Perfil() {
                     )}
                   </div>
 
-                  {/* Musicais da lista */}
                   {lista.itens.length === 0 ? (
                     <p style={{ fontSize: "13px", color: "#aaa", padding: "16px", fontStyle: "italic" }}>Nenhum musical nesta lista ainda.</p>
                   ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "12px", padding: "16px" }}>
-                      {lista.itens.map(item => (
-                        <a key={item.id} href={"/musical/" + item.musicalId}
-                          style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column" }}>
-                          <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "6px" }}>
-                            {item.capa
-                              ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                              : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "10px", padding: "6px", textAlign: "center" }}>{item.titulo}</div>}
-                          </div>
-                          <p style={{ fontSize: "12px", fontWeight: "600", margin: 0, lineHeight: "1.3", color: "#1a1a1a" }}>{item.titulo}</p>
-                        </a>
-                      ))}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "12px", padding: "16px" }}>
+                      {lista.itens.map(item => {
+                        const m = musicalDoItem(item)
+                        return (
+                          <CardMusical
+                            key={item.id}
+                            musical={m}
+                            dropdownAberto={dropdownCardAberto === m.id}
+                            esconderDirecao
+                            {...cardProps}
+                          />
+                        )
+                      })}
                     </div>
                   )}
                 </div>
