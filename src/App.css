@@ -516,6 +516,18 @@ a, button, [onClick], [role="button"] {
     display: none;
   }
 }
+@media (max-width: 600px) {
+  .top5-grid {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+  .top5-grid > a {
+    flex: 0 0 130px;
+  }
+}
 
 @keyframes shimmer {
   0% { background-position: 200% 0; }

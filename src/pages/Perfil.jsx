@@ -565,8 +565,9 @@ function Perfil() {
                 {listas.map(lista => {
                   const marcado = lista.itens.some(i => i.id === item.musicalId)
                   return (
-                    <div key={lista.id} onClick={() => toggleMusicalNaListaPerfil(item.musicalId, item.titulo, item.capa, item.direcao, lista.id)}
-                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 12px", cursor: "pointer", background: marcado ? "#fffbe6" : "transparent" }}
+                    <div key={lista.id} role="button" tabIndex={0}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleMusicalNaListaPerfil(item.musicalId, item.titulo, item.capa, item.direcao, lista.id) }}
+                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", cursor: "pointer", background: marcado ? "#fffbe6" : "transparent", WebkitTapHighlightColor: "transparent" }}
                       onMouseEnter={e => e.currentTarget.style.background = marcado ? "#fff8d6" : "#f9f9f9"}
                       onMouseLeave={e => e.currentTarget.style.background = marcado ? "#fffbe6" : "transparent"}>
                       <span style={{ width: "14px", height: "14px", border: "2px solid", borderColor: marcado ? "#F5C518" : "#ccc", borderRadius: "3px", background: marcado ? "#F5C518" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "9px", color: "#1a1a1a" }}>{marcado ? "✓" : ""}</span>
@@ -857,7 +858,7 @@ function Perfil() {
           </a>
         )}
       </div>
-      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0' }}>
+      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
           { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
           { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
@@ -942,7 +943,7 @@ function Perfil() {
             {isProprioPerfil ? "Clique em editar para escolher seus 5 musicais favoritos." : "Nenhum favorito definido ainda."}
           </p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "12px", overflowX: "auto" }} className="top5-grid">
             {top3.map((item, i) => (
               <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
                 style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518", padding: "8px" }}
