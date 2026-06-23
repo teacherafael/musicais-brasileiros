@@ -925,52 +925,6 @@ function Perfil() {
         )}
       </div>
 
-      {/* GOSTEI / NÃO GOSTEI */}
-      {(reacoesUsuario.gostei.length > 0 || reacoesUsuario.naoGostei.length > 0) && (
-        <div style={{ marginBottom: "40px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-            <div>
-              <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
-                👍 Gostei ({reacoesUsuario.gostei.length})
-              </h3>
-              {reacoesUsuario.gostei.length === 0
-                ? <p style={{ fontSize: "13px", color: "#bbb", fontStyle: "italic" }}>Nenhum ainda.</p>
-                : <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                    {reacoesUsuario.gostei.map((item, i) => (
-                      <li key={item.musicalId}>
-                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
-                          onMouseOver={e => e.currentTarget.style.textDecoration = "underline"}
-                          onMouseOut={e => e.currentTarget.style.textDecoration = "none"}>
-                          {item.titulo || item.musicalId}
-                        </a>
-                      </li>
-                    ))}
-                  </ol>
-              }
-            </div>
-            <div>
-              <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
-                👎 Não gostei ({reacoesUsuario.naoGostei.length})
-              </h3>
-              {reacoesUsuario.naoGostei.length === 0
-                ? <p style={{ fontSize: "13px", color: "#bbb", fontStyle: "italic" }}>Nenhum ainda.</p>
-                : <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                    {reacoesUsuario.naoGostei.map((item, i) => (
-                      <li key={item.musicalId}>
-                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
-                          onMouseOver={e => e.currentTarget.style.textDecoration = "underline"}
-                          onMouseOut={e => e.currentTarget.style.textDecoration = "none"}>
-                          {item.titulo || item.musicalId}
-                        </a>
-                      </li>
-                    ))}
-                  </ol>
-              }
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ABAS — agora deslizáveis no mobile */}
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
@@ -1077,6 +1031,49 @@ function Perfil() {
                 </div>
               </a>
             ))}
+          </div>
+        )}
+
+        {/* GOSTEI / NÃO GOSTEI — dentro do bloco escuro, abaixo do Top 5 */}
+        {(reacoesUsuario.gostei.length > 0 || reacoesUsuario.naoGostei.length > 0) && (
+          <div style={{ marginTop: "32px", borderTop: "1px solid #2a2a2a", paddingTop: "24px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
+                  👍 Gostei ({reacoesUsuario.gostei.length})
+                </h3>
+                <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {reacoesUsuario.gostei.map(item => (
+                    <li key={item.musicalId}>
+                      <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
+                        onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
+                        onMouseOut={e => e.currentTarget.style.color = "#e8e8e4"}>
+                        {item.titulo || item.musicalId}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
+                  👎 Não gostei ({reacoesUsuario.naoGostei.length})
+                </h3>
+                {reacoesUsuario.naoGostei.length === 0
+                  ? <p style={{ fontSize: "13px", color: "#555", fontStyle: "italic" }}>Nenhum ainda.</p>
+                  : <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {reacoesUsuario.naoGostei.map(item => (
+                        <li key={item.musicalId}>
+                          <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
+                            onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
+                            onMouseOut={e => e.currentTarget.style.color = "#e8e8e4"}>
+                            {item.titulo || item.musicalId}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                }
+              </div>
+            </div>
           </div>
         )}
       </div>
