@@ -34,6 +34,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
   {
+    id: "teatro-niss",
+    nomeOficial: "Teatro Nissi",
+    aliases: ["Teatro Brigadeiro", "Teatro Jardel Filho"],
+    endereco: "Avenida Brigadeiro Luís Antônio, 884",
+    bairro: "Bela Vista",
+    cidade: "São Paulo – SP",
+  },
+  {
     id: "teatro-claro-mais-sp",
     nomeOficial: "Teatro Claro Mais SP",
     aliases: ["Theatro Net SP", "Theatro Net São Paulo"],
