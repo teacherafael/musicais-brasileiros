@@ -5,12 +5,10 @@ import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 
-// Funções da equipe criativa. As duas primeiras são fixas (sempre aparecem no
-// formulário); as demais entram via "+ Adicionar função".
 const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
-const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Músicos"]
+// "Músicos" removido daqui — agora tem campo próprio separado
+const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria"]
 
-// Estado inicial do editor de equipe criativa (sempre começa com as duas fixas).
 function equipeInicial() {
   return [
     { funcao: "Direção", nomesTexto: "" },
@@ -18,8 +16,6 @@ function equipeInicial() {
   ]
 }
 
-// Constrói o array equipeCriativa a partir das strings antigas direcao/direcaoMusical
-// (usado ao aprovar uma sugestão, que vem só com esses dois campos).
 function montarEquipeDeStrings(direcao, direcaoMusical) {
   const equipe = []
   const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
@@ -29,9 +25,6 @@ function montarEquipeDeStrings(direcao, direcaoMusical) {
   return equipe
 }
 
-// Campos que a Home usa (busca, filtros, ordenações, carrosséis). A sinopse NÃO entra
-// de propósito: é o campo mais pesado e a Home não usa. Isso mantém o índice pequeno.
-// equipeCriativa/teatro/teatros entram para o Pessoa e o Teatro poderem ler daqui.
 function montarItemIndice(id, m) {
   return {
     id,
@@ -59,8 +52,6 @@ function montarItemIndice(id, m) {
   }
 }
 
-// Lê todos os musicais uma vez e grava a lista enxuta em indices/home.
-// Retorna a quantidade indexada (pra exibir no status).
 async function gerarIndiceHome() {
   const snap = await getDocs(collection(db, "musicais"))
   const itens = snap.docs.map(d => montarItemIndice(d.id, d.data()))
@@ -81,29 +72,24 @@ function Admin() {
   const [mensagens, setMensagens] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
-  // Abas cujos dados já foram carregados nesta sessão (evita reler o banco à toa)
   const [carregadas, setCarregadas] = useState(new Set())
   const [capas, setCapas] = useState({})
   const [editandoSugestao, setEditandoSugestao] = useState(null)
   const [formSugestao, setFormSugestao] = useState({})
-
-  // Status do índice da Home
   const [indiceStatus, setIndiceStatus] = useState("")
 
-  // --- Aba "Adicionar musical" (cadastro direto pelo painel) ---
+  // Aba "Adicionar musical"
   const [formNovo, setFormNovo] = useState({})
   const [capaNovo, setCapaNovo] = useState("")
   const [teatrosNovo, setTeatrosNovo] = useState([])
   const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
+  const [musicosNovo, setMusicosNovo] = useState([])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
 
-  // Carrega APENAS os dados da aba pedida. Cada busca tem seu próprio try/catch,
-  // então uma falha numa coleção não trava o painel inteiro.
   async function carregarAba(qual) {
-    // "adicionar" não tem dados pra buscar; abas já carregadas não recarregam.
     if (qual === "adicionar" || carregadas.has(qual)) return
     setCarregando(true)
     try {
@@ -113,8 +99,6 @@ function Admin() {
         setSugestoes(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       } else if (qual === "relatos") {
         const snap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
-        // Mostra só relatos de erro. Denúncias de comentário antigas (tipo
-        // "denuncia_comentario") não aparecem mais — não há mais comentários.
         setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.tipo !== "denuncia_comentario"))
       } else if (qual === "musicais") {
         const snap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
@@ -125,19 +109,16 @@ function Admin() {
       }
       setCarregadas(prev => new Set(prev).add(qual))
     } catch (e) {
-      // Não marca como carregada → ao reabrir a aba, tenta de novo.
       console.error("Erro ao carregar aba:", qual, e)
     }
     setCarregando(false)
   }
 
-  // Troca de aba: muda a aba ativa e carrega os dados dela (se ainda não tiver).
   function trocarAba(qual) {
     setAba(qual)
     carregarAba(qual)
   }
 
-  // Ao abrir o painel, carrega só a aba inicial.
   useEffect(() => {
     if (usuario && ADMINS.includes(usuario.uid)) {
       carregarAba(aba)
@@ -145,7 +126,6 @@ function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario])
 
-  // Botão manual: regenera o índice da Home com o que está hoje na coleção musicais.
   async function atualizarIndiceManual() {
     setIndiceStatus("Gerando índice...")
     try {
@@ -157,7 +137,6 @@ function Admin() {
     setTimeout(() => setIndiceStatus(""), 4000)
   }
 
-  // Move um bloco de teatro pra cima/baixo no formulário de adicionar
   function moverTeatroNovo(index, direcao) {
     const destino = index + direcao
     if (destino < 0 || destino >= teatrosNovo.length) return
@@ -166,7 +145,6 @@ function Admin() {
     setTeatrosNovo(novo)
   }
 
-  // --- Handlers do editor de equipe criativa (aba "Adicionar musical") ---
   function adicionarFuncao() {
     const usadas = equipeNovo.map(e => e.funcao)
     const disponivel = FUNCOES_OPCIONAIS.find(f => !usadas.includes(f))
@@ -190,7 +168,6 @@ function Admin() {
     setEquipeNovo(novo)
   }
 
-  // Publica um musical novo direto na coleção "musicais"
   async function publicarNovo() {
     if (!formNovo.titulo || !formNovo.titulo.trim()) {
       alert("O título é obrigatório.")
@@ -205,13 +182,11 @@ function Admin() {
       .replace(/^-+|-+$/g, "")
     ) || "musical-" + Date.now()
 
-    // Proteção: não sobrescrever um musical já existente (zeraria avaliações)
     const existe = await getDoc(doc(db, "musicais", slug))
     if (existe.exists()) {
       if (!window.confirm(`Já existe um musical com esse título ("${formNovo.titulo}"). Publicar vai SOBRESCREVER o existente e zerar as avaliações. Continuar?`)) return
     }
 
-    // Monta a lista de teatros no mesmo formato da página de musicais
     const teatrosLimpos = teatrosNovo
       .map(item => ({
         ano: item.ano.trim(),
@@ -219,15 +194,18 @@ function Admin() {
       }))
       .filter(item => item.ano && item.teatros.length > 0)
 
-    // Monta a equipe criativa (só funções com pelo menos um nome)
     const equipeCriativa = equipeNovo
       .map(e => ({ funcao: e.funcao, nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
       .filter(e => e.nomes.length > 0)
-    // Mantém direcao/direcaoMusical em sincronia (compatibilidade com índice, busca, card)
+
     const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
     const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
     const direcaoSync = dirEntry ? dirEntry.nomes.join(", ") : ""
     const direcaoMusicalSync = dirMusEntry ? dirMusEntry.nomes.join(", ") : ""
+
+    const musicosLimpos = musicosNovo
+      .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
+      .filter(item => item.local && item.nomes.length > 0)
 
     await setDoc(doc(db, "musicais", slug), {
       titulo: formNovo.titulo || "",
@@ -245,6 +223,7 @@ function Admin() {
       teatro: teatrosLimpos[0]?.teatros[0] || "",
       teatros: teatrosLimpos,
       teatrosAdicionais: [],
+      musicos: musicosLimpos,
       capa: capaNovo || "",
       totalVotos: 0,
       somaEstrelas: 0,
@@ -256,10 +235,9 @@ function Admin() {
     setCapaNovo("")
     setTeatrosNovo([])
     setEquipeNovo(equipeInicial())
-    // Mantém o índice da Home em dia
+    setMusicosNovo([])
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
-    // Vai pra aba de musicais e garante que a lista completa esteja carregada
     setAba("musicais")
     carregarAba("musicais")
   }
@@ -291,15 +269,15 @@ function Admin() {
 
   async function aprovar(sugestao) {
     const slug = (sugestao.titulo
-  .toLowerCase()
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/\s+/g, "-")
-  .replace(/[^a-z0-9-]/g, "")
-  .replace(/^-+|-+$/g, "")
-) || "musical-" + Date.now()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/^-+|-+$/g, "")
+    ) || "musical-" + Date.now()
 
-await setDoc(doc(db, "musicais", slug), {
+    await setDoc(doc(db, "musicais", slug), {
       titulo: sugestao.titulo || "",
       sinopse: sugestao.sinopse || "",
       direcao: sugestao.direcao || "",
@@ -313,6 +291,7 @@ await setDoc(doc(db, "musicais", slug), {
       musicaOriginal: sugestao.musicaOriginal || "",
       ano: sugestao.ano || "",
       teatro: sugestao.teatro || "",
+      musicos: [],
       capa: capas[sugestao.id] || "",
       totalVotos: 0,
       somaEstrelas: 0,
@@ -321,7 +300,6 @@ await setDoc(doc(db, "musicais", slug), {
     await updateDoc(doc(db, "sugestoes", sugestao.id), { status: "aprovado" })
     setSugestoes(prev => prev.filter(s => s.id !== sugestao.id))
     setCapas(prev => { const next = { ...prev }; delete next[sugestao.id]; return next })
-    // Mantém o índice da Home em dia
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a aprovação */ }
   }
 
@@ -339,7 +317,6 @@ await setDoc(doc(db, "musicais", slug), {
     if (!window.confirm(`Tem certeza que quer deletar "${titulo}"? Esta ação não pode ser desfeita.`)) return
     await deleteDoc(doc(db, "musicais", musicalId))
     setMusicais(prev => prev.filter(m => m.id !== musicalId))
-    // Mantém o índice da Home em dia
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a deleção */ }
   }
 
@@ -360,46 +337,30 @@ await setDoc(doc(db, "musicais", slug), {
         {label}
       </label>
       {multiline ? (
-        <textarea
-          value={formSugestao[chave] || ""}
-          onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }}
-        />
+        <textarea value={formSugestao[chave] || ""} onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
       ) : (
-        <input
-          type="text"
-          value={formSugestao[chave] || ""}
-          onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-        />
+        <input type="text" value={formSugestao[chave] || ""} onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
       )}
     </div>
   )
 
-  // Igual ao campoSugestao, mas ligado ao formulário da aba "Adicionar musical"
   const campoNovo = (label, chave, multiline = false) => (
     <div style={{ marginBottom: "12px" }}>
       <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
         {label}
       </label>
       {multiline ? (
-        <textarea
-          value={formNovo[chave] || ""}
-          onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "100px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }}
-        />
+        <textarea value={formNovo[chave] || ""} onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", height: "100px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
       ) : (
-        <input
-          type="text"
-          value={formNovo[chave] || ""}
-          onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-        />
+        <input type="text" value={formNovo[chave] || ""} onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
       )}
     </div>
   )
 
-  // Editor da equipe criativa (aba "Adicionar musical")
   const editorEquipe = (
     <div style={{ marginBottom: "20px" }}>
       <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
@@ -413,43 +374,51 @@ await setDoc(doc(db, "musicais", slug), {
             {fixa ? (
               <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
             ) : (
-              <select
-                value={item.funcao}
-                onChange={e => mudarFuncao(i, e.target.value)}
-                style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}
-              >
+              <select value={item.funcao} onChange={e => mudarFuncao(i, e.target.value)}
+                style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}>
                 {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => (
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
             )}
-            <input
-              type="text"
-              placeholder="Nomes (separados por vírgula)"
-              value={item.nomesTexto}
-              onChange={e => mudarNomes(i, e.target.value)}
-              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-            />
+            <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
             {!fixa && (
-              <button
-                onClick={() => removerFuncao(i)}
-                style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
-                title="Remover"
-              >
-                ✕
-              </button>
+              <button onClick={() => removerFuncao(i)} style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
             )}
           </div>
         )
       })}
       {equipeNovo.length < FUNCOES_FIXAS.length + FUNCOES_OPCIONAIS.length && (
-        <button
-          onClick={adicionarFuncao}
-          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
-        >
+        <button onClick={adicionarFuncao} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
           + Adicionar função
         </button>
       )}
+    </div>
+  )
+
+  // Editor de músicos por local (aba "Adicionar musical")
+  const editorMusicos = (
+    <div style={{ marginBottom: "20px" }}>
+      <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+        Músicos (por local)
+      </label>
+      {musicosNovo.map((item, i) => (
+        <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+          <input type="text" placeholder="Local (ex: São Paulo)" value={item.local}
+            onChange={e => { const novo = [...musicosNovo]; novo[i] = { ...novo[i], local: e.target.value }; setMusicosNovo(novo) }}
+            style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+          <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto}
+            onChange={e => { const novo = [...musicosNovo]; novo[i] = { ...novo[i], nomesTexto: e.target.value }; setMusicosNovo(novo) }}
+            style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+          <button onClick={() => setMusicosNovo(musicosNovo.filter((_, idx) => idx !== i))}
+            style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+        </div>
+      ))}
+      <button onClick={() => setMusicosNovo([...musicosNovo, { local: "", nomesTexto: "" }])}
+        style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+        + Adicionar local
+      </button>
     </div>
   )
 
@@ -490,7 +459,6 @@ await setDoc(doc(db, "musicais", slug), {
         ) : (
           sugestoes.map(s => (
             <div key={s.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-
               {editandoSugestao === s.id ? (
                 <>
                   <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "16px" }}>Editando sugestão</h2>
@@ -526,29 +494,21 @@ await setDoc(doc(db, "musicais", slug), {
                   {s.ano && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Ano:</strong> {s.ano}</p>}
                   {s.teatro && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Teatro:</strong> {s.teatro}</p>}
                   <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>Sugerido por: {s.nome}</p>
-
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
                       URL da capa (opcional)
                     </label>
-                    <input
-                      type="text"
-                      placeholder="https://..."
-                      value={capas[s.id] || ""}
+                    <input type="text" placeholder="https://..." value={capas[s.id] || ""}
                       onChange={e => setCapas(prev => ({ ...prev, [s.id]: e.target.value }))}
-                      style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }}
-                    />
+                      style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }} />
                     {capas[s.id] && (
                       <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
                     )}
                   </div>
-
                   <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                     <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
-                    <button
-                      onClick={() => abrirEdicaoSugestao(s)}
-                      style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}
-                    >
+                    <button onClick={() => abrirEdicaoSugestao(s)}
+                      style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
                       ✏️ Editar
                     </button>
                     <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
@@ -576,6 +536,7 @@ await setDoc(doc(db, "musicais", slug), {
           {campoNovo("Música original", "musicaOriginal")}
           {campoNovo("Ano", "ano")}
 
+          {/* Editor de teatros */}
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
               Teatros (o primeiro da lista é considerado a estreia)
@@ -583,73 +544,36 @@ await setDoc(doc(db, "musicais", slug), {
             {teatrosNovo.map((item, i) => (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <button
-                    onClick={() => moverTeatroNovo(i, -1)}
-                    disabled={i === 0}
-                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }}
-                    title="Mover para cima"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => moverTeatroNovo(i, 1)}
-                    disabled={i === teatrosNovo.length - 1}
-                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === teatrosNovo.length - 1 ? "default" : "pointer", color: i === teatrosNovo.length - 1 ? "#ddd" : "#888", fontSize: "12px" }}
-                    title="Mover para baixo"
-                  >
-                    ▼
-                  </button>
+                  <button onClick={() => moverTeatroNovo(i, -1)} disabled={i === 0}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para cima">▲</button>
+                  <button onClick={() => moverTeatroNovo(i, 1)} disabled={i === teatrosNovo.length - 1}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === teatrosNovo.length - 1 ? "default" : "pointer", color: i === teatrosNovo.length - 1 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para baixo">▼</button>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Ano"
-                  value={item.ano}
-                  onChange={e => {
-                    const novo = [...teatrosNovo]
-                    novo[i] = { ...novo[i], ano: e.target.value }
-                    setTeatrosNovo(novo)
-                  }}
-                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                />
-                <input
-                  type="text"
-                  placeholder="Teatros (separados por vírgula)"
-                  value={item.teatrosTexto}
-                  onChange={e => {
-                    const novo = [...teatrosNovo]
-                    novo[i] = { ...novo[i], teatrosTexto: e.target.value }
-                    setTeatrosNovo(novo)
-                  }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }}
-                />
-                <button
-                  onClick={() => setTeatrosNovo(teatrosNovo.filter((_, idx) => idx !== i))}
-                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }}
-                  title="Remover"
-                >
-                  ✕
-                </button>
+                <input type="text" placeholder="Ano" value={item.ano}
+                  onChange={e => { const novo = [...teatrosNovo]; novo[i] = { ...novo[i], ano: e.target.value }; setTeatrosNovo(novo) }}
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <input type="text" placeholder="Teatros (separados por vírgula)" value={item.teatrosTexto}
+                  onChange={e => { const novo = [...teatrosNovo]; novo[i] = { ...novo[i], teatrosTexto: e.target.value }; setTeatrosNovo(novo) }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <button onClick={() => setTeatrosNovo(teatrosNovo.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
-            <button
-              onClick={() => setTeatrosNovo([...teatrosNovo, { ano: "", teatrosTexto: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}
-            >
+            <button onClick={() => setTeatrosNovo([...teatrosNovo, { ano: "", teatrosTexto: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar teatro
             </button>
           </div>
+
+          {/* Editor de músicos */}
+          {editorMusicos}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
               URL da capa (opcional)
             </label>
-            <input
-              type="text"
-              placeholder="https://..."
-              value={capaNovo}
-              onChange={e => setCapaNovo(e.target.value)}
-              style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }}
-            />
+            <input type="text" placeholder="https://..." value={capaNovo} onChange={e => setCapaNovo(e.target.value)}
+              style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
             {capaNovo && (
               <img src={capaNovo} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
             )}
@@ -657,7 +581,7 @@ await setDoc(doc(db, "musicais", slug), {
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={publicarNovo}>Publicar musical</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()) }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]) }}>Limpar</button>
           </div>
         </div>
       ) : aba === "relatos" ? (
@@ -673,9 +597,7 @@ await setDoc(doc(db, "musicais", slug), {
                 <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518" }}>{r.musicalTitulo}</p>
               </div>
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
-              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                Reportado por: {r.nome}
-              </p>
+              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Reportado por: {r.nome}</p>
               <div style={{ display: "flex", gap: "12px" }}>
                 <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>Ver musical</button>
                 <button className="btn-sair" onClick={() => resolverRelato(r.id)}>Marcar como resolvido</button>
@@ -688,50 +610,31 @@ await setDoc(doc(db, "musicais", slug), {
           <p style={{ color: "#888" }}>Nenhuma mensagem ainda.</p>
         ) : (
           mensagens.map(m => (
-            <div key={m.id} style={{
-              background: m.lida ? "#fff" : "#fffbe6",
-              border: m.lida ? "1px solid #e8e8e4" : "1px solid #F5C518",
-              borderRadius: "12px",
-              padding: "20px",
-              marginBottom: "16px"
-            }}>
+            <div key={m.id} style={{ background: m.lida ? "#fff" : "#fffbe6", border: m.lida ? "1px solid #e8e8e4" : "1px solid #F5C518", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", flexWrap: "wrap" }}>
                 {!m.lida && (
-                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px", background: "#F5C518", color: "#1a1a1a", borderRadius: "4px", padding: "2px 8px" }}>
-                    Nova
-                  </span>
+                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px", background: "#F5C518", color: "#1a1a1a", borderRadius: "4px", padding: "2px 8px" }}>Nova</span>
                 )}
                 <p style={{ fontSize: "15px", fontWeight: "700", margin: 0 }}>{m.nome}</p>
                 {m.email && (
-                  <a href={`mailto:${m.email}`} style={{ fontSize: "13px", color: "#888", textDecoration: "none" }}>
-                    {m.email}
-                  </a>
+                  <a href={`mailto:${m.email}`} style={{ fontSize: "13px", color: "#888", textDecoration: "none" }}>{m.email}</a>
                 )}
                 <p style={{ fontSize: "12px", color: "#bbb", margin: 0, marginLeft: "auto" }}>
                   {m.data?.toDate ? m.data.toDate().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
                 </p>
               </div>
-              <p style={{ fontSize: "15px", color: "#333", lineHeight: "1.6", marginBottom: "16px", whiteSpace: "pre-wrap" }}>
-                {m.mensagem}
-              </p>
+              <p style={{ fontSize: "15px", color: "#333", lineHeight: "1.6", marginBottom: "16px", whiteSpace: "pre-wrap" }}>{m.mensagem}</p>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                 {!m.lida && (
-                  <button className="btn-comentar" onClick={() => marcarMensagemLida(m.id)}>
-                    ✓ Marcar como lida
-                  </button>
+                  <button className="btn-comentar" onClick={() => marcarMensagemLida(m.id)}>✓ Marcar como lida</button>
                 )}
                 {m.email && (
-                  <a
-                    href={`mailto:${m.email}`}
-                    style={{ display: "inline-block", padding: "10px 20px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", color: "#1a1a1a", textDecoration: "none", background: "#fff" }}
-                  >
+                  <a href={`mailto:${m.email}`} style={{ display: "inline-block", padding: "10px 20px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", color: "#1a1a1a", textDecoration: "none", background: "#fff" }}>
                     Responder por e-mail
                   </a>
                 )}
-                <button
-                  onClick={() => deletarMensagem(m.id)}
-                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}
-                >
+                <button onClick={() => deletarMensagem(m.id)}
+                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
                   Deletar
                 </button>
               </div>
@@ -740,7 +643,6 @@ await setDoc(doc(db, "musicais", slug), {
         )
       ) : (
         <>
-          {/* Barra de ação do índice da Home */}
           <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "12px", padding: "16px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: "220px" }}>
               <p style={{ fontSize: "14px", fontWeight: "700", margin: "0 0 2px" }}>Índice da Home</p>
@@ -751,9 +653,7 @@ await setDoc(doc(db, "musicais", slug), {
                 <p style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a1a", margin: "8px 0 0" }}>{indiceStatus}</p>
               )}
             </div>
-            <button className="btn-comentar" onClick={atualizarIndiceManual}>
-              🔄 Atualizar índice da Home
-            </button>
+            <button className="btn-comentar" onClick={atualizarIndiceManual}>🔄 Atualizar índice da Home</button>
           </div>
 
           {musicais.length === 0 ? (
@@ -774,7 +674,8 @@ await setDoc(doc(db, "musicais", slug), {
                 </div>
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                   <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
-                  <button onClick={() => deletarMusical(m.id, m.titulo)} style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                  <button onClick={() => deletarMusical(m.id, m.titulo)}
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
                     Deletar
                   </button>
                 </div>
