@@ -21,6 +21,12 @@ function Footer() {
 </p>
       <div style={{ display: "flex", gap: "20px" }}>
         <button
+          onClick={() => navigate("/sobre")}
+          style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+        >
+          Sobre
+        </button>
+        <button
           onClick={() => navigate("/termos")}
           style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
         >

@@ -9,6 +9,7 @@ import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
+import Sobre from "./pages/Sobre"
 import Pessoa from "./pages/Pessoa"
 import Teatro from "./pages/Teatro"
 import Mensagens from "./pages/Mensagens"
@@ -58,10 +59,19 @@ function BarraProgresso() {
   return null
 }
 
+function ScrollToTop() {
+  const location = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+  return null
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Header />
+      <ScrollToTop />
       <BarraProgresso />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -71,6 +81,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/termos" element={<Termos />} />
+        <Route path="/sobre" element={<Sobre />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
         <Route path="/teatro/:id" element={<Teatro />} />

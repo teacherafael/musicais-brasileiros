@@ -1,0 +1,45 @@
+import { useNavigate } from "react-router-dom"
+
+function Sobre() {
+  const navigate = useNavigate()
+
+  return (
+    <main>
+      <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
+      <p className="section-label">MCDb — Musical Cast Database</p>
+      <h1 className="page-title">Sobre</h1>
+
+      {[
+        {
+          titulo: "O que é o MCDb",
+          paragrafos: [
+            <>O <strong>Musical Cast Database (MCDb)</strong>, idealizado e criado por <strong>Rafael Nogueira</strong>, é um catálogo do teatro musical brasileiro — um lugar pra <strong>registrar, descobrir, marcar</strong> o que você já viu e avaliar as produções que passaram pelos nossos palcos.</>,
+            <>A motivação é simples: o <strong>teatro musical brasileiro é mal documentado online</strong>. Montagens inteiras desaparecem da memória, fichas técnicas se perdem, e quase nada disso está organizado num só lugar. O <strong>MCDb</strong> existe pra mudar isso — construir, aos poucos, o arquivo que a nossa <strong>comunidade</strong> merece.</>
+          ]
+        },
+        {
+          titulo: "De onde veio",
+          paragrafos: [
+            <>O <strong>MCDb</strong> é uma extensão do <strong>Musical Cast</strong>, podcast que fala sobre teatro musical desde <strong>2015</strong>. É algo que ele sentia que faltava: um catálogo de verdade, onde qualquer pessoa tem acesso às informações em segundos.</>
+          ]
+        },
+        {
+          titulo: "Como funciona",
+          paragrafos: [
+            <>Qualquer pessoa pode navegar e <strong>descobrir musicais</strong>. Com login pelo Google, você marca o que já viu, monta listas, avalia com estrelas e acompanha o que está em cartaz. As avaliações são privadas por padrão.</>,
+            <>O acervo está sempre crescendo — se você sentir falta de algum musical, é só sugerir.</>
+          ]
+        }
+      ].map((item, i) => (
+        <div key={i} style={{ marginBottom: "28px" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>{item.titulo}</h2>
+          {item.paragrafos.map((p, j) => (
+            <p key={j} style={{ fontSize: "15px", color: "#444", lineHeight: "1.75", marginBottom: "14px" }}>{p}</p>
+          ))}
+        </div>
+      ))}
+    </main>
+  )
+}
+
+export default Sobre
