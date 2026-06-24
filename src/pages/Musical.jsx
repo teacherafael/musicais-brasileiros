@@ -32,12 +32,19 @@ const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino",
 // Ordem fixa de exibição do bloco secundário, independente da ordem salva no banco
 const FUNCOES_SECUNDARIAS = ["Coreografia", "Cenografia", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Figurino", "Regência"]
 
-// Retorna funções secundárias na ordem fixa, só as que têm nomes preenchidos
+// Retorna funções secundárias na ordem fixa + cargos livres ao final
 function equipeSecundariaOrdenada(equipeCriativa) {
   if (!equipeCriativa || equipeCriativa.length === 0) return []
-  return FUNCOES_SECUNDARIAS
+  const FUNCOES_PRIMARIAS = ["Direção", "Direção Musical"]
+  const fixas = FUNCOES_SECUNDARIAS
     .map(funcao => equipeCriativa.find(item => item.funcao === funcao && item.nomes && item.nomes.length > 0))
     .filter(Boolean)
+  const livres = equipeCriativa.filter(item =>
+    !FUNCOES_PRIMARIAS.includes(item.funcao) &&
+    !FUNCOES_SECUNDARIAS.includes(item.funcao) &&
+    item.nomes && item.nomes.length > 0
+  )
+  return [...fixas, ...livres]
 }
 
 function montarEquipeDeStrings(direcao, direcaoMusical) {
@@ -545,7 +552,7 @@ function Musical() {
 
           {/* Editor de equipe criativa */}
           <div style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Equipe criativa</label>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Equipe</label>
             {equipeEdicao.map((item, i) => {
               const fixa = FUNCOES_FIXAS.includes(item.funcao)
               const ehOutro = item.funcao === "Outro"
@@ -862,7 +869,7 @@ function Musical() {
           {temBlocoEquipe && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Equipe criativa</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Equipe</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 {equipeSecundaria.map((item, i) => (
                   <p key={i} style={{ fontSize: "14px", color: "#444", marginBottom: 0 }}>
