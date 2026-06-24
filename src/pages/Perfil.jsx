@@ -619,6 +619,25 @@ function Perfil() {
         for (const d of snap.docs) await deleteDoc(d.ref)
       }
 
+      // 3b. Apaga listas personalizadas e seus itens (subcoleção aninhada)
+      try {
+        const listasSnap = await getDocs(collection(db, "usuarios", userId, "listas"))
+        for (const listaDoc of listasSnap.docs) {
+          const itensSnap = await getDocs(collection(db, "usuarios", userId, "listas", listaDoc.id, "itens"))
+          for (const item of itensSnap.docs) await deleteDoc(item.ref)
+          await deleteDoc(listaDoc.ref)
+        }
+      } catch (e) {}
+
+      // 3c. Apaga reações (espelho no usuário + cópia em cada musical)
+      try {
+        const reacoesSnap = await getDocs(collection(db, "usuarios", userId, "reacoes"))
+        for (const r of reacoesSnap.docs) {
+          try { await deleteDoc(doc(db, "musicais", r.id, "reacoes", userId)) } catch (e) {}
+          await deleteDoc(r.ref)
+        }
+      } catch (e) {}
+
       // 4. Desfaz relações de seguir nos dois lados
       for (const s of seguindo) {
         try { await deleteDoc(doc(db, "usuarios", userId, "seguindo", s.id)) } catch (e) {}

@@ -174,8 +174,8 @@ function Musical() {
 
   useEffect(() => {
     if (!musical) return
-    document.title = `${musical.titulo} | MBDb`
-    return () => { document.title = "MBDb" }
+    document.title = `${musical.titulo} | MCDb`
+    return () => { document.title = "MCDb" }
   }, [musical])
 
   useEffect(() => {
@@ -516,12 +516,12 @@ function Musical() {
   return (
     <main>
       <Helmet>
-        <title>{musical.titulo} — MBDb</title>
-        <meta name="description" content={musical.sinopse || `Veja informações sobre ${musical.titulo} no MBDb.`} />
+        <title>{musical.titulo} — MCDb</title>
+        <meta name="description" content={musical.sinopse || `Veja informações sobre ${musical.titulo} no MCDb.`} />
         <meta property="og:title" content={musical.titulo} />
-        <meta property="og:description" content={musical.sinopse || `Veja informações sobre ${musical.titulo} no MBDb.`} />
+        <meta property="og:description" content={musical.sinopse || `Veja informações sobre ${musical.titulo} no MCDb.`} />
         {musical.capa && <meta property="og:image" content={musical.capa} />}
-        <meta property="og:url" content={`https://musicais-brasileiros.vercel.app/musical/${id}`} />
+        <meta property="og:url" content={`https://mcdb.musicalcast.com.br/musical/${id}`} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
