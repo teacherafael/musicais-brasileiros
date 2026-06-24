@@ -53,18 +53,16 @@ function equipeParaEditor(musical) {
   const fonte = (musical.equipeCriativa && musical.equipeCriativa.length > 0)
     ? musical.equipeCriativa
     : montarEquipeDeStrings(musical.direcao, musical.direcaoMusical)
-  const editor = [
-    { funcao: "Direção", nomesTexto: "" },
-    { funcao: "Direção Musical", nomesTexto: "" },
-  ]
+  const FUNCOES_PADRAO = ["Direção", "Direção Musical", "Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria"]
+  const editor = FUNCOES_PADRAO.map(funcao => ({ funcao, nomesTexto: "" }))
   fonte.forEach(item => {
-    // Ignora "Músicos" que possa ter ficado salvo no campo antigo
     if (item.funcao === "Músicos") return
     const nomesTexto = (item.nomes || []).join(", ")
     const existente = editor.find(e => e.funcao === item.funcao)
     if (existente) existente.nomesTexto = nomesTexto
-    else editor.push({ funcao: item.funcao, nomesTexto })
+    else editor.push({ funcao: item.funcao, nomesTexto, cargoTexto: item.funcao })
   })
+  editor.push({ funcao: "Outro", nomesTexto: "", cargoTexto: "" })
   return editor
 }
 
