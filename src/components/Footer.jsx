@@ -32,12 +32,12 @@ function Footer() {
         <button
           onClick={toggleQr}
           style={{
-            background: "#b8960a",
-            border: "none",
-            borderRadius: "6px",
-            padding: "7px 18px",
-            fontSize: "13px",
-            color: "#fff",
+            background: "#fdc03e",
+          border: "none",
+          borderRadius: "6px",
+          padding: "7px 18px",
+          fontSize: "13px",
+          color: "#000",
             cursor: "pointer",
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: "600"
