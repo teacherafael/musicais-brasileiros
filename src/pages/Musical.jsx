@@ -474,7 +474,7 @@ function Musical() {
   }
 
   async function deletarSessao(sessaoId) {
-    if (!window.confirm("Remover este registro de sessão?")) return
+    if (!window.confirm("Remover este registro de sessão?")) return // confirmação mantida — ação destrutiva
     await deleteDoc(doc(db, "usuarios", usuario.uid, "sessoesAssistidas", sessaoId))
     setSessoes(prev => prev.filter(s => s.id !== sessaoId))
     mostrarToast("Sessão removida.")
@@ -503,7 +503,7 @@ function Musical() {
       link.download = `${musical.titulo}-mcdb.png`
       link.href = canvas.toDataURL("image/png")
       link.click()
-    } catch (e) { alert("Erro ao gerar imagem. Tente novamente.") }
+    } catch (e) { mostrarToast("Erro ao gerar imagem. Tente novamente.") }
     setGerando(false)
   }
 
@@ -789,7 +789,7 @@ function Musical() {
               style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               {queroVer ? "✓ Quero ver" : "+ Quero ver"}
             </button>
-            <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copiado!") }}
+            <button onClick={() => { navigator.clipboard.writeText(window.location.href); mostrarToast("Link copiado!") }}
               style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
               🔗 Copiar link
             </button>

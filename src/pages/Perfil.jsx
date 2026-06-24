@@ -429,7 +429,7 @@ function Perfil() {
   }
 
   async function toggleSeguir() {
-    if (!usuarioLogado) return alert("Voce precisa estar logado para seguir alguem.")
+    if (!usuarioLogado) return mostrarToast("Faça login para seguir alguém.")
     setCarregandoSeguir(true)
     const refMeuSeguindo = doc(db, "usuarios", usuarioLogado.uid, "seguindo", userId)
     const refSeguidorDele = doc(db, "usuarios", userId, "seguidores", usuarioLogado.uid)
@@ -458,7 +458,7 @@ function Perfil() {
   }
 
   async function enviarMensagem() {
-    if (!usuarioLogado) return alert("Faça login para enviar mensagens.")
+    if (!usuarioLogado) return mostrarToast("Faça login para enviar mensagens.")
     setEnviandoMensagem(true)
     const conversasSnap = await getDocs(
       query(collection(db, "conversas"), where("participantes", "array-contains", usuarioLogado.uid))
@@ -507,7 +507,7 @@ function Perfil() {
     if (top3Selecionado.includes(musicalId)) {
       setTop3Selecionado(prev => prev.filter(id => id !== musicalId))
     } else {
-      if (top3Selecionado.length >= 5) return alert("Voce ja selecionou 5 musicais.")
+      if (top3Selecionado.length >= 5) return mostrarToast("Você já selecionou 5 musicais.")
       setTop3Selecionado(prev => {
         const novo = [...prev]
         const primeiroVazio = [0, 1, 2, 3, 4].find(i => !novo[i])
@@ -554,7 +554,7 @@ function Perfil() {
         } catch (e) {}
       }
     } catch (e) {
-      alert("Erro ao atualizar o banimento. Tente novamente.")
+      mostrarToast("Erro ao atualizar o banimento. Tente novamente.")
     }
     setProcessandoConta(false)
   }
@@ -570,7 +570,7 @@ function Perfil() {
     try {
       await reauthenticateWithPopup(usuarioLogado, provider)
     } catch (e) {
-      alert("Não foi possível confirmar sua identidade (login cancelado ou expirado). Tente novamente.")
+      mostrarToast("Não foi possível confirmar sua identidade. Tente novamente.")
       setProcessandoConta(false)
       return
     }
@@ -678,7 +678,7 @@ function Perfil() {
 
       navigate("/")
     } catch (e) {
-      alert("Algo deu errado ao deletar a conta. Tente novamente ou entre em contato pelo formulário da Home.")
+      mostrarToast("Algo deu errado ao deletar a conta. Tente novamente ou entre em contato pelo formulário da Home.")
       setProcessandoConta(false)
     }
   }
