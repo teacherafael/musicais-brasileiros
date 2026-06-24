@@ -5,23 +5,29 @@ import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 
-const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
-// "Músicos" removido daqui — agora tem campo próprio separado
-const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria"]
+// Essenciais: gravam nos campos planos do Firestore (busca/Home/Pessoa dependem deles)
+const ESSENCIAIS = ["Direção", "Direção Musical", "Versionista", "Texto Original", "Música Original", "Produtora"]
+const ESSENCIAL_CAMPO = {
+  "Direção": "direcao",
+  "Direção Musical": "direcaoMusical",
+  "Versionista": "versionista",
+  "Texto Original": "textoOriginal",
+  "Música Original": "musicaOriginal",
+  "Produtora": "producao",
+}
+// Complementares: gravam dentro do array equipeCriativa
+const COMPLEMENTARES = [
+  "Direção Residente", "Assistência de Direção", "Direção de Movimento", "Coordenação Artística",
+  "Supervisão Musical", "Regência", "Preparação Vocal", "Arranjos / Orquestração",
+  "Coreografia", "Assistência de Coreografia",
+  "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
+  "Direção de Produção", "Produção Geral", "Produção Executiva", "Produtor Associado",
+]
 
 function equipeInicial() {
   return [
-    { funcao: "Direção", nomesTexto: "" },
-    { funcao: "Direção Musical", nomesTexto: "" },
-    { funcao: "Regência", nomesTexto: "" },
-    { funcao: "Coreografia", nomesTexto: "" },
-    { funcao: "Cenografia", nomesTexto: "" },
-    { funcao: "Figurino", nomesTexto: "" },
-    { funcao: "Design de Luz", nomesTexto: "" },
-    { funcao: "Design de Som", nomesTexto: "" },
-    { funcao: "Visagismo", nomesTexto: "" },
-    { funcao: "Perucaria", nomesTexto: "" },
-    { funcao: "Outro", nomesTexto: "", cargoTexto: "" },
+    ...ESSENCIAIS.map(funcao => ({ funcao, nomesTexto: "", essencial: true })),
+    ...COMPLEMENTARES.map(funcao => ({ funcao, nomesTexto: "", essencial: false })),
   ]
 }
 
@@ -154,27 +160,24 @@ function Admin() {
     setTeatrosNovo(novo)
   }
 
-  function adicionarFuncao() {
-    const usadas = equipeNovo.map(e => e.funcao)
-    const disponivel = FUNCOES_OPCIONAIS.find(f => !usadas.includes(f))
-    if (!disponivel) return
-    setEquipeNovo([...equipeNovo, { funcao: disponivel, nomesTexto: "" }])
-  }
-
-  function removerFuncao(index) {
-    setEquipeNovo(equipeNovo.filter((_, i) => i !== index))
-  }
-
-  function mudarFuncao(index, novaFuncao) {
-    const novo = [...equipeNovo]
-    novo[index] = { ...novo[index], funcao: novaFuncao }
-    setEquipeNovo(novo)
+  function adicionarCargoLivre() {
+    setEquipeNovo([...equipeNovo, { funcao: "", nomesTexto: "", livre: true, cargoTexto: "" }])
   }
 
   function mudarNomes(index, texto) {
     const novo = [...equipeNovo]
     novo[index] = { ...novo[index], nomesTexto: texto }
     setEquipeNovo(novo)
+  }
+
+  function mudarCargoLivre(index, texto) {
+    const novo = [...equipeNovo]
+    novo[index] = { ...novo[index], cargoTexto: texto }
+    setEquipeNovo(novo)
+  }
+
+  function removerLinhaEquipe(index) {
+    setEquipeNovo(equipeNovo.filter((_, i) => i !== index))
   }
 
   async function publicarNovo() {
@@ -203,17 +206,22 @@ function Admin() {
       }))
       .filter(item => item.ano && item.teatros.length > 0)
 
+    // Essenciais → campos planos
+    const planos = {}
+    ESSENCIAIS.forEach(funcao => {
+      const row = equipeNovo.find(r => r.essencial && r.funcao === funcao)
+      const nomes = row ? row.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) : []
+      planos[ESSENCIAL_CAMPO[funcao]] = nomes.join(", ")
+    })
+
+    // Complementares + cargos livres → equipeCriativa
     const equipeCriativa = equipeNovo
-      .map(e => ({
-        funcao: e.funcao === "Outro" ? (e.cargoTexto || "").trim() : e.funcao,
-        nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
+      .filter(r => !r.essencial)
+      .map(r => ({
+        funcao: r.livre ? (r.cargoTexto || "").trim() : r.funcao,
+        nomes: r.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
       }))
       .filter(e => e.funcao && e.nomes.length > 0)
-
-    const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
-    const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
-    const direcaoSync = dirEntry ? dirEntry.nomes.join(", ") : ""
-    const direcaoMusicalSync = dirMusEntry ? dirMusEntry.nomes.join(", ") : ""
 
     const musicosLimpos = musicosNovo
       .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
@@ -223,15 +231,15 @@ function Admin() {
       titulo: formNovo.titulo || "",
       tituloOriginal: formNovo.tituloOriginal || "",
       sinopse: formNovo.sinopse || "",
-      direcao: direcaoSync,
-      direcaoMusical: direcaoMusicalSync,
+      direcao: planos.direcao,
+      direcaoMusical: planos.direcaoMusical,
+      versionista: planos.versionista,
+      textoOriginal: planos.textoOriginal,
+      musicaOriginal: planos.musicaOriginal,
+      producao: planos.producao,
       equipeCriativa,
-      producao: formNovo.producao || "",
       elenco: formNovo.elenco || "",
       elencoAdicional: formNovo.elencoAdicional || "",
-      versionista: formNovo.versionista || "",
-      textoOriginal: formNovo.textoOriginal || "",
-      musicaOriginal: formNovo.musicaOriginal || "",
       ano: formNovo.ano || "",
       teatro: teatrosLimpos[0]?.teatros[0] || "",
       teatros: teatrosLimpos,
@@ -243,7 +251,7 @@ function Admin() {
       dataCriacao: new Date()
     })
 
-    setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: direcaoSync, ano: formNovo.ano, capa: capaNovo }, ...prev])
+    setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: planos.direcao, ano: formNovo.ano, capa: capaNovo }, ...prev])
     setFormNovo({})
     setCapaNovo("")
     setTeatrosNovo([])
@@ -374,34 +382,41 @@ function Admin() {
     </div>
   )
 
+  const inputEquipeStyle = { flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }
+  const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }
+
   const editorEquipe = (
     <div style={{ marginBottom: "20px" }}>
       <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
-        Equipe criativa
+        Equipe
       </label>
       {equipeNovo.map((item, i) => {
-        const fixa = FUNCOES_FIXAS.includes(item.funcao)
-        const ehOutro = item.funcao === "Outro"
+        const mostrarDivisor = i === ESSENCIAIS.length
+        if (item.livre) {
+          return (
+            <div key={i}>
+              <div style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                <input type="text" placeholder="Cargo" value={item.cargoTexto || ""} onChange={e => mudarCargoLivre(i, e.target.value)} style={cargoLivreStyle} />
+                <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)} style={inputEquipeStyle} />
+                <button onClick={() => removerLinhaEquipe(i)} style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+              </div>
+            </div>
+          )
+        }
         return (
-          <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
-            {fixa ? (
-              <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
-            ) : ehOutro ? (
-              <input type="text" placeholder="Cargo" value={item.cargoTexto || ""} onChange={e => { const novo = [...equipeNovo]; novo[i] = { ...novo[i], cargoTexto: e.target.value }; setEquipeNovo(novo) }}
-                style={{ width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
-            ) : (
-              <span style={{ width: "150px", fontSize: "14px", color: "#444", flexShrink: 0 }}>{item.funcao}</span>
-            )}
-            <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
-                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
-                  {(!FUNCOES_FIXAS.includes(item.funcao)) && (
-                    <button onClick={() => setEquipeNovo(equipeNovo.filter((_, idx) => idx !== i))}
-                      style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
-                  )}
-                </div>
-              )
-            })}
+          <div key={i}>
+            {mostrarDivisor && <div style={{ borderTop: "1px solid #eee", margin: "14px 0 12px" }} />}
+            <div style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+              <span style={{ width: "150px", fontSize: "14px", fontWeight: item.essencial ? "600" : "400", color: item.essencial ? "#1a1a1a" : "#444", flexShrink: 0 }}>{item.funcao}</span>
+              <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)} style={inputEquipeStyle} />
+            </div>
           </div>
+        )
+      })}
+      <button onClick={adicionarCargoLivre} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }}>
+        + Adicionar cargo
+      </button>
+    </div>
   )
 
   // Editor de músicos por local (aba "Adicionar musical")
@@ -473,7 +488,7 @@ function Admin() {
                   {campoSugestao("Sinopse", "sinopse", true)}
                   {campoSugestao("Direção", "direcao")}
                   {campoSugestao("Direção musical", "direcaoMusical")}
-                  {campoSugestao("Produção", "producao")}
+                  {campoSugestao("Produtora", "producao")}
                   {campoSugestao("Elenco", "elenco")}
                   {campoSugestao("Elenco adicional", "elencoAdicional")}
                   {campoSugestao("Versionista", "versionista")}
@@ -492,7 +507,7 @@ function Admin() {
                   {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
                   {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
                   {s.direcaoMusical && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção musical:</strong> {s.direcaoMusical}</p>}
-                  {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produção:</strong> {s.producao}</p>}
+                  {s.producao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Produtora:</strong> {s.producao}</p>}
                   {s.elenco && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco:</strong> {s.elenco}</p>}
                   {s.elencoAdicional && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Elenco adicional:</strong> {s.elencoAdicional}</p>}
                   {s.versionista && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Versionista:</strong> {s.versionista}</p>}
@@ -536,12 +551,12 @@ function Admin() {
           {campoNovo("Título original", "tituloOriginal")}
           {campoNovo("Sinopse", "sinopse", true)}
           {editorEquipe}
-          {campoNovo("Produção", "producao")}
-          {campoNovo("Elenco", "elenco", true)}
+          {campoNovo("Elenco de estreia", "elenco", true)}
           {campoNovo("Elenco adicional", "elencoAdicional", true)}
-          {campoNovo("Versionista", "versionista")}
-          {campoNovo("Texto original", "textoOriginal")}
-          {campoNovo("Música original", "musicaOriginal")}
+
+          {/* Editor de músicos */}
+          {editorMusicos}
+
           {campoNovo("Ano", "ano")}
 
           {/* Editor de teatros */}
@@ -572,9 +587,6 @@ function Admin() {
               + Adicionar teatro
             </button>
           </div>
-
-          {/* Editor de músicos */}
-          {editorMusicos}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
