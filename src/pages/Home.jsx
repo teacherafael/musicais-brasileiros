@@ -31,8 +31,12 @@ function Home() {
   const [dropdownListasAberto, setDropdownListasAberto] = useState(null)
 
   const carrosselRef = useRef(null)
-  const [podePrev, setPodePrev] = useState(false)
-  const [podeNext, setPodeNext] = useState(true)
+const [podePrev, setPodePrev] = useState(false)
+const [podeNext, setPodeNext] = useState(true)
+
+const carrosselDestaquesRef = useRef(null)
+const [podeDestPrev, setPodeDestPrev] = useState(false)
+const [podeDestNext, setPodeDestNext] = useState(true)
 
   const [contatoMensagem, setContatoMensagem] = useState("")
   const [contatoEnviando, setContatoEnviando] = useState(false)
@@ -49,7 +53,19 @@ function Home() {
     setPodePrev(el.scrollLeft > 4)
     setPodeNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
   }
+function atualizarBotoesDestaques() {
+  const el = carrosselDestaquesRef.current
+  if (!el) return
+  setPodeDestPrev(el.scrollLeft > 4)
+  setPodeDestNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+}
 
+function scrollDestaques(direcao) {
+  const el = carrosselDestaquesRef.current
+  if (!el) return
+  el.scrollBy({ left: direcao * 156 * 3, behavior: "smooth" })
+  setTimeout(atualizarBotoesDestaques, 350)
+}
   function scrollCarrossel(direcao) {
     const el = carrosselRef.current
     if (!el) return
@@ -133,7 +149,7 @@ function Home() {
     buscarMusicais()
   }, [])
 
-  useEffect(() => { atualizarBotoes() }, [musicais])
+  useEffect(() => { atualizarBotoes(); atualizarBotoesDestaques() }, [musicais])
 
   // Fecha o dropdown se clicar fora — mas ignora cliques no botão "+ Listas"
   useEffect(() => {
@@ -303,13 +319,19 @@ function Home() {
       </div>
 
       {destaques.length > 0 && (
-        <div style={{ marginBottom: "40px" }}>
-          <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>EM CARTAZ</p>
-          <div style={{ display: "flex", gap: "16px", overflowX: "auto", overflowY: "visible", paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {destaques.map(m => <CardMusical key={m.id} musical={m} tamanho="pequeno" dropdownAberto={dropdownListasAberto === m.id} {...cardProps} />)}
-          </div>
-        </div>
-      )}
+  <div style={{ marginBottom: "40px" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+      <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", margin: 0 }}>EM CARTAZ</p>
+      <div style={{ display: "flex", gap: "6px" }}>
+        <button onClick={() => scrollDestaques(-1)} disabled={!podeDestPrev} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e8e8e4", background: podeDestPrev ? "#1a1a1a" : "#f5f5f5", color: podeDestPrev ? "#F5C518" : "#ccc", fontSize: "14px", fontWeight: "700", cursor: podeDestPrev ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }} aria-label="Anterior">‹</button>
+        <button onClick={() => scrollDestaques(1)} disabled={!podeDestNext} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e8e8e4", background: podeDestNext ? "#1a1a1a" : "#f5f5f5", color: podeDestNext ? "#F5C518" : "#ccc", fontSize: "14px", fontWeight: "700", cursor: podeDestNext ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }} aria-label="Próximo">›</button>
+      </div>
+    </div>
+    <div ref={carrosselDestaquesRef} onScroll={atualizarBotoesDestaques} style={{ display: "flex", gap: "16px", overflowX: "auto", overflowY: "visible", paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}>
+      {destaques.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
+    </div>
+  </div>
+)}
 
       {recentesIds.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
