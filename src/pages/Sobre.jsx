@@ -1,7 +1,28 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import QRCode from "qrcode"
 
 function Sobre() {
   const navigate = useNavigate()
+  const [qrUrl, setQrUrl] = useState(null)
+  const [copiado, setCopiado] = useState(false)
+
+  const pixPayload = "00020126450014BR.GOV.BCB.PIX0123musicalcastbr@gmail.com5204000053039865802BR5920Rafael Luiz Nogueira6009SAO PAULO621405108kiqRR0vuY6304D3D0"
+
+  async function gerarQr() {
+    if (qrUrl) return
+    const url = await QRCode.toDataURL(pixPayload, { width: 200, margin: 2 })
+    setQrUrl(url)
+  }
+
+  function copiarChave() {
+    navigator.clipboard.writeText("musicalcastbr@gmail.com")
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2000)
+  }
+
+  // Gera o QR ao montar
+  useState(() => { gerarQr() }, [])
 
   return (
     <main>
@@ -38,6 +59,32 @@ function Sobre() {
           ))}
         </div>
       ))}
+
+      {/* Seção Apoie */}
+      <div style={{ borderTop: "1px solid #e8e8e4", paddingTop: "28px", marginBottom: "28px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "700" }}>Apoie o MCDb</h2>
+        <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75", maxWidth: "520px" }}>
+          O MCDb é um projeto independente, mantido por uma pessoa. Se ele foi útil pra você, considere contribuir — qualquer valor ajuda a manter o catálogo no ar e crescendo.
+        </p>
+        {qrUrl && <img src={qrUrl} alt="QR Code Pix" style={{ width: 160, height: 160, borderRadius: "8px" }} />}
+        <p style={{ fontSize: "13px", color: "#666" }}>Pix: <strong>musicalcastbr@gmail.com</strong></p>
+        <button
+          onClick={copiarChave}
+          style={{
+            background: "#b8960a",
+            border: "none",
+            borderRadius: "6px",
+            padding: "8px 20px",
+            fontSize: "14px",
+            color: "#fff",
+            cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: "600"
+          }}
+        >
+          {copiado ? "✓ Chave copiada!" : "Copiar chave Pix"}
+        </button>
+      </div>
     </main>
   )
 }
