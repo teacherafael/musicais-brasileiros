@@ -271,7 +271,8 @@ function Musical() {
       elencoAdicional: musical.elencoAdicional || "", versionista: musical.versionista || "",
       textoOriginal: musical.textoOriginal || "", musicaOriginal: musical.musicaOriginal || "",
       ano: musical.ano || "", teatro: musical.teatro || "",
-      capa: musical.capa || "", programaDigital: musical.programaDigital || ""
+      capa: musical.capa || "", programaDigital: musical.programaDigital || "",
+      tituloOriginal: musical.tituloOriginal || ""
     })
     setEquipeEdicao(equipeParaEditor(musical))
     let listaTeatros = musical.teatros || []
@@ -538,6 +539,7 @@ function Musical() {
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "24px", marginBottom: "32px" }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", marginBottom: "24px" }}>Editar musical</h2>
           {campo("Título", "titulo")}
+          {campo("Título original", "tituloOriginal")}
           {campo("Sinopse", "sinopse", true)}
 
           {/* Editor de equipe criativa */}
@@ -653,6 +655,12 @@ function Musical() {
             </div>
             <div>
               <h1 className="musical-titulo">{musical.titulo}</h1>
+
+              {musical.tituloOriginal && (
+                <p style={{ fontSize: "16px", color: "#888", fontStyle: "italic", marginBottom: "12px", marginTop: "-4px" }}>
+                  {musical.tituloOriginal}
+                </p>
+              )}
 
               <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
                 <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
