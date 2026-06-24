@@ -21,6 +21,13 @@ const ALIASES = {
   
 }
 
+// Remove acentos e deixa minúsculo, pra busca tolerante a acentuação
+const normalizar = (texto) =>
+  (texto || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+
 function Pessoa() {
   const { nome } = useParams()
   const navigate = useNavigate()
@@ -67,7 +74,7 @@ function Pessoa() {
           const todosCampos = [...campos, ...nomesEquipe]
           // Busca pelo nome atual E por todos os aliases
           return todosCampos.some(c =>
-            c && todosOsNomes.some(n => c.toLowerCase().includes(n))
+            <p className="section-label">Musical Cast Database</p>
           )
         })
         .sort((a, b) => Number(a.ano) - Number(b.ano))
@@ -100,7 +107,7 @@ function Pessoa() {
                 <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
                   {m.capa
                     ? <img src={m.capa} alt={m.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "6px" }} />
-                    : <div style={{ width: "100%", height: "100%", background: "#1a1a1a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{m.titulo}</div>
+                    : <div style={{ width: "100%", height: "100%", background: "#0a2c59", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", color: "#b8960a", fontSize: "12px", padding: "8px", textAlign: "center" }}>{m.titulo}</div>
                   }
                 </div>
               </div>
