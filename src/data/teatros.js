@@ -409,6 +409,14 @@ export const teatros = [
     bairro: "Vila Brandina",
     cidade: "Campinas – SP",
   },
+     {
+    id: "teatro-municipal-castro-mendes-campinas",
+    nomeOficial: "Teatro Municipal Castro Mendes",
+    aliases: ["Teatro Municipal Castro Mendes", "Teatro Municipal José de Castro Mendes"],
+    endereco: "Praça Correa de Lemos, s/n",
+    bairro: "Vila Industrial",
+    cidade: "Campinas – SP",
+  },
   {
     id: "teatro-casa-grande-rj",
     nomeOficial: "Teatro Casa Grande",
