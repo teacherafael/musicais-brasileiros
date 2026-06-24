@@ -55,13 +55,13 @@ export default function Teatro() {
   if (!teatro) {
     return (
       <div style={{ maxWidth: 800, margin: "60px auto", padding: "0 20px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "Playfair Display, serif", color: "#F5C518" }}>
+        <h2 style={{ fontFamily: "Playfair Display, serif", color: "#0a2c59" }}>
           Teatro não encontrado
         </h2>
         <p style={{ color: "#ccc" }}>
           Este teatro ainda não está cadastrado na base de dados.
         </p>
-        <Link to="/" style={{ color: "#F5C518" }}>← Voltar para a Home</Link>
+        <Link to="/" style={{ color: "#0a2c59" }}>← Voltar para a Home</Link>
       </div>
     );
   }
@@ -73,7 +73,7 @@ export default function Teatro() {
       <div style={{ marginBottom: 32 }}>
         <Link
           to="/"
-          style={{ color: "#1a1a1a", fontSize: 14, textDecoration: "none" }}
+          style={{ color: "#0a2c59", fontSize: 14, textDecoration: "none" }}
         >
           ← Voltar para a Home
         </Link>
@@ -81,7 +81,7 @@ export default function Teatro() {
           style={{
             fontFamily: "Playfair Display, serif",
             fontSize: 32,
-            color: "#F5C518",
+            color: "#0a2c59",
             margin: "12px 0 4px",
           }}
         >
@@ -89,7 +89,7 @@ export default function Teatro() {
         </h1>
 
         {/* Info do teatro */}
-        <div style={{ color: "#1a1a1a", fontSize: 17, lineHeight: 1.7 }}>
+        <div style={{ color: "#555", fontSize: 17, lineHeight: 1.7 }}>
           {teatro.endereco && <div>📍 {teatro.endereco}</div>}
           {teatro.bairro && teatro.cidade && (
             <div>
@@ -97,7 +97,7 @@ export default function Teatro() {
             </div>
           )}
           {teatro.aliases.length > 0 && (
-            <div style={{ marginTop: 6, fontSize: 13, color: "#1a1a1a" }}>
+            <div style={{ marginTop: 6, fontSize: 13, color: "#888" }}>
               Também conhecido como:{" "}
               {teatro.aliases.join(", ")}
             </div>
@@ -110,8 +110,8 @@ export default function Teatro() {
         style={{
           fontFamily: "Playfair Display, serif",
           fontSize: 24,
-          color: "#1a1a1a",
-          borderBottom: "1px solid #333",
+          color: "#0a2c59",
+          borderBottom: "1px solid #e8e8e4",
           paddingBottom: 10,
           marginBottom: 20,
         }}
@@ -139,22 +139,13 @@ export default function Teatro() {
               <Link
                 key={musical.id}
                 to={`/musical/${musical.id}`}
-                style={{ textDecoration: "none" }}
+                style={{ textDecoration: "none", color: "inherit" }}
               >
                 <div
                   style={{
-                    background: "#222",
                     borderRadius: 6,
-                    border: "1px solid #333",
                     overflow: "hidden",
-                    transition: "border-color 0.2s",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.borderColor = "#F5C518")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.borderColor = "#333")
-                  }
                 >
                   {/* Capa */}
                   {musical.capa ? (
@@ -166,6 +157,7 @@ export default function Teatro() {
                         aspectRatio: "2/3",
                         objectFit: "cover",
                         display: "block",
+                        borderRadius: 6,
                       }}
                     />
                   ) : (
@@ -173,12 +165,13 @@ export default function Teatro() {
                       style={{
                         width: "100%",
                         aspectRatio: "2/3",
-                        background: "#333",
+                        background: "#0a2c59",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#555",
+                        color: "#b8960a",
                         fontSize: 12,
+                        borderRadius: 6,
                       }}
                     >
                       sem capa
@@ -186,10 +179,10 @@ export default function Teatro() {
                   )}
 
                   {/* Info */}
-                  <div style={{ padding: "10px 10px 12px" }}>
+                  <div style={{ padding: "10px 2px 12px" }}>
                     <div
                       style={{
-                        color: "#e8e8e4",
+                        color: "#1a1a1a",
                         fontWeight: 600,
                         fontSize: 13,
                         lineHeight: 1.3,
