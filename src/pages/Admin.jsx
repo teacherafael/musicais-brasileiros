@@ -13,6 +13,15 @@ function equipeInicial() {
   return [
     { funcao: "Direção", nomesTexto: "" },
     { funcao: "Direção Musical", nomesTexto: "" },
+    { funcao: "Regência", nomesTexto: "" },
+    { funcao: "Coreografia", nomesTexto: "" },
+    { funcao: "Cenografia", nomesTexto: "" },
+    { funcao: "Figurino", nomesTexto: "" },
+    { funcao: "Design de Luz", nomesTexto: "" },
+    { funcao: "Design de Som", nomesTexto: "" },
+    { funcao: "Visagismo", nomesTexto: "" },
+    { funcao: "Perucaria", nomesTexto: "" },
+    { funcao: "Outro", nomesTexto: "", cargoTexto: "" },
   ]
 }
 
@@ -195,8 +204,11 @@ function Admin() {
       .filter(item => item.ano && item.teatros.length > 0)
 
     const equipeCriativa = equipeNovo
-      .map(e => ({ funcao: e.funcao, nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
-      .filter(e => e.nomes.length > 0)
+      .map(e => ({
+        funcao: e.funcao === "Outro" ? (e.cargoTexto || "").trim() : e.funcao,
+        nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
+      }))
+      .filter(e => e.funcao && e.nomes.length > 0)
 
     const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
     const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
@@ -209,6 +221,7 @@ function Admin() {
 
     await setDoc(doc(db, "musicais", slug), {
       titulo: formNovo.titulo || "",
+      tituloOriginal: formNovo.tituloOriginal || "",
       sinopse: formNovo.sinopse || "",
       direcao: direcaoSync,
       direcaoMusical: direcaoMusicalSync,
@@ -368,32 +381,22 @@ function Admin() {
       </label>
       {equipeNovo.map((item, i) => {
         const fixa = FUNCOES_FIXAS.includes(item.funcao)
-        const usadas = equipeNovo.map(e => e.funcao)
+        const ehOutro = item.funcao === "Outro"
         return (
           <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
             {fixa ? (
               <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
+            ) : ehOutro ? (
+              <input type="text" placeholder="Cargo" value={item.cargoTexto || ""} onChange={e => { const novo = [...equipeNovo]; novo[i] = { ...novo[i], cargoTexto: e.target.value }; setEquipeNovo(novo) }}
+                style={{ width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
             ) : (
-              <select value={item.funcao} onChange={e => mudarFuncao(i, e.target.value)}
-                style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}>
-                {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => (
-                  <option key={f} value={f}>{f}</option>
-                ))}
-              </select>
+              <span style={{ width: "150px", fontSize: "14px", color: "#444", flexShrink: 0 }}>{item.funcao}</span>
             )}
             <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
               style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
-            {!fixa && (
-              <button onClick={() => removerFuncao(i)} style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
-            )}
           </div>
         )
       })}
-      {equipeNovo.length < FUNCOES_FIXAS.length + FUNCOES_OPCIONAIS.length && (
-        <button onClick={adicionarFuncao} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
-          + Adicionar função
-        </button>
-      )}
     </div>
   )
 
@@ -526,6 +529,7 @@ function Admin() {
           </p>
 
           {campoNovo("Título", "titulo")}
+          {campoNovo("Título original", "tituloOriginal")}
           {campoNovo("Sinopse", "sinopse", true)}
           {editorEquipe}
           {campoNovo("Produção", "producao")}
