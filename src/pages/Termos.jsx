@@ -52,7 +52,11 @@ function Termos() {
           texto: "O MCDb pode atualizar estes Termos de Uso a qualquer momento. As alterações entram em vigor na data de publicação. O uso continuado da plataforma após a publicação de novas versões implica a aceitação dos termos atualizados."
         },
         {
-          titulo: "10. Contato",
+          titulo: "10. Critérios de Inclusão no Banco de Dados",
+          texto: "O MCDb cataloga exclusivamente produções teatrais profissionais. Para musicais de origem estrangeira, é exigido que a montagem tenha sido realizada com os devidos direitos de produção adquiridos. Produções amadoras, montagens não licenciadas e apresentações escolares ou universitárias não são elegíveis para inclusão, independentemente de terem sido realizadas publicamente."
+        },
+        {
+          titulo: "11. Contato",
           texto: "Para dúvidas, solicitações de correção de informações ou denúncias de conteúdo inadequado, entre em contato pelo endereço de e-mail disponível na página de suporte da plataforma."
         }
       ].map((item, i) => (
