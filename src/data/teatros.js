@@ -412,10 +412,18 @@ export const teatros = [
      {
     id: "teatro-municipal-castro-mendes-campinas",
     nomeOficial: "Teatro Municipal Castro Mendes",
-    aliases: ["Teatro Municipal Castro Mendes", "Teatro Municipal José de Castro Mendes"],
+    aliases: ["Teatro Castro Mendes", "Teatro Municipal José de Castro Mendes"],
     endereco: "Praça Correa de Lemos, s/n",
     bairro: "Vila Industrial",
     cidade: "Campinas – SP",
+  },
+       {
+    id: "teatro-municipal-sylvia-de-alencar",
+    nomeOficial: "Teatro Municipal Sylvia de Alencar Matheus",
+    aliases: ["Teatro Sylvia de Alencar Matheus"],
+    endereco: "Rua Monteiro de Barros, 101",
+    bairro: "Centro",
+    cidade: "Vinhedo – SP",
   },
   {
     id: "teatro-casa-grande-rj",
