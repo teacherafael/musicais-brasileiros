@@ -393,11 +393,15 @@ function Admin() {
               <span style={{ width: "150px", fontSize: "14px", color: "#444", flexShrink: 0 }}>{item.funcao}</span>
             )}
             <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
-              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  {(!FUNCOES_FIXAS.includes(item.funcao)) && (
+                    <button onClick={() => setEquipeNovo(equipeNovo.filter((_, idx) => idx !== i))}
+                      style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        )
-      })}
-    </div>
   )
 
   // Editor de músicos por local (aba "Adicionar musical")
