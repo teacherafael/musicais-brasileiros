@@ -317,8 +317,11 @@ function Musical() {
       .map(item => ({ ano: item.ano.trim(), teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean) }))
       .filter(item => item.ano && item.teatros.length > 0)
     const equipeCriativa = equipeEdicao
-      .map(e => ({ funcao: e.funcao, nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
-      .filter(e => e.nomes.length > 0)
+      .map(e => ({
+        funcao: e.funcao === "Outro" ? (e.cargoTexto || "").trim() : e.funcao,
+        nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
+      }))
+      .filter(e => e.funcao && e.nomes.length > 0)
     const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
     const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
     const musicosLimpos = musicosEdicao
@@ -547,30 +550,22 @@ function Musical() {
             <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Equipe criativa</label>
             {equipeEdicao.map((item, i) => {
               const fixa = FUNCOES_FIXAS.includes(item.funcao)
-              const usadas = equipeEdicao.map(e => e.funcao)
+              const ehOutro = item.funcao === "Outro"
               return (
                 <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
                   {fixa ? (
                     <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
+                  ) : ehOutro ? (
+                    <input type="text" placeholder="Cargo" value={item.cargoTexto || ""} onChange={e => { const novo = [...equipeEdicao]; novo[i] = { ...novo[i], cargoTexto: e.target.value }; setEquipeEdicao(novo) }}
+                      style={{ width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
                   ) : (
-                    <select value={item.funcao} onChange={e => mudarFuncao(i, e.target.value)}
-                      style={{ width: "150px", padding: "10px 8px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0, background: "#fff" }}>
-                      {FUNCOES_OPCIONAIS.filter(f => f === item.funcao || !usadas.includes(f)).map(f => <option key={f} value={f}>{f}</option>)}
-                    </select>
+                    <span style={{ width: "150px", fontSize: "14px", color: "#444", flexShrink: 0 }}>{item.funcao}</span>
                   )}
                   <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
                     style={{ flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }} />
-                  {!fixa && (
-                    <button onClick={() => removerFuncao(i)} style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
-                  )}
                 </div>
               )
             })}
-            {equipeEdicao.length < FUNCOES_FIXAS.length + FUNCOES_OPCIONAIS.length && (
-              <button onClick={adicionarFuncao} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
-                + Adicionar função
-              </button>
-            )}
           </div>
 
           {campo("Produção", "producao")}
