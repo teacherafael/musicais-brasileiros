@@ -38,7 +38,7 @@ const ESSENCIAL_CAMPO = {
 // Complementares: gravam dentro do array equipeCriativa
 const COMPLEMENTARES = [
   "Direção Residente", "Assistência de Direção", "Direção de Movimento", "Coordenação Artística",
-  "Supervisão Musical", "Regência", "Preparação Vocal", "Arranjos / Orquestração",
+"Supervisão Musical", "Assistência de Direção Musical", "Regência", "Preparação Vocal", "Arranjos/Orquestração",
   "Coreografia", "Assistência de Coreografia",
   "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
   "Direção de Produção", "Produção Geral", "Produção Executiva", "Produtor Associado",
