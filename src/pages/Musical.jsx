@@ -25,24 +25,34 @@ function nomesClicaveis(texto) {
   ))
 }
 
-const FUNCOES_FIXAS = ["Direção", "Direção Musical"]
-// "Músicos" removido daqui — agora tem campo próprio separado
-const FUNCOES_OPCIONAIS = ["Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria"]
+// Essenciais: gravam nos campos planos do Firestore (busca/Home/Pessoa dependem deles)
+const ESSENCIAIS = ["Direção", "Direção Musical", "Versionista", "Texto Original", "Música Original", "Produtora"]
+const ESSENCIAL_CAMPO = {
+  "Direção": "direcao",
+  "Direção Musical": "direcaoMusical",
+  "Versionista": "versionista",
+  "Texto Original": "textoOriginal",
+  "Música Original": "musicaOriginal",
+  "Produtora": "producao",
+}
+// Complementares: gravam dentro do array equipeCriativa
+const COMPLEMENTARES = [
+  "Direção Residente", "Assistência de Direção", "Direção de Movimento", "Coordenação Artística",
+  "Supervisão Musical", "Regência", "Preparação Vocal", "Arranjos / Orquestração",
+  "Coreografia", "Assistência de Coreografia",
+  "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
+  "Direção de Produção", "Produção Geral", "Produção Executiva", "Produtor Associado",
+]
 
-// Ordem fixa de exibição do bloco secundário, independente da ordem salva no banco
-const FUNCOES_SECUNDARIAS = ["Coreografia", "Cenografia", "Design de Luz", "Design de Som", "Visagismo", "Perucaria", "Figurino", "Regência"]
-
-// Retorna funções secundárias na ordem fixa + cargos livres ao final
+// Bloco "Equipe" da exibição: complementares na ordem fixa + cargos livres ao final
 function equipeSecundariaOrdenada(equipeCriativa) {
   if (!equipeCriativa || equipeCriativa.length === 0) return []
-  const FUNCOES_PRIMARIAS = ["Direção", "Direção Musical"]
-  const fixas = FUNCOES_SECUNDARIAS
+  const fixas = COMPLEMENTARES
     .map(funcao => equipeCriativa.find(item => item.funcao === funcao && item.nomes && item.nomes.length > 0))
     .filter(Boolean)
+  const conhecidas = [...ESSENCIAIS, ...COMPLEMENTARES, "Músicos"]
   const livres = equipeCriativa.filter(item =>
-    !FUNCOES_PRIMARIAS.includes(item.funcao) &&
-    !FUNCOES_SECUNDARIAS.includes(item.funcao) &&
-    item.nomes && item.nomes.length > 0
+    !conhecidas.includes(item.funcao) && item.nomes && item.nomes.length > 0
   )
   return [...fixas, ...livres]
 }
@@ -56,21 +66,23 @@ function montarEquipeDeStrings(direcao, direcaoMusical) {
   return equipe
 }
 
+// Monta as linhas do editor: essenciais (de equipeCriativa ou do campo plano) + complementares + livres
 function equipeParaEditor(musical) {
-  const fonte = (musical.equipeCriativa && musical.equipeCriativa.length > 0)
-    ? musical.equipeCriativa
-    : montarEquipeDeStrings(musical.direcao, musical.direcaoMusical)
-  const FUNCOES_PADRAO = ["Direção", "Direção Musical", "Regência", "Coreografia", "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria"]
-  const editor = FUNCOES_PADRAO.map(funcao => ({ funcao, nomesTexto: "" }))
-  fonte.forEach(item => {
-    if (item.funcao === "Músicos") return
-    const nomesTexto = (item.nomes || []).join(", ")
-    const existente = editor.find(e => e.funcao === item.funcao)
-    if (existente) existente.nomesTexto = nomesTexto
-    else editor.push({ funcao: item.funcao, nomesTexto, cargoTexto: item.funcao })
+  const ec = Array.isArray(musical.equipeCriativa) ? musical.equipeCriativa : []
+  const essenciais = ESSENCIAIS.map(funcao => {
+    const noArray = ec.find(e => e.funcao === funcao && e.nomes && e.nomes.length > 0)
+    const nomesTexto = noArray ? noArray.nomes.join(", ") : (musical[ESSENCIAL_CAMPO[funcao]] || "")
+    return { funcao, nomesTexto, essencial: true }
   })
-  editor.push({ funcao: "Outro", nomesTexto: "", cargoTexto: "" })
-  return editor
+  const complementares = COMPLEMENTARES.map(funcao => {
+    const noArray = ec.find(e => e.funcao === funcao && e.nomes && e.nomes.length > 0)
+    return { funcao, nomesTexto: noArray ? noArray.nomes.join(", ") : "", essencial: false }
+  })
+  const conhecidas = [...ESSENCIAIS, ...COMPLEMENTARES]
+  const livres = ec
+    .filter(e => !conhecidas.includes(e.funcao) && e.funcao !== "Músicos" && e.nomes && e.nomes.length > 0)
+    .map(e => ({ funcao: "", nomesTexto: e.nomes.join(", "), livre: true, cargoTexto: e.funcao }))
+  return [...essenciais, ...complementares, ...livres]
 }
 
 const LABELS = {
@@ -271,10 +283,7 @@ function Musical() {
   function abrirEdicao() {
     setFormEdicao({
       titulo: musical.titulo || "", sinopse: musical.sinopse || "",
-      direcao: musical.direcao || "", direcaoMusical: musical.direcaoMusical || "",
-      producao: musical.producao || "", elenco: musical.elenco || "",
-      elencoAdicional: musical.elencoAdicional || "", versionista: musical.versionista || "",
-      textoOriginal: musical.textoOriginal || "", musicaOriginal: musical.musicaOriginal || "",
+      elenco: musical.elenco || "", elencoAdicional: musical.elencoAdicional || "",
       ano: musical.ano || "", teatro: musical.teatro || "",
       capa: musical.capa || "", programaDigital: musical.programaDigital || "",
       tituloOriginal: musical.tituloOriginal || ""
@@ -294,21 +303,8 @@ function Musical() {
     setEditandoMusical(true)
   }
 
-  function adicionarFuncao() {
-    const usadas = equipeEdicao.map(e => e.funcao)
-    const disponivel = FUNCOES_OPCIONAIS.find(f => !usadas.includes(f))
-    if (!disponivel) return
-    setEquipeEdicao([...equipeEdicao, { funcao: disponivel, nomesTexto: "" }])
-  }
-
-  function removerFuncao(index) {
-    setEquipeEdicao(equipeEdicao.filter((_, i) => i !== index))
-  }
-
-  function mudarFuncao(index, novaFuncao) {
-    const novo = [...equipeEdicao]
-    novo[index] = { ...novo[index], funcao: novaFuncao }
-    setEquipeEdicao(novo)
+  function adicionarCargoLivre() {
+    setEquipeEdicao([...equipeEdicao, { funcao: "", nomesTexto: "", livre: true, cargoTexto: "" }])
   }
 
   function mudarNomes(index, texto) {
@@ -317,25 +313,50 @@ function Musical() {
     setEquipeEdicao(novo)
   }
 
+  function mudarCargoLivre(index, texto) {
+    const novo = [...equipeEdicao]
+    novo[index] = { ...novo[index], cargoTexto: texto }
+    setEquipeEdicao(novo)
+  }
+
+  function removerLinhaEquipe(index) {
+    setEquipeEdicao(equipeEdicao.filter((_, i) => i !== index))
+  }
+
   async function salvarEdicaoMusical() {
     const teatrosLimpos = teatrosAdicionais
       .map(item => ({ ano: item.ano.trim(), teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean) }))
       .filter(item => item.ano && item.teatros.length > 0)
+
+    // Essenciais → campos planos
+    const planos = {}
+    ESSENCIAIS.forEach(funcao => {
+      const row = equipeEdicao.find(r => r.essencial && r.funcao === funcao)
+      const nomes = row ? row.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) : []
+      planos[ESSENCIAL_CAMPO[funcao]] = nomes.join(", ")
+    })
+
+    // Complementares + cargos livres → equipeCriativa
     const equipeCriativa = equipeEdicao
-      .map(e => ({
-        funcao: e.funcao === "Outro" ? (e.cargoTexto || "").trim() : e.funcao,
-        nomes: e.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
+      .filter(r => !r.essencial)
+      .map(r => ({
+        funcao: r.livre ? (r.cargoTexto || "").trim() : r.funcao,
+        nomes: r.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
       }))
       .filter(e => e.funcao && e.nomes.length > 0)
-    const dirEntry = equipeCriativa.find(e => e.funcao === "Direção")
-    const dirMusEntry = equipeCriativa.find(e => e.funcao === "Direção Musical")
+
     const musicosLimpos = musicosEdicao
       .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
       .filter(item => item.local && item.nomes.length > 0)
+
     const dadosFinais = {
       ...formEdicao,
-      direcao: dirEntry ? dirEntry.nomes.join(", ") : "",
-      direcaoMusical: dirMusEntry ? dirMusEntry.nomes.join(", ") : "",
+      direcao: planos.direcao,
+      direcaoMusical: planos.direcaoMusical,
+      versionista: planos.versionista,
+      textoOriginal: planos.textoOriginal,
+      musicaOriginal: planos.musicaOriginal,
+      producao: planos.producao,
       equipeCriativa,
       teatro: teatrosLimpos[0]?.teatros[0] || "",
       teatros: teatrosLimpos,
@@ -522,6 +543,9 @@ function Musical() {
   const itemDirecao = equipeBase.find(e => e.funcao === "Direção")
   const itemDirecaoMusical = equipeBase.find(e => e.funcao === "Direção Musical")
 
+  const inputEquipeStyle = { flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }
+  const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }
+
   return (
     <main>
       <Helmet>
@@ -550,43 +574,65 @@ function Musical() {
           {campo("Título original", "tituloOriginal")}
           {campo("Sinopse", "sinopse", true)}
 
-          {/* Editor de equipe criativa */}
+          {/* Editor de equipe (essenciais + complementares + cargos livres) */}
           <div style={{ marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Equipe</label>
             {equipeEdicao.map((item, i) => {
-              const fixa = FUNCOES_FIXAS.includes(item.funcao)
-              const ehOutro = item.funcao === "Outro"
+              const mostrarDivisor = i === ESSENCIAIS.length
+              if (item.livre) {
+                return (
+                  <div key={i}>
+                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                      <input type="text" placeholder="Cargo" value={item.cargoTexto || ""} onChange={e => mudarCargoLivre(i, e.target.value)} style={cargoLivreStyle} />
+                      <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)} style={inputEquipeStyle} />
+                      <button onClick={() => removerLinhaEquipe(i)} style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+                    </div>
+                  </div>
+                )
+              }
               return (
-                <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
-                  {fixa ? (
-                    <span style={{ width: "150px", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", flexShrink: 0 }}>{item.funcao}</span>
-                  ) : ehOutro ? (
-                    <input type="text" placeholder="Cargo" value={item.cargoTexto || ""} onChange={e => { const novo = [...equipeEdicao]; novo[i] = { ...novo[i], cargoTexto: e.target.value }; setEquipeEdicao(novo) }}
-                      style={{ width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
-                  ) : (
-                    <span style={{ width: "150px", fontSize: "14px", color: "#444", flexShrink: 0 }}>{item.funcao}</span>
-                  )}
-                  <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)}
-                    style={{ flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }} />
-                  {(!FUNCOES_FIXAS.includes(item.funcao)) && (
-                    <button onClick={() => setEquipeEdicao(equipeEdicao.filter((_, idx) => idx !== i))}
-                      style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
-                  )}
+                <div key={i}>
+                  {mostrarDivisor && <div style={{ borderTop: "1px solid #eee", margin: "14px 0 12px" }} />}
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                    <span style={{ width: "150px", fontSize: "14px", fontWeight: item.essencial ? "600" : "400", color: item.essencial ? "#1a1a1a" : "#444", flexShrink: 0 }}>{item.funcao}</span>
+                    <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} onChange={e => mudarNomes(i, e.target.value)} style={inputEquipeStyle} />
+                  </div>
                 </div>
               )
             })}
+            <button onClick={adicionarCargoLivre} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }}>
+              + Adicionar cargo
+            </button>
           </div>
 
-          {campo("Produção", "producao")}
           {campo("Elenco de estreia", "elenco")}
           {campo("Elenco adicional", "elencoAdicional")}
-          {campo("Versionista", "versionista")}
-          {campo("Texto original", "textoOriginal")}
-          {campo("Música original", "musicaOriginal")}
+
+          {/* Editor de músicos por local */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+              Músicos (por local)
+            </label>
+            {musicosEdicao.map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                <input type="text" placeholder="Local (ex: São Paulo)" value={item.local}
+                  onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], local: e.target.value }; setMusicosEdicao(novo) }}
+                  style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto}
+                  onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], nomesTexto: e.target.value }; setMusicosEdicao(novo) }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <button onClick={() => setMusicosEdicao(musicosEdicao.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+              </div>
+            ))}
+            <button onClick={() => setMusicosEdicao([...musicosEdicao, { local: "", nomesTexto: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              + Adicionar local
+            </button>
+          </div>
+
           {campo("Ano", "ano")}
           {campo("Teatro de estreia", "teatro")}
-          {campo("URL da capa", "capa")}
-          {campo("Link do programa digital (Google Drive)", "programaDigital")}
 
           {/* Editor de teatros */}
           <div style={{ marginBottom: "20px" }}>
@@ -617,28 +663,8 @@ function Musical() {
             </button>
           </div>
 
-          {/* Editor de músicos por local */}
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
-              Músicos (por local)
-            </label>
-            {musicosEdicao.map((item, i) => (
-              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
-                <input type="text" placeholder="Local (ex: São Paulo)" value={item.local}
-                  onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], local: e.target.value }; setMusicosEdicao(novo) }}
-                  style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
-                <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto}
-                  onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], nomesTexto: e.target.value }; setMusicosEdicao(novo) }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
-                <button onClick={() => setMusicosEdicao(musicosEdicao.filter((_, idx) => idx !== i))}
-                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
-              </div>
-            ))}
-            <button onClick={() => setMusicosEdicao([...musicosEdicao, { local: "", nomesTexto: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
-              + Adicionar local
-            </button>
-          </div>
+          {campo("URL da capa", "capa")}
+          {campo("Link do programa digital (Google Drive)", "programaDigital")}
 
           {formEdicao.capa && (
             <img src={formEdicao.capa} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
@@ -693,7 +719,7 @@ function Musical() {
               )}
               {musical.producao && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                  <strong style={{ color: "#1a1a1a" }}>Produção:</strong>{" "}{nomesClicaveis(musical.producao)}
+                  <strong style={{ color: "#1a1a1a" }}>Produtora:</strong>{" "}{nomesClicaveis(musical.producao)}
                 </p>
               )}
 
@@ -869,7 +895,7 @@ function Musical() {
             </div>
           )}
 
-          {/* ── EQUIPE CRIATIVA SECUNDÁRIA + MÚSICOS (lista) ── */}
+          {/* ── EQUIPE (complementares + músicos) ── */}
           {temBlocoEquipe && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
