@@ -71,12 +71,12 @@ function Sobre() {
         <button
           onClick={copiarChave}
           style={{
-            background: "#b8960a",
+            background: "#fdc03e",
             border: "none",
             borderRadius: "6px",
             padding: "8px 20px",
             fontSize: "14px",
-            color: "#fff",
+            color: "#000",
             cursor: "pointer",
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: "600"
