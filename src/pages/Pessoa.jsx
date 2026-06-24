@@ -74,7 +74,7 @@ function Pessoa() {
           const todosCampos = [...campos, ...nomesEquipe]
           // Busca pelo nome atual E por todos os aliases
           return todosCampos.some(c =>
-            <p className="section-label">Musical Cast Database</p>
+            todosOsNomes.some(n => normalizar(c).includes(normalizar(n)))
           )
         })
         .sort((a, b) => Number(a.ano) - Number(b.ano))
