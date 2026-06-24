@@ -1127,7 +1127,12 @@ function Perfil() {
           </div>
           {isProprioPerfil ? (
             votos.length === 0 ? (
-              <p className="login-aviso"><a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a></p>
+              <div style={{ textAlign: "center", padding: "40px 0" }}>
+                <p style={{ fontSize: "32px", marginBottom: "8px" }}>⭐</p>
+                <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>Você ainda não avaliou nenhum musical</p>
+                <p style={{ fontSize: "14px", color: "#888", marginBottom: "16px" }}>Suas notas ficam guardadas aqui, só pra você.</p>
+                <a href="/" style={{ color: "#b8960a", fontWeight: "600", textDecoration: "none" }}>Explorar musicais →</a>
+              </div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
                 {votos.map(voto => {
@@ -1182,7 +1187,7 @@ function Perfil() {
               {isProprioPerfil
                 ? (filtroJaVi === "sem-avaliacao"
                     ? "Você já avaliou tudo que marcou como visto! 🎉"
-                    : <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a>)
+                   : <span><span style={{ fontSize: "20px" }}>🎭</span><br />Você ainda não marcou nenhum musical como visto.<br /><a href="/" style={{ color: "#b8960a", fontWeight: "600", textDecoration: "none" }}>Explorar musicais →</a></span>)
                 : "Este usuário ainda não marcou nenhum musical como visto."}
             </p>
           ) : (
@@ -1214,7 +1219,7 @@ function Perfil() {
       {tabAtiva === "quero-ver" && (
         <div>
           {queroVer.length === 0 ? (
-            <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não tem musicais na lista."}</p>
+            <p className="login-aviso">{isProprioPerfil ? <span><span style={{ fontSize: "20px" }}>🍿</span><br />Sua lista de desejos está vazia.<br /><a href="/" style={{ color: "#b8960a", fontWeight: "600", textDecoration: "none" }}>Descobrir musicais →</a></span> : "Este usuário ainda não tem musicais na lista."}</p>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
               {queroVer.map(item => {
@@ -1237,7 +1242,7 @@ function Perfil() {
       {tabAtiva === "comentarios" && (
         <div>
           {comentarios.length === 0 ? (
-            <p className="login-aviso">{isProprioPerfil ? <a href="/" style={{ color: "#F5C518" }}>Explorar musicais →</a> : "Este usuário ainda não fez nenhum comentário."}</p>
+            <p className="login-aviso">{isProprioPerfil ? <span><span style={{ fontSize: "20px" }}>💬</span><br />Você ainda não comentou em nenhum musical.<br /><a href="/" style={{ color: "#b8960a", fontWeight: "600", textDecoration: "none" }}>Explorar musicais →</a></span> : "Este usuário ainda não fez nenhum comentário."}</p>
           ) : (
             comentarios.map(c => {
               const musical = musicais[c.musicalId]
