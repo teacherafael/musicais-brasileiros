@@ -43,7 +43,7 @@ function Footer() {
             fontWeight: "600"
           }}
         >
-          💛 Contribua via Pix
+          Contribua via Pix
         </button>
         {qrUrl && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
