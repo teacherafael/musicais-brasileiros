@@ -134,10 +134,6 @@ export default function Teatro() {
           }}
         >
           {musicais.map((musical) => {
-            const media =
-              musical.totalVotos > 0
-                ? (musical.somaEstrelas / musical.totalVotos).toFixed(1)
-                : null;
 
             return (
               <Link
@@ -205,18 +201,6 @@ export default function Teatro() {
                     <div style={{ color: "#888", fontSize: 12 }}>
                       {musical.anosNesteTeatro.join(", ") || "—"}
                     </div>
-                    {media && (
-                      <div
-                        style={{
-                          marginTop: 6,
-                          color: "#F5C518",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        ★ {media}
-                      </div>
-                    )}
                   </div>
                 </div>
               </Link>

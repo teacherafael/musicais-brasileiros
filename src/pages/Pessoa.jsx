@@ -107,12 +107,6 @@ function Pessoa() {
               <div style={{ width: "100%" }}>
                 <p className="card-titulo">{m.titulo}</p>
                 <p className="card-meta">Direção: {m.direcao || "—"}</p>
-                {m.totalVotos > 0 && (
-                  <div className="rating-badge">
-                    ★ {(m.somaEstrelas / m.totalVotos).toFixed(1)}
-                    <span className="rating-votos">({m.totalVotos} {m.totalVotos === 1 ? "voto" : "votos"})</span>
-                  </div>
-                )}
               </div>
             </a>
           ))}
