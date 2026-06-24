@@ -12,6 +12,7 @@
       ],
       "destination": "/api/og-musical?id=:id"
     },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
