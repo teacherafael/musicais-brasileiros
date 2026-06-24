@@ -224,7 +224,7 @@ export default function CardMusical({
         >
           <div style={{ width: "140px", height: "200px", marginBottom: "10px", borderRadius: "6px", overflow: "hidden", position: "relative" }}>
             {musical.capa
-              ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ? <img src={musical.capa?.replace("/upload/", "/upload/f_auto,q_auto,w_280/")} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>}
             {barraBotoes}
           </div>
@@ -256,7 +256,7 @@ export default function CardMusical({
       >
         <div style={{ width: "100%", aspectRatio: "2/3", position: "relative", overflow: "hidden" }}>
           {musical.capa
-            ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <img src={musical.capa?.replace("/upload/", "/upload/f_auto,q_auto,w_400/")} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "12px", textAlign: "center" }}>{musical.titulo}</div>}
           {barraBotoes}
         </div>
