@@ -663,7 +663,11 @@ function Perfil() {
       // 7. Apaga conversas em que participa
       try {
         const conversasSnap = await getDocs(query(collection(db, "conversas"), where("participantes", "array-contains", userId)))
-        for (const d of conversasSnap.docs) await deleteDoc(d.ref)
+        for (const d of conversasSnap.docs) {
+          const msgsSnap = await getDocs(collection(db, "conversas", d.id, "mensagens"))
+          for (const msg of msgsSnap.docs) await deleteDoc(msg.ref)
+          await deleteDoc(d.ref)
+        }
       } catch (e) {}
 
       // 8. Apaga o documento de usuário
