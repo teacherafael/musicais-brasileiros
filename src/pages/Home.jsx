@@ -280,7 +280,9 @@ function scrollDestaques(direcao) {
     .filter(musical => {
       const termo = normalizar(busca)
       const campos = [musical.titulo, musical.elenco, musical.elencoAdicional, musical.direcao, musical.direcaoMusical, musical.producao, musical.versionista, musical.textoOriginal, musical.musicaOriginal]
-      return campos.some(c => normalizar(c).includes(termo)) && (filtroAno === "" || musical.ano === filtroAno)
+      const nomesEquipe = (musical.equipeCriativa || []).flatMap(item => item.nomes || [])
+      const nomesMusicos = (musical.musicos || []).flatMap(item => item.nomes || [])
+      return [...campos, ...nomesEquipe, ...nomesMusicos].some(c => normalizar(c).includes(termo)) && (filtroAno === "" || musical.ano === filtroAno)
     })
     .filter(musical => !ocultarVistos || !jaViSet.has(musical.id))
     .map(musical => ({ ...musical, media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0 }))

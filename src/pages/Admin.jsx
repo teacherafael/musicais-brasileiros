@@ -55,6 +55,7 @@ function montarItemIndice(id, m) {
     textoOriginal: m.textoOriginal || "",
     musicaOriginal: m.musicaOriginal || "",
     equipeCriativa: Array.isArray(m.equipeCriativa) ? m.equipeCriativa : [],
+    musicos: Array.isArray(m.musicos) ? m.musicos : [],
     teatro: m.teatro || "",
     teatros: Array.isArray(m.teatros) ? m.teatros : [],
     totalVotos: Number(m.totalVotos) || 0,
