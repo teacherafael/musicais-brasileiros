@@ -61,6 +61,7 @@ function montarItemIndice(id, m) {
     totalVotos: Number(m.totalVotos) || 0,
     somaEstrelas: Number(m.somaEstrelas) || 0,
     popularidade: Number(m.popularidade) || 0,
+    totalLikes: Number(m.totalLikes) || 0,
     destaque: m.destaque === true,
     dataCriacao: m.dataCriacao?.seconds
       ? { seconds: m.dataCriacao.seconds }

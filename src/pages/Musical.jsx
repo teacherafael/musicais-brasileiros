@@ -257,17 +257,30 @@ function Musical() {
     if (!usuario) return mostrarToast("Faça login para reagir.")
     const refMusical = doc(db, "musicais", id, "reacoes", usuario.uid)
     const refUsuario = doc(db, "usuarios", usuario.uid, "reacoes", id)
+    const refContador = doc(db, "musicais", id)
+
     if (minhaReacao === tipo) {
+      // Remove reação
       await Promise.all([deleteDoc(refMusical), deleteDoc(refUsuario)])
+      await updateDoc(refContador, {
+        [tipo === "gostei" ? "totalLikes" : "totalDislikes"]: increment(-1)
+      })
       setMinhaReacao(null)
       if (tipo === "gostei") setTotalGostei(p => Math.max(0, p - 1))
       else setTotalNaoGostei(p => Math.max(0, p - 1))
     } else {
       const anterior = minhaReacao
       const dadosReacao = { reacao: tipo, uid: usuario.uid, musicalId: id, titulo: musical?.titulo || "", capa: musical?.capa || "" }
+      const campoNovo = tipo === "gostei" ? "totalLikes" : "totalDislikes"
+      const campoAnterior = anterior === "gostei" ? "totalLikes" : anterior === "nao_gostei" ? "totalDislikes" : null
+
+      const atualizacaoContador = { [campoNovo]: increment(1) }
+      if (campoAnterior) atualizacaoContador[campoAnterior] = increment(-1)
+
       await Promise.all([
         setDoc(refMusical, { reacao: tipo, uid: usuario.uid }),
-        setDoc(refUsuario, dadosReacao)
+        setDoc(refUsuario, dadosReacao),
+        updateDoc(refContador, atualizacaoContador)
       ])
       setMinhaReacao(tipo)
       if (tipo === "gostei") {
