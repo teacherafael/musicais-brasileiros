@@ -60,6 +60,7 @@ function Pessoa() {
   useEffect(() => {
     if (nomeCanonicoDoAlias) return // aguarda o redirect
     async function buscar() {
+      await new Promise(r => setTimeout(r, 3000))
       // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
       const indiceSnap = await getDoc(doc(db, "indices", "home"))
       const itens = indiceSnap.exists() ? (indiceSnap.data().itens || []) : []
@@ -88,13 +89,19 @@ function Pessoa() {
   return (
     <main>
       <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
-      <p className="section-label">Musicais Brasileiros Database</p>
+      <p className="section-label">Musical Cast Database</p>
       <h1 className="page-title">{nomeDecodificado}</h1>
       <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
-        {carregando ? "Buscando..." : `${musicais.length} ${musicais.length === 1 ? "musical encontrado" : "musicais encontrados"}`}
+        {carregando ? "Carregando..." : `${musicais.length} ${musicais.length === 1 ? "musical encontrado" : "musicais encontrados"}`}
       </p>
 
-      {!carregando && musicais.length === 0 ? (
+      {carregando ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} style={{ borderRadius: "6px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite", aspectRatio: "2/3" }} />
+          ))}
+        </div>
+      ) : !carregando && musicais.length === 0 ? (
         <p style={{ color: "#888" }}>Nenhum musical encontrado para esta pessoa.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
