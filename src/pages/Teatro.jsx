@@ -13,6 +13,13 @@ export default function Teatro() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
+    if (teatro) {
+      document.title = `${teatro.nomeOficial} | MCDb`
+      return () => { document.title = "MCDb — Musical Cast Database" }
+    }
+  }, [teatro])
+
+  useEffect(() => {
     if (!teatro) return;
 
     function anosNesteTeatro(musical, nomesDoTeatro) {
