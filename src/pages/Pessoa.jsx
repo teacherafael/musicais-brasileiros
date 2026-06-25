@@ -11,6 +11,7 @@ const ALIASES = {
   "fabiane bang": "Fabi Bang",
   "janaina zuba": "Zuba Janaina",
 "paula flaibann": "Paulão do Vrah",
+"daniel ribeiro": "Daniel Salve",
 "luciana bolina": "Lubo",
 "janaina amorin": "Jana Amorin",
 "maria bia martins": "Maria Bia",
@@ -58,9 +59,13 @@ function Pessoa() {
   const nomeBusca = nomeDecodificado.toLowerCase()
 
   useEffect(() => {
+    document.title = `${nomeDecodificado} | MCDb`
+    return () => { document.title = "MCDb — Musical Cast Database" }
+  }, [nomeDecodificado])
+
+  useEffect(() => {
     if (nomeCanonicoDoAlias) return // aguarda o redirect
     async function buscar() {
-      await new Promise(r => setTimeout(r, 3000))
       // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
       const indiceSnap = await getDoc(doc(db, "indices", "home"))
       const itens = indiceSnap.exists() ? (indiceSnap.data().itens || []) : []
