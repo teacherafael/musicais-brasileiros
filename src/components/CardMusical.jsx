@@ -240,7 +240,7 @@ export default function CardMusical({
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", maxWidth: "260px", margin: "0 auto", width: "100%" }}>
       <a
         href={"/musical/" + musical.id}
         onMouseEnter={() => setHovered(true)}
