@@ -395,7 +395,7 @@ function Perfil() {
     const nomeLimpo = nome.trim()
     if (!nomeLimpo) return
     const uid = usuarioLogado.uid
-    const listaRef = await addDoc(collection(db, "usuarios", uid, "listas"), { nome: nomeLimpo, criadaEm: serverTimestamp() })
+    const listaRef = await addDoc(collection(db, "usuarios", uid, "listas"), { nome: nomeLimpo, criadaEm: serverTimestamp(), publica: true })
     const listaId = listaRef.id
     await setDoc(doc(db, "usuarios", uid, "listas", listaId, "itens", musical.id), {
       musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "", adicionadoEm: serverTimestamp()
@@ -409,7 +409,7 @@ function Perfil() {
       return novo
     })
     if (usuarioLogado.uid === userId) {
-      setListas(prev => [...prev, { id: listaId, nome: nomeLimpo, itens: [{ id: musical.id, musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" }] }])
+      setListas(prev => [...prev, { id: listaId, nome: nomeLimpo, publica: true, itens: [{ id: musical.id, musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" }] }])
     }
     onDone()
     mostrarToast(`Adicionado a "${nomeLimpo}"`)
@@ -1261,15 +1261,17 @@ function Perfil() {
       {/* LISTAS PERSONALIZADAS (do dono do perfil) */}
       {tabAtiva === "listas" && (
         <div>
-          {listas.length === 0 ? (
+          {(() => {
+            const listasVisiveis = isProprioPerfil ? listas : listas.filter(l => l.publica !== false)
+            return listasVisiveis.length === 0 ? (
             <p className="login-aviso">
               {isProprioPerfil
                 ? 'Você ainda não criou nenhuma lista. Use o botão "+ Listas" nos cartazes para criar.'
-                : 'Este usuário ainda não criou nenhuma lista.'}
+                : listas.length > 0 ? 'Este usuário não tem listas públicas.' : 'Este usuário ainda não criou nenhuma lista.'}
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-              {listas.map(lista => (
+              {listasVisiveis.map(lista => (
                 <div key={lista.id} style={{ border: "1px solid #e8e8e4", borderRadius: "12px", overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", background: "#f9f9f9", borderBottom: lista.itens.length > 0 ? "1px solid #e8e8e4" : "none" }}>
                     {isProprioPerfil && editandoListaId === lista.id ? (
@@ -1312,6 +1314,15 @@ function Perfil() {
                         </div>
                         {isProprioPerfil && (
                           <div style={{ display: "flex", gap: "6px" }}>
+                            <button
+                              onClick={async () => {
+                                const nova = lista.publica === false ? true : false
+                                await setDoc(doc(db, "usuarios", userId, "listas", lista.id), { publica: nova }, { merge: true })
+                                setListas(prev => prev.map(l => l.id === lista.id ? { ...l, publica: nova } : l))
+                              }}
+                              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: lista.publica === false ? "#888" : "#5a9e6f", cursor: "pointer" }}>
+                              {lista.publica === false ? "🔒 Privada" : "🌐 Pública"}
+                            </button>
                             <button
                               onClick={() => { setEditandoListaId(lista.id); setEditandoListaNome(lista.nome) }}
                               style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer" }}>
@@ -1357,7 +1368,8 @@ function Perfil() {
                 </div>
               ))}
             </div>
-          )}
+          )
+          })()}
         </div>
       )}
 
