@@ -340,7 +340,7 @@ export const teatros = [
    {
     id: "promon",
     nomeOficial: "Teatro Espaço Promon",
-    aliases: ["Teatro Promon"],
+    aliases: ["Teatro Promon", "Espaço Promon"],
     endereco: "Av. Pres. Juscelino Kubitschek, 1830 ",
     bairro: "Itaim Bibi",
     cidade: "São Paulo – SP",
@@ -463,6 +463,14 @@ export const teatros = [
     aliases: ["Teatro Municipal do Rio de Janeiro"],
     endereco: "Praça Floriano, S/N ",
     bairro: "Centro",
+    cidade: "Rio de Janeiro – RJ",
+  },
+   {
+    id: "teatro-dos-quatro",
+    nomeOficial: "Teatro dos 4",
+    aliases: ["Teatro dos Quatro"],
+    endereco: "R. Marquês de São Vicente, 52",
+    bairro: "Gávea",
     cidade: "Rio de Janeiro – RJ",
   },
    {
