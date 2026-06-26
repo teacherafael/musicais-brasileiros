@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
 import { ehAdmin } from "../admins"
 import CardMusical from "../components/CardMusical"
+import html2canvas from "html2canvas"
 
 function SeloVerificado() {
   return (
@@ -707,6 +708,25 @@ function Perfil() {
     return `https://${url}`
   }
 
+  async function gerarCardPerfil() {
+    const el = document.getElementById("card-perfil-exportar")
+    if (!el) return
+    el.style.display = "flex"
+    try {
+      const canvas = await html2canvas(el, {
+        useCORS: true,
+        backgroundColor: null,
+        scale: 2,
+      })
+      const link = document.createElement("a")
+      link.download = `mcdb-${nomePerfil || "perfil"}.png`
+      link.href = canvas.toDataURL("image/png")
+      link.click()
+    } finally {
+      el.style.display = "none"
+    }
+  }
+
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = ehAdmin(usuarioLogado)
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
@@ -902,6 +922,91 @@ function Perfil() {
               ✉️ Mensagens
             </button>
           )}
+        </div>
+
+        {isProprioPerfil && (
+          <button
+            onClick={gerarCardPerfil}
+            style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "4px" }}>
+            📷 Salvar card do perfil
+          </button>
+        )}
+
+        {/* Card oculto para exportação — proporção Stories (9:16) */}
+        <div id="card-perfil-exportar" style={{
+          display: "none",
+          position: "fixed", top: "-9999px", left: "-9999px",
+          width: "400px",
+          height: "711px",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#1a1a1a",
+          fontFamily: "'DM Sans', sans-serif",
+          gap: "0",
+        }}>
+          {/* Logo */}
+          <img
+            src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png"
+            alt="MCDb"
+            crossOrigin="anonymous"
+            style={{ width: "120px", marginBottom: "40px" }}
+          />
+
+          {/* Foto de perfil */}
+          {fotoPerfil && (
+            <img
+              src={fotoPerfil}
+              alt={nomePerfil}
+              crossOrigin="anonymous"
+              style={{ width: "100px", height: "100px", borderRadius: "50%", border: "4px solid #F5C518", objectFit: "cover", marginBottom: "20px" }}
+            />
+          )}
+
+          {/* Nome */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            <p style={{ fontSize: "26px", fontWeight: "700", color: "#fff", margin: 0 }}>
+              {nomePerfil || "Usuário"}
+            </p>
+            {verificado && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
+                <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </div>
+
+          {/* Média */}
+          {mediaVotos && (
+            <p style={{ fontSize: "18px", color: "#F5C518", margin: "0 0 48px", fontWeight: "600" }}>
+              ★ {mediaVotos} <span style={{ color: "#666", fontWeight: "400", fontSize: "14px" }}>· {votos.length} {votos.length === 1 ? "avaliação" : "avaliações"}</span>
+            </p>
+          )}
+
+          {/* ME SIGA + área de link */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+            <p style={{ fontSize: "19px", fontWeight: "700", color: "#F5C518", letterSpacing: "3px", textTransform: "uppercase", margin: 0 }}>
+              ME SIGA
+            </p>
+            {/* Área reservada para o selo de link do Instagram */}
+            <div style={{
+              width: "180px",
+              height: "48px",
+              borderRadius: "24px",
+              border: "2px dashed #444",
+              background: "#222",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              <span style={{ fontSize: "13px", color: "#555" }}>adicionar link</span>
+            </div>
+          </div>
         </div>
 
         {mostrarSeguidores && (
