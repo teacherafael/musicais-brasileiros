@@ -1144,7 +1144,7 @@ function Perfil() {
       </div>
 
       {/* ABAS — agora abaixo do Top 5, deslizáveis no mobile */}
-      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
           { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
           { id: 'reacoes', label: `Gostei / Não gostei` },
