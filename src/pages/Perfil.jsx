@@ -1043,37 +1043,14 @@ function Perfil() {
         )}
       </div>
 
-      {/* NAVEGAÇÃO INTERNA */}
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '0 0 8px 0' }}>
-        <a href="#top5" style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#F5C518', borderRadius: '20px' }}>
-          ✦ Top 5
-        </a>
-        {isProprioPerfil && (
+      {/* NAVEGAÇÃO INTERNA — botão excluir conta acima do Top 5 */}
+      {isProprioPerfil && (
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '0 0 8px 0' }}>
           <a href="#zona-risco" style={{ color: '#cc0000', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#fff5f5', border: '1px solid #f0c0c0', borderRadius: '20px' }}>
-          🗑 Excluir minha conta
+            🗑 Excluir minha conta
           </a>
-        )}
-      </div>
-
-      {/* ABAS — agora deslizáveis no mobile */}
-      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
-        {[
-          { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
-          { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
-          { id: 'quero-ver', label: `Quero ver (${queroVer.length})` },
-          { id: 'comentarios', label: `Comentários (${comentarios.length})` },
-          { id: 'listas', label: `Listas (${listas.length})` },
-        ].map(tab => (
-          <button key={tab.id} onClick={() => setTabAtiva(tab.id)} style={{
-            background: 'none', border: 'none', borderBottom: tabAtiva === tab.id ? '2px solid #F5C518' : '2px solid transparent',
-            marginBottom: '-2px', padding: '10px 16px', fontFamily: "'DM Sans', sans-serif",
-            fontSize: '14px', fontWeight: tabAtiva === tab.id ? '600' : '400',
-            color: tabAtiva === tab.id ? '#1a1a1a' : '#888', cursor: 'pointer', whiteSpace: 'nowrap'
-          }}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* TOP 5 */}
       <div id="top5" style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
@@ -1164,60 +1141,28 @@ function Perfil() {
           </div>
         )}
 
-        {/* GOSTEI / NÃO GOSTEI — dentro do bloco escuro, abaixo do Top 5 */}
-        {(reacoesUsuario.gostei.length > 0 || reacoesUsuario.naoGostei.length > 0) && (
-          <div style={{ marginTop: "32px", borderTop: "1px solid #2a2a2a", paddingTop: "24px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-              <div>
-                <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
-                  👍 Gostei ({reacoesUsuario.gostei.length})
-                </h3>
-                <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {(verMaisGostei ? reacoesUsuario.gostei : reacoesUsuario.gostei.slice(0, 10)).map(item => (
-                    <li key={item.musicalId}>
-                      <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
-                        onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
-                        onMouseOut={e => e.currentTarget.style.color = "#e8e8e4"}>
-                        {item.titulo || item.musicalId}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-                {reacoesUsuario.gostei.length > 10 && (
-                  <button onClick={() => setVerMaisGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
-                    {verMaisGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.gostei.length - 10} musicais`}
-                  </button>
-                )}
-              </div>
-              <div>
-                <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
-                  👎 Não gostei ({reacoesUsuario.naoGostei.length})
-                </h3>
-                {reacoesUsuario.naoGostei.length === 0
-                  ? <p style={{ fontSize: "13px", color: "#555", fontStyle: "italic" }}>Nenhum ainda.</p>
-                  : <>
-                      <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                        {(verMaisNaoGostei ? reacoesUsuario.naoGostei : reacoesUsuario.naoGostei.slice(0, 10)).map(item => (
-                          <li key={item.musicalId}>
-                            <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#e8e8e4", textDecoration: "none", lineHeight: "1.4" }}
-                              onMouseOver={e => e.currentTarget.style.color = "#F5C518"}
-                              onMouseOut={e => e.currentTarget.style.color = "#e8e8e4"}>
-                              {item.titulo || item.musicalId}
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                      {reacoesUsuario.naoGostei.length > 10 && (
-                        <button onClick={() => setVerMaisNaoGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
-                          {verMaisNaoGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.naoGostei.length - 10} musicais`}
-                        </button>
-                      )}
-                    </>
-                }
-              </div>
-            </div>
-          </div>
-        )}
+      </div>
+
+      {/* ABAS — agora abaixo do Top 5, deslizáveis no mobile */}
+      <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
+        {[
+          { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
+          { id: 'reacoes', label: `Gostei / Não gostei` },
+          { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
+          { id: 'quero-ver', label: `Quero ver (${queroVer.length})` },
+          { id: 'listas', label: `Listas (${listas.length})` },
+          { id: 'sessoes', label: `Minhas Sessões` },
+          { id: 'comentarios', label: `Comentários (${comentarios.length})` },
+        ].map(tab => (
+          <button key={tab.id} onClick={() => setTabAtiva(tab.id)} style={{
+            background: 'none', border: 'none', borderBottom: tabAtiva === tab.id ? '2px solid #F5C518' : '2px solid transparent',
+            marginBottom: '-2px', padding: '10px 16px', fontFamily: "'DM Sans', sans-serif",
+            fontSize: '14px', fontWeight: tabAtiva === tab.id ? '600' : '400',
+            color: tabAtiva === tab.id ? '#1a1a1a' : '#888', cursor: 'pointer', whiteSpace: 'nowrap'
+          }}>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* TABS */}
@@ -1258,6 +1203,63 @@ function Perfil() {
           ) : (
             <p className="login-aviso">As avaliações deste usuário são privadas.</p>
           )}
+        </div>
+      )}
+
+      {tabAtiva === "reacoes" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
+          <div>
+            <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
+              👍 Gostei ({reacoesUsuario.gostei.length})
+            </h3>
+            {reacoesUsuario.gostei.length === 0
+              ? <p style={{ fontSize: "13px", color: "#888", fontStyle: "italic" }}>Nenhum ainda.</p>
+              : <>
+                  <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {(verMaisGostei ? reacoesUsuario.gostei : reacoesUsuario.gostei.slice(0, 10)).map(item => (
+                      <li key={item.musicalId}>
+                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
+                          onMouseOver={e => e.currentTarget.style.color = "#b8960a"}
+                          onMouseOut={e => e.currentTarget.style.color = "#1a1a1a"}>
+                          {item.titulo || item.musicalId}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                  {reacoesUsuario.gostei.length > 10 && (
+                    <button onClick={() => setVerMaisGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                      {verMaisGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.gostei.length - 10} musicais`}
+                    </button>
+                  )}
+                </>
+            }
+          </div>
+          <div>
+            <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
+              👎 Não gostei ({reacoesUsuario.naoGostei.length})
+            </h3>
+            {reacoesUsuario.naoGostei.length === 0
+              ? <p style={{ fontSize: "13px", color: "#888", fontStyle: "italic" }}>Nenhum ainda.</p>
+              : <>
+                  <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {(verMaisNaoGostei ? reacoesUsuario.naoGostei : reacoesUsuario.naoGostei.slice(0, 10)).map(item => (
+                      <li key={item.musicalId}>
+                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
+                          onMouseOver={e => e.currentTarget.style.color = "#b8960a"}
+                          onMouseOut={e => e.currentTarget.style.color = "#1a1a1a"}>
+                          {item.titulo || item.musicalId}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                  {reacoesUsuario.naoGostei.length > 10 && (
+                    <button onClick={() => setVerMaisNaoGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                      {verMaisNaoGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.naoGostei.length - 10} musicais`}
+                    </button>
+                  )}
+                </>
+            }
+          </div>
         </div>
       )}
 
@@ -1477,6 +1479,52 @@ function Perfil() {
           })()}
         </div>
       )}
+
+      {tabAtiva === "sessoes" && (() => {
+        const musicaisComSessoes = Object.entries(sessoesPorMusical)
+          .map(([mid, sessoes]) => {
+            const visiveis = isProprioPerfil ? sessoes : sessoes.filter(s => s.publico)
+            return { mid, sessoes: visiveis }
+          })
+          .filter(({ sessoes }) => sessoes.length > 0)
+          .sort((a, b) => {
+            const aData = a.sessoes[0].data + (a.sessoes[0].horario || "")
+            const bData = b.sessoes[0].data + (b.sessoes[0].horario || "")
+            return aData > bData ? -1 : 1
+          })
+
+        if (musicaisComSessoes.length === 0) return (
+          <p className="login-aviso">
+            {isProprioPerfil
+              ? "Você ainda não registrou nenhuma sessão. Na página de um musical, marque como \"Já vi\" e clique em \"+ Adicionar sessão\"."
+              : "Este usuário não tem sessões públicas."}
+          </p>
+        )
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+            {musicaisComSessoes.map(({ mid, sessoes }) => {
+              const m = musicais[mid] || { id: mid, titulo: mid }
+              return (
+                <div key={mid} style={{ borderBottom: "1px solid #e8e8e4", padding: "14px 0" }}>
+                  <a href={"/musical/" + mid} style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", color: "#1a1a1a", textDecoration: "none" }}
+                    onMouseOver={e => e.currentTarget.style.color = "#b8960a"}
+                    onMouseOut={e => e.currentTarget.style.color = "#1a1a1a"}>
+                    {m.titulo}
+                  </a>
+                  <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                    {sessoes.map(s => (
+                      <p key={s.id} style={{ fontSize: "13px", color: "#555", margin: 0 }}>
+                        • {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}{s.teatro ? ` · ${s.teatro}` : ""}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
 
       {/* ZONA DE RISCO — apenas no próprio perfil */}
       {isProprioPerfil && (
