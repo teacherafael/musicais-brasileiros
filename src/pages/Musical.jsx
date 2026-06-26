@@ -732,7 +732,7 @@ function Musical() {
               )}
               {musical.producao && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                  <strong style={{ color: "#1a1a1a" }}>Produtora:</strong>{" "}{nomesClicaveis(musical.producao)}
+                  <strong style={{ color: "#1a1a1a" }}>Produção:</strong>{" "}{nomesClicaveis(musical.producao)}
                 </p>
               )}
 
