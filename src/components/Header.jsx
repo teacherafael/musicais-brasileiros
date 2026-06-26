@@ -206,12 +206,12 @@ function Header() {
 </Link>
 
         <div className="header-right">
-          <span
-            onClick={() => navigate("/ranking")}
-            style={{ fontSize: "14px", color: "#aaa", cursor: "pointer" }}
+          <Link
+            to="/ranking"
+            style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
           >
             Top 15
-          </span>
+          </Link>
 
           {usuario && (
             <div ref={sinoRef} style={{ position: "relative" }}>
@@ -330,21 +330,22 @@ function Header() {
           {usuario ? (
             <>
               {usuario.photoURL && (
-                <img
-                  src={usuario.photoURL}
-                  alt="perfil"
-                  referrerPolicy="no-referrer"
-                  onClick={() => navigate(`/perfil/${usuario.uid}`)}
-                  style={{ width: "32px", height: "32px", borderRadius: "50%", cursor: "pointer", flexShrink: 0 }}
-                />
+                <Link to={`/perfil/${usuario.uid}`} style={{ flexShrink: 0, lineHeight: 0 }}>
+                  <img
+                    src={usuario.photoURL}
+                    alt="perfil"
+                    referrerPolicy="no-referrer"
+                    style={{ width: "32px", height: "32px", borderRadius: "50%", display: "block" }}
+                  />
+                </Link>
               )}
-              <span
+              <Link
+                to={`/perfil/${usuario.uid}`}
                 className="header-user header-user-nome"
-                onClick={() => navigate(`/perfil/${usuario.uid}`)}
-                style={{ cursor: "pointer" }}
+                style={{ textDecoration: "none", color: "inherit" }}
               >
                 Meu perfil
-              </span>
+              </Link>
               <button className="btn-sair" onClick={sair}>Sair</button>
             </>
           ) : (
