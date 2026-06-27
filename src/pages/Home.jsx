@@ -187,7 +187,7 @@ function scrollDestaques(direcao) {
 
   const handleToggleJaVi = useCallback(async (e, musical) => {
     e.preventDefault(); e.stopPropagation()
-    if (!usuario) return alert("Faça login para usar esta função.")
+    if (!usuario) return mostrarToast("Faça login para usar esta função.")
     const refJaVi = doc(db, "usuarios", usuario.uid, "jaVi", musical.id)
     const refQueroVer = doc(db, "usuarios", usuario.uid, "queroVer", musical.id)
     const mRef = doc(db, "musicais", musical.id)

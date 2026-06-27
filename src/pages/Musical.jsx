@@ -14,12 +14,12 @@ function nomesClicaveis(texto) {
   if (!texto) return null
   return texto.split(",").map((nome, i, arr) => (
     <span key={i}>
-      <Link
-        to={"/pessoa/" + encodeURIComponent(nome.trim())}
+      <a
+        href={"/pessoa/" + encodeURIComponent(nome.trim())}
         style={{ color: "#444", borderBottom: "1px dotted #aaa", textDecoration: "none" }}
       >
         {nome.trim()}
-      </Link>
+      </a>
       {i < arr.length - 1 ? ", " : ""}
     </span>
   ))
@@ -811,7 +811,7 @@ function Musical() {
             </button>
             {musical.programaDigital && (
               <a href={musical.programaDigital} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#b8960a", color: "#1a1a1a", border: "1px solid #b8960a", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#F5C518", color: "#1a1a1a", border: "1px solid #F5C518", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
                 📄 Baixe o programa digital
               </a>
             )}
@@ -893,7 +893,7 @@ function Musical() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elenco.split(",").map(nome => {
                   const n = nome.trim()
-                  return <Link key={n} to={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</Link>
+                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
                 })}
               </div>
             </div>
@@ -905,7 +905,7 @@ function Musical() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elencoAdicional.split(",").map(nome => {
                   const n = nome.trim()
-                  return <Link key={n} to={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</Link>
+                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
                 })}
               </div>
             </div>
