@@ -318,7 +318,7 @@ function scrollDestaques(direcao) {
       <p style={{ fontSize: "15px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo digital colaborativo do teatro musical brasileiro.</p>
       <div style={{ marginBottom: "32px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
         <button className="btn-comentar" onClick={() => navigate("/sugestao")}>+ Sugerir um musical</button>
-        <button className="btn-comentar" onClick={() => navigate("/contribuir")} style={{ background: "transparent", color: "#1a1a1a", border: "2px solid #1a1a1a" }}>💛 Contribuir</button>
+        <button className="btn-comentar" onClick={() => navigate("/contribuir")} style={{ background: "transparent", color: "#1a1a1a", border: "2px solid #1a1a1a" }}>$ Contribuir</button>
       </div>
 
       {destaques.length > 0 && (
