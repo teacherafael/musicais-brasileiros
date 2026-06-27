@@ -4,7 +4,8 @@ import Footer from "./components/Footer"
 import Home from "./pages/Home"
 import Musical from "./pages/Musical"
 import Perfil from "./pages/Perfil"
-import Sugestao from "./pages/Sugestao"
+import Sugestao from "./pages/Sugestao";
+import Contribuir from "./pages/Contribuir";
 import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
@@ -77,6 +78,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/musical/:id" element={<Musical />} />
         <Route path="/perfil/:userId" element={<Perfil />} />
+        <Route path="/sugestao" element={<Sugestao />} />
         <Route path="/sugestao" element={<Sugestao />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
