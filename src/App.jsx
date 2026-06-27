@@ -79,7 +79,7 @@ function App() {
         <Route path="/musical/:id" element={<Musical />} />
         <Route path="/perfil/:userId" element={<Perfil />} />
         <Route path="/sugestao" element={<Sugestao />} />
-        <Route path="/sugestao" element={<Sugestao />} />
+        <Route path="/contribuir" element={<Contribuir />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/termos" element={<Termos />} />
