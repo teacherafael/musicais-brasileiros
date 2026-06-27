@@ -371,6 +371,11 @@ function Admin() {
       .replace(/^-+|-+$/g, "")
     ) || "musical-" + Date.now()
 
+    const existe = await getDoc(doc(db, "musicais", slug))
+    if (existe.exists()) {
+      if (!window.confirm(`Já existe um musical com esse título ("${sugestao.titulo}"). Publicar vai SOBRESCREVER o existente e zerar as avaliações. Continuar?`)) return
+    }
+
     // Monta equipeCriativa a partir dos campos já salvos na sugestão
     const equipeCriativaFinal = Array.isArray(sugestao.equipeCriativa) && sugestao.equipeCriativa.length > 0
       ? sugestao.equipeCriativa
