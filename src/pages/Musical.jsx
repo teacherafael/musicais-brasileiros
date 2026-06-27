@@ -14,12 +14,12 @@ function nomesClicaveis(texto) {
   if (!texto) return null
   return texto.split(",").map((nome, i, arr) => (
     <span key={i}>
-      <a
-        href={"/pessoa/" + encodeURIComponent(nome.trim())}
+      <Link
+        to={"/pessoa/" + encodeURIComponent(nome.trim())}
         style={{ color: "#444", borderBottom: "1px dotted #aaa", textDecoration: "none" }}
       >
         {nome.trim()}
-      </a>
+      </Link>
       {i < arr.length - 1 ? ", " : ""}
     </span>
   ))
@@ -893,7 +893,7 @@ function Musical() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elenco.split(",").map(nome => {
                   const n = nome.trim()
-                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
+                  return <Link key={n} to={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</Link>
                 })}
               </div>
             </div>
@@ -905,7 +905,7 @@ function Musical() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elencoAdicional.split(",").map(nome => {
                   const n = nome.trim()
-                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
+                  return <Link key={n} to={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</Link>
                 })}
               </div>
             </div>
