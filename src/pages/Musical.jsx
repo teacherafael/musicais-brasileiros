@@ -216,19 +216,22 @@ function Musical() {
     buscarEstados()
   }, [usuario, id])
 
+  // Totais de reações vêm dos contadores já gravados no documento do musical
+  // (totalLikes / totalDislikes) — evita ler a subcoleção inteira a cada visita.
   useEffect(() => {
-    async function buscarReacoes() {
-      const snap = await getDocs(collection(db, "musicais", id, "reacoes"))
-      let g = 0, ng = 0
-      snap.docs.forEach(d => {
-        if (d.data().reacao === "gostei") g++
-        else if (d.data().reacao === "nao_gostei") ng++
-        if (usuario && d.id === usuario.uid) setMinhaReacao(d.data().reacao)
-      })
-      setTotalGostei(g)
-      setTotalNaoGostei(ng)
+    if (!musical) return
+    setTotalGostei(Number(musical.totalLikes) || 0)
+    setTotalNaoGostei(Number(musical.totalDislikes) || 0)
+  }, [musical])
+
+  // Lê apenas a reação do próprio usuário (1 leitura) para destacar o botão ativo.
+  useEffect(() => {
+    async function buscarMinhaReacao() {
+      if (!usuario) { setMinhaReacao(null); return }
+      const snap = await getDoc(doc(db, "musicais", id, "reacoes", usuario.uid))
+      setMinhaReacao(snap.exists() ? snap.data().reacao : null)
     }
-    buscarReacoes()
+    buscarMinhaReacao()
   }, [id, usuario])
 
   useEffect(() => {
