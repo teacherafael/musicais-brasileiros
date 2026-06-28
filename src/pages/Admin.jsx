@@ -140,7 +140,7 @@ function Admin() {
   const [indiceStatus, setIndiceStatus] = useState("")
 
   // Aba "Adicionar musical"
-  const [formNovo, setFormNovo] = useState({})
+  const [formNovo, setFormNovo] = useState({ programaDigital: "" })
   const [capaNovo, setCapaNovo] = useState("")
   const [teatrosNovo, setTeatrosNovo] = useState([])
   const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
@@ -290,6 +290,7 @@ function Admin() {
       teatros: teatrosLimpos,
       musicos: musicosLimpos,
       capa: capa || "",
+      programaDigital: form.programaDigital || "",
     }
   }
 
@@ -704,6 +705,8 @@ function Admin() {
           {campoNovo("Ano", "ano")}
           {renderEditorTeatros(teatrosNovo, setTeatrosNovo, moverTeatroNovo)}
 
+          {campoNovo("Link do programa digital (opcional)", "programaDigital")}
+
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
               URL da capa (opcional)
@@ -717,7 +720,7 @@ function Admin() {
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={publicarNovo}>Publicar musical</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({}); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]) }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]) }}>Limpar</button>
           </div>
         </div>
       ) : aba === "relatos" ? (
