@@ -977,6 +977,9 @@ function Musical() {
             {!usuario && (
               <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Faça login para reagir.</p>
             )}
+            {usuario && (
+              <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Sua reação fica visível no seu perfil público.</p>
+            )}
           </div>
 
           {/* ── CARTÃO PARA COMPARTILHAR ── */}
