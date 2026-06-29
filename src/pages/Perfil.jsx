@@ -32,6 +32,7 @@ function Perfil() {
   const [carregando, setCarregando] = useState(true)
   const [top3, setTop3] = useState([])
   const [avaliacoesPublicas, setAvaliacoesPublicas] = useState(true)
+const [reacoesPublicas, setReacoesPublicas] = useState(true)
   const [editandoTop3, setEditandoTop3] = useState(false)
   const [top3Selecionado, setTop3Selecionado] = useState([])
   const [buscaTop3, setBuscaTop3] = useState("")
@@ -146,6 +147,7 @@ function Perfil() {
         if (usuarioDoc.exists()) {
           const data = usuarioDoc.data()
           setAvaliacoesPublicas(data.avaliacoesPublicas ?? true)
+setReacoesPublicas(data.reacoesPublicas ?? true)
           setVerificado(data.verificado ?? false)
           setBanido(data.banido ?? false)
           if (data.nome) setNomeUsuario(data.nome)
@@ -525,7 +527,13 @@ function Perfil() {
     await setDoc(doc(db, "usuarios", userId), { avaliacoesPublicas: novo }, { merge: true })
   }
 
-  async function toggleVerificado() {
+  async function toggleReacoesPublicas() {
+  const novo = !reacoesPublicas
+  setReacoesPublicas(novo)
+  await setDoc(doc(db, "usuarios", userId), { reacoesPublicas: novo }, { merge: true })
+}
+
+async function toggleVerificado() {
     const novo = !verificado
     setVerificado(novo)
     await setDoc(doc(db, "usuarios", userId), { verificado: novo }, { merge: true })
@@ -1147,7 +1155,7 @@ function Perfil() {
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
           { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
-          { id: 'reacoes', label: `Gostei / Não gostei` },
+          ...(reacoesPublicas || isProprioPerfil ? [{ id: 'reacoes', label: `Gostei / Não gostei` }] : []),
           { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
           { id: 'quero-ver', label: `Quero ver (${queroVer.length})` },
           { id: 'listas', label: `Listas (${listas.length})` },
@@ -1207,6 +1215,17 @@ function Perfil() {
       )}
 
       {tabAtiva === "reacoes" && (
+        <div>
+          {isProprioPerfil && (
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", padding: "12px 16px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "8px" }}>
+              <span style={{ fontSize: "13px", color: "#555", flex: 1 }}>
+                {reacoesPublicas ? "Suas reações são visíveis no seu perfil público." : "Suas reações estão ocultas para outros visitantes."}
+              </span>
+              <button onClick={toggleReacoesPublicas} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", border: "1px solid #e8e8e4", background: reacoesPublicas ? "#F5C518" : "transparent", color: reacoesPublicas ? "#1a1a1a" : "#888", cursor: "pointer", fontWeight: "600", whiteSpace: "nowrap" }}>
+                {reacoesPublicas ? "🌐 Públicas" : "🔒 Ocultas"}
+              </button>
+            </div>
+          )}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
           <div>
             <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
@@ -1260,6 +1279,7 @@ function Perfil() {
                 </>
             }
           </div>
+        </div>
         </div>
       )}
 
