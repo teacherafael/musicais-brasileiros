@@ -5,8 +5,10 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import CardMusical from "../components/CardMusical"
 
-const normalizar = (texto) =>
-  texto?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ?? ""
+const normalizar = (texto) => {
+  const base = texto?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() ?? ""
+  return base.replace(/^(o|a|os|as|um|uma|the|an)\s+/, "")
+}
 
 
 function Home() {
