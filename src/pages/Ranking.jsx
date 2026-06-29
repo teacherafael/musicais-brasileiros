@@ -88,7 +88,7 @@ function Ranking() {
 
           const listaCurtidos = itens
             .filter(m => (m.totalLikes || 0) > 0)
-            .sort((a, b) => (b.totalLikes || 0) - (a.totalLikes || 0))
+            .sort((a, b) => ((b.totalLikes || 0) - (b.totalDislikes || 0)) - ((a.totalLikes || 0) - (a.totalDislikes || 0)))
             .slice(0, 15)
 
           setPopulares(listaPopulares)
@@ -147,7 +147,7 @@ function Ranking() {
                   musical={musical}
                   index={index}
                   navigate={navigate}
-                  contador={musical.totalLikes}
+                  contador={(musical.totalLikes || 0) - (musical.totalDislikes || 0)}
                   labelSingular="curtida"
                   labelPlural="curtidas"
                 />
