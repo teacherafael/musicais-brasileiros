@@ -317,7 +317,7 @@ function scrollDestaques(direcao) {
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>{musicais.length}</span>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>musicais brasileiros<br />catalogados</h1>
       </div>
-      <p style={{ fontSize: "15px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo digital colaborativo do teatro musical brasileiro.</p>
+      <p style={{ fontSize: "15px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo digital do teatro musical brasileiro.</p>
       <div style={{ marginBottom: "32px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
         <button className="btn-comentar" onClick={() => navigate("/sugestao")}>+ Sugerir um musical</button>
         <button className="btn-comentar" onClick={() => navigate("/contribuir")} style={{ background: "transparent", color: "#1a1a1a", border: "2px solid #1a1a1a" }}>$ Contribuir</button>
