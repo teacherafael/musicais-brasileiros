@@ -17,6 +17,7 @@ const ALIASES = {
 "cleto baccic": "Baccic",
 "maria bia martins": "Maria Bia",
 "andré padreca": "André Luiz Odin",
+"Gabriel D'ângelo": "Gabriel D'Angelo",
 "rafael miranda": "Rafa Diverse",
 "leonardo wagner": "Leo Wagner",
 "andressa massei": "Andrezza Massei",
