@@ -342,7 +342,7 @@ function Header() {
               <Link
                 to={`/perfil/${usuario.uid}`}
                 className="header-user header-user-nome"
-                style={{ textDecoration: "none", color: "inherit" }}
+                style={{ textDecoration: "none", color: "#aaa" }}
               >
                 Meu perfil
               </Link>

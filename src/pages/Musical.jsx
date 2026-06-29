@@ -978,7 +978,7 @@ function Musical() {
               <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Faça login para reagir.</p>
             )}
             {usuario && (
-              <p style={{ fontSize: "14px", color: "#a59200", marginTop: "8px" }}>Sua reação fica visível no seu perfil público.</p>
+              <p style={{ fontSize: "14px", color: "#a59200", marginTop: "8px" }}>No seu perfil você pode escolher se sua reação fica pública ou não.</p>
             )}
           </div>
 
