@@ -414,6 +414,9 @@ main {
 
 @media (max-width: 600px) {
   .grid-musicais {
+    grid-template-columns: 1fr !important;
+  }
+  .grid-pessoa {
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .header-user-nome {

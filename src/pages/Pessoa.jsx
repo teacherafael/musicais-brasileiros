@@ -104,7 +104,7 @@ function Pessoa() {
       </p>
 
       {carregando ? (
-        <div className="grid-musicais" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
+        <div className="grid-pessoa" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} style={{ borderRadius: "6px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite", aspectRatio: "2/3" }} />
           ))}
@@ -112,7 +112,7 @@ function Pessoa() {
       ) : !carregando && musicais.length === 0 ? (
         <p style={{ color: "#888" }}>Nenhum musical encontrado para esta pessoa.</p>
       ) : (
-        <div className="grid-musicais" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
+        <div className="grid-pessoa" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
           {musicais.map(m => (
             <a key={m.id}
               href={"/musical/" + m.id}
