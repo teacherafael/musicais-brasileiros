@@ -516,7 +516,6 @@ function Musical() {
     try {
       const canvas = await html2canvas(cartaoRef.current, { useCORS: true, scale: 2, backgroundColor: null })
 
-      // gera um Blob a partir do canvas (necessário para o compartilhamento nativo)
       const blob = await new Promise((resolve) =>
         canvas.toBlob(resolve, "image/png")
       )
@@ -526,15 +525,23 @@ function Musical() {
         type: "image/png",
       })
 
-      // se o navegador suporta compartilhar arquivos → abre a folha nativa (Instagram, etc.)
+      let compartilhou = false
+
+      // tenta o compartilhamento nativo (folha do iOS com Instagram, etc.)
       if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
         try {
           await navigator.share({ files: [arquivo] })
+          compartilhou = true
         } catch (err) {
-          if (err.name !== "AbortError") console.error(err) // ignora cancelamento
+          if (err.name === "AbortError") {
+            compartilhou = true // usuário cancelou de propósito → não baixa
+          }
+          // qualquer outro erro: cai pro download abaixo
         }
-      } else {
-        // fallback: download tradicional (desktop e navegadores sem suporte)
+      }
+
+      // se não conseguiu compartilhar, baixa a imagem (fallback)
+      if (!compartilhou) {
         const link = document.createElement("a")
         link.download = `${musical.titulo}-mcdb.png`
         link.href = canvas.toDataURL("image/png")
