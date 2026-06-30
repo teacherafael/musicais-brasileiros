@@ -1535,7 +1535,7 @@ async function toggleVerificado() {
                   <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "4px" }}>
                     {sessoes.map(s => (
                       <p key={s.id} style={{ fontSize: "13px", color: "#555", margin: 0 }}>
-                        • {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}{s.teatro ? ` · ${s.teatro}` : ""}
+                        • {formatarData(s.data)}{s.horario ? ` às ${s.horario}` : ""}{s.teatro ? ` · ${s.teatro}` : ""}{s.assento ? ` · 🪑 ${s.assento}` : ""}
                       </p>
                     ))}
                   </div>

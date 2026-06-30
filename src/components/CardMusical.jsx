@@ -38,7 +38,7 @@ export default function CardMusical({
 
   // Atualiza posição do dropdown portal se a janela for redimensionada ou scrollada
   useEffect(() => {
-    if (!dropdownAberto || usandoModal || !pequeno) return
+    if (!dropdownAberto || usandoModal) return
     function atualizar() {
       if (!btnListasRef.current) return
       const r = btnListasRef.current.getBoundingClientRect()
@@ -55,7 +55,7 @@ export default function CardMusical({
 
   function handleAbrirListas(e) {
     const mobile = window.innerWidth <= 600
-    if (!mobile && pequeno && btnListasRef.current) {
+    if (!mobile && btnListasRef.current) {
       const r = btnListasRef.current.getBoundingClientRect()
       setPosDropdown({ top: r.bottom + 8, left: r.left, width: Math.max(r.width, 200) })
     }
@@ -150,9 +150,9 @@ export default function CardMusical({
     document.body
   )
 
-  // Dropdown via portal — desktop + card pequeno (carrossel)
+  // Dropdown via portal — desktop, qualquer tamanho de card
   // Renderiza no body com posição fixa calculada via getBoundingClientRect
-  const dropdownPortal = dropdownAberto && !usandoModal && pequeno && createPortal(
+  const dropdownPortal = dropdownAberto && !usandoModal && createPortal(
     <div
       data-listas-dropdown
       style={{
@@ -167,21 +167,6 @@ export default function CardMusical({
       {conteudoListas}
     </div>,
     document.body
-  )
-
-  // Dropdown normal relativo — desktop + card grande (grid e perfil)
-  const dropdownRelativo = dropdownAberto && !usandoModal && !pequeno && (
-    <div
-      data-listas-dropdown
-      style={{
-        position: "absolute",
-        top: "calc(100% + 6px)", left: "0", right: "0",
-        background: "#fff", border: "1px solid #e8e8e4", borderRadius: "10px",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 200, padding: "8px 0", minWidth: "200px"
-      }}
-    >
-      {conteudoListas}
-    </div>
   )
 
   const barraBotoes = usuario && (
@@ -268,7 +253,7 @@ export default function CardMusical({
         </div>
       </a>
       {modalMobile}
-      {dropdownRelativo}
+      {dropdownPortal}
     </div>
   )
 }
