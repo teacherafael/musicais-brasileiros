@@ -1007,9 +1007,14 @@ async function toggleVerificado() {
 
           {/* Média */}
           {mediaVotos && (
-            <p style={{ fontSize: "18px", color: "#F5C518", margin: "0 0 48px", fontWeight: "600" }}>
-              ★ {mediaVotos} <span style={{ color: "#666", fontWeight: "400", fontSize: "14px" }}>· {votos.length} {votos.length === 1 ? "avaliação" : "avaliações"}</span>
-            </p>
+            <div style={{ textAlign: "center", margin: "0 0 48px" }}>
+              <p style={{ fontSize: "24px", color: "#F5C518", margin: 0, fontWeight: "700" }}>
+                ★ {mediaVotos} <span style={{ color: "#888", fontWeight: "400", fontSize: "16px" }}>/ 5</span>
+              </p>
+              <p style={{ fontSize: "13px", color: "#999", margin: "6px 0 0", fontWeight: "400" }}>
+                nota média · {votos.length} {votos.length === 1 ? "musical avaliado" : "musicais avaliados"}
+              </p>
+            </div>
           )}
 
           {/* ME SIGA + área de link */}
