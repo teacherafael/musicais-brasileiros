@@ -14,12 +14,12 @@ function nomesClicaveis(texto) {
   if (!texto) return null
   return texto.split(",").map((nome, i, arr) => (
     <span key={i}>
-      <a
-        href={"/pessoa/" + encodeURIComponent(nome.trim())}
+      <Link
+        to={"/pessoa/" + encodeURIComponent(nome.trim())}
         style={{ color: "#444", borderBottom: "1px dotted #aaa", textDecoration: "none" }}
       >
         {nome.trim()}
-      </a>
+      </Link>
       {i < arr.length - 1 ? ", " : ""}
     </span>
   ))
@@ -515,10 +515,31 @@ function Musical() {
     setGerando(true)
     try {
       const canvas = await html2canvas(cartaoRef.current, { useCORS: true, scale: 2, backgroundColor: null })
-      const link = document.createElement("a")
-      link.download = `${musical.titulo}-mcdb.png`
-      link.href = canvas.toDataURL("image/png")
-      link.click()
+
+      // gera um Blob a partir do canvas (necessário para o compartilhamento nativo)
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png")
+      )
+      if (!blob) { setGerando(false); return }
+
+      const arquivo = new File([blob], `${musical.titulo}-mcdb.png`, {
+        type: "image/png",
+      })
+
+      // se o navegador suporta compartilhar arquivos → abre a folha nativa (Instagram, etc.)
+      if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+        try {
+          await navigator.share({ files: [arquivo] })
+        } catch (err) {
+          if (err.name !== "AbortError") console.error(err) // ignora cancelamento
+        }
+      } else {
+        // fallback: download tradicional (desktop e navegadores sem suporte)
+        const link = document.createElement("a")
+        link.download = `${musical.titulo}-mcdb.png`
+        link.href = canvas.toDataURL("image/png")
+        link.click()
+      }
     } catch (e) { mostrarToast("Erro ao gerar imagem. Tente novamente.") }
     setGerando(false)
   }
@@ -893,7 +914,7 @@ function Musical() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elenco.split(",").map(nome => {
                   const n = nome.trim()
-                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
+                  return <Link key={n} to={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</Link>
                 })}
               </div>
             </div>
@@ -905,7 +926,7 @@ function Musical() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elencoAdicional.split(",").map(nome => {
                   const n = nome.trim()
-                  return <a key={n} href={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</a>
+                  return <Link key={n} to={"/pessoa/" + encodeURIComponent(n)} style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", borderRadius: "999px", fontSize: "13px", border: "1px solid #F5C518", background: "#FFF8E1", color: "#7a5f00", textDecoration: "none" }}>{n}</Link>
                 })}
               </div>
             </div>
