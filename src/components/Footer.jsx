@@ -6,7 +6,7 @@ function Footer() {
   const navigate = useNavigate()
   const [qrUrl, setQrUrl] = useState(null)
 
-  const pixPayload = "00020126450014BR.GOV.BCB.PIX0123musicalcastbr@gmail.com5204000053039865802BR5920Rafael Luiz Nogueira6009SAO PAULO621405108kiqRR0vuY6304D3D0"
+  const pixPayload = "00020126450014BR.GOV.BCB.PIX0123musicalcastbr@gmail.com5204000053039865802BR5912MUSICAL CAST6009SAO PAULO62080504MCDB63047CD0"
 
   async function toggleQr() {
     if (qrUrl) { setQrUrl(null); return }
