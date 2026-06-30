@@ -175,6 +175,17 @@ function Ranking() {
 
         </div>
       )}
+
+      {!carregando && avaliados.length > 0 && (
+        <details style={{ marginTop: "32px", maxWidth: "640px" }}>
+          <summary style={{ fontSize: "13px", color: "#888", cursor: "pointer", userSelect: "none" }}>ⓘ Como é calculado o ranking dos mais bem avaliados?</summary>
+          <div style={{ marginTop: "12px", padding: "14px 16px", background: "#faf9f6", border: "1px solid #e8e8e4", borderRadius: "10px" }}>
+            <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7", marginBottom: "12px" }}>O ranking não usa a média simples das estrelas. Se usasse, um musical com uma única avaliação de 5 estrelas apareceria à frente de um musical com dezenas de avaliações e média 4,7 — o que não reflete a realidade.</p>
+            <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7", marginBottom: "12px" }}>Para evitar isso, o MCDb usa uma média ponderada bayesiana. Na prática, isso significa que um título só alcança sua posição "real" no ranking depois de receber um número razoável de avaliações. Enquanto tem poucos votos, sua nota fica puxada na direção da média geral da plataforma, e vai se firmando à medida que mais pessoas avaliam.</p>
+            <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7" }}>O resultado é um ranking mais justo: títulos muito bem avaliados por muita gente sobem de forma consistente, enquanto notas extremas baseadas em pouquíssimos votos não distorcem o topo da lista.</p>
+          </div>
+        </details>
+      )}
     </main>
   )
 }

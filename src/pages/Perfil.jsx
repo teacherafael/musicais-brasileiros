@@ -806,7 +806,7 @@ async function toggleVerificado() {
           {nomePerfil || "Usuario"}
           {verificado && <SeloVerificado />}
         </h1>
-        {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este e o seu perfil</p>}
+        {isProprioPerfil && <p style={{ color: "#888", fontSize: "14px" }}>Este é o seu perfil</p>}
         {banido && (
           <p style={{ color: "#cc0000", fontSize: "13px", fontWeight: "600", marginTop: "4px" }}>
             🚫 Esta conta está banida{isProprioPerfil ? " — você não pode votar, comentar, seguir ou usar listas." : "."}
