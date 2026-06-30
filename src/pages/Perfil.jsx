@@ -726,10 +726,31 @@ async function toggleVerificado() {
         backgroundColor: null,
         scale: 2,
       })
-      const link = document.createElement("a")
-      link.download = `mcdb-${nomePerfil || "perfil"}.png`
-      link.href = canvas.toDataURL("image/png")
-      link.click()
+
+      // gera um Blob a partir do canvas (necessário para o compartilhamento nativo)
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png")
+      )
+      if (!blob) return
+
+      const arquivo = new File([blob], `mcdb-${nomePerfil || "perfil"}.png`, {
+        type: "image/png",
+      })
+
+      // se o navegador suporta compartilhar arquivos → abre a folha nativa (Instagram, etc.)
+      if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+        try {
+          await navigator.share({ files: [arquivo] })
+        } catch (err) {
+          if (err.name !== "AbortError") console.error(err) // ignora cancelamento
+        }
+      } else {
+        // fallback: download tradicional (desktop e navegadores sem suporte)
+        const link = document.createElement("a")
+        link.download = `mcdb-${nomePerfil || "perfil"}.png`
+        link.href = canvas.toDataURL("image/png")
+        link.click()
+      }
     } finally {
       el.style.display = "none"
     }
