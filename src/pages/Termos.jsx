@@ -8,7 +8,7 @@ function Termos() {
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
       <p className="section-label">MCDb — Musical Cast Database</p>
       <h1 className="page-title">Termos de Uso</h1>
-      <p style={{ fontSize: "13px", color: "#888", marginBottom: "32px" }}>Última atualização: 22 de junho de 2026</p>
+      <p style={{ fontSize: "13px", color: "#888", marginBottom: "32px" }}>Última atualização: 30 de junho de 2026</p>
 
       <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75", marginBottom: "24px" }}>
         Ao acessar e utilizar o MCDb (Musical Cast Database), disponível em musicais-brasileiros.vercel.app, você concorda com os presentes Termos de Uso. Caso não concorde com qualquer parte destes termos, pedimos que não utilize a plataforma.
@@ -33,7 +33,7 @@ function Termos() {
         },
         {
           titulo: "5. Conteúdo e Conduta do Usuário",
-          texto: "O usuário pode publicar conteúdo na plataforma, como informações de perfil (nome de exibição, mini-bio e links para redes sociais) e avaliações tornadas públicas por sua própria opção. Ao fazê-lo, o usuário concorda em não publicar conteúdo que contenha ataques pessoais, assédio ou discurso de ódio contra artistas, profissionais ou outros usuários; que constitua spam ou publicidade não autorizada; que viole direitos de terceiros, incluindo direitos autorais e de imagem; ou que contenha informações sabidamente falsas com intenção de prejudicar produções ou profissionais. Esta cláusula se aplica a qualquer forma de conteúdo que venha a ser disponibilizada aos usuários na plataforma."
+          texto: "O usuário pode publicar informações de perfil na plataforma, como nome de exibição, mini-bio e links para redes sociais. Ao fazê-lo, o usuário concorda em não incluir conteúdo que contenha ataques pessoais, assédio ou discurso de ódio contra artistas, profissionais ou outros usuários; que constitua spam ou publicidade não autorizada; ou que viole direitos de terceiros, incluindo direitos autorais e de imagem. Esta cláusula se aplica a qualquer conteúdo que o usuário venha a disponibilizar em seu perfil ou em outras áreas da plataforma."
         },
         {
           titulo: "6. Moderação de Conteúdo",
