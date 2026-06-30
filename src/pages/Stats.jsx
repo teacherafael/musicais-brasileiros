@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, doc, getDoc, getCountFromServer } from "firebase/firestore"
 import { db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
@@ -9,8 +9,9 @@ function Stats() {
 
   useEffect(() => {
     async function calcular() {
-      const snap = await getDocs(collection(db, "musicais"))
-      const lista = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
+      const indiceSnap = await getDoc(doc(db, "indices", "home"))
+      const lista = indiceSnap.exists() ? (indiceSnap.data().itens || []) : []
 
       const totalMusicais = lista.length
       const totalVotos = lista.reduce((acc, m) => acc + (m.totalVotos || 0), 0)
@@ -29,21 +30,6 @@ function Stats() {
         .slice(0, 3)
 
       const notaMaisAlta = top3Avaliados[0]
-
-      // Comentários
-      let totalComentarios = 0
-      const comentariosPorMusical = {}
-      await Promise.all(
-        lista.map(async m => {
-          const subSnap = await getDocs(collection(db, "musicais", m.id, "comentarios"))
-          comentariosPorMusical[m.id] = subSnap.size
-          totalComentarios += subSnap.size
-        })
-      )
-      const top3Comentados = [...lista]
-        .sort((a, b) => (comentariosPorMusical[b.id] || 0) - (comentariosPorMusical[a.id] || 0))
-        .filter(m => (comentariosPorMusical[m.id] || 0) > 0)
-        .slice(0, 3)
 
       // Diretor
       const direcaoCount = {}
@@ -103,19 +89,19 @@ function Stats() {
         if (m.ano) anoCount[m.ano] = (anoCount[m.ano] || 0) + 1
       })
       const anosSorted = Object.entries(anoCount).sort((a, b) => a[0].localeCompare(b[0]))
-      const maxPorAno = Math.max(...anosSorted.map(([, v]) => v))
+      const maxPorAno = anosSorted.length > 0 ? Math.max(...anosSorted.map(([, v]) => v)) : 0
 
-      // Usuários
-      const usuariosSnap = await getDocs(collection(db, "usuarios"))
-      const totalUsuarios = usuariosSnap.size
+      // Usuários (contagem barata: 1 leitura, sem baixar os documentos)
+      const usuariosCount = await getCountFromServer(collection(db, "usuarios"))
+      const totalUsuarios = usuariosCount.data().count
 
       setStats({
-        totalMusicais, totalVotos, totalComentarios, mediaNota,
+        totalMusicais, totalVotos, mediaNota,
         totalUsuarios,
-        top3Votados, top3Avaliados, top3Comentados,
+        top3Votados, top3Avaliados,
         notaMaisAlta, dirMaisFrequente, teatroMaisFrequente,
         top3Diretores, top3DiretoresMusicais, top3Elenco,
-        anosSorted, maxPorAno, comentariosPorMusical
+        anosSorted, maxPorAno
       })
     }
     calcular()
@@ -198,7 +184,7 @@ function Stats() {
 
   return (
     <main>
-      <p className="section-label">MBDb</p>
+      <p className="section-label">MCDb</p>
       <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "32px", fontWeight: "700", margin: "8px 0 32px" }}>
         Estatísticas
       </h1>
@@ -209,7 +195,6 @@ function Stats() {
         {bloco("Total de musicais", stats.totalMusicais)}
         {bloco("Usuários cadastrados", stats.totalUsuarios)}
         {bloco("Total de avaliações", stats.totalVotos)}
-        {bloco("Total de comentários", stats.totalComentarios)}
         {bloco("Nota média geral", `★ ${stats.mediaNota.toFixed(2)}`)}
         {stats.notaMaisAlta && bloco(
           "Nota mais alta",
@@ -240,11 +225,6 @@ function Stats() {
           "Melhor avaliados",
           stats.top3Avaliados,
           m => `★ ${(m.somaEstrelas / m.totalVotos).toFixed(2)}`
-        )}
-        {stats.top3Comentados.length > 0 && blocoTop3(
-          "Mais comentados",
-          stats.top3Comentados,
-          m => `${stats.comentariosPorMusical[m.id]} comentários`
         )}
       </div>
 

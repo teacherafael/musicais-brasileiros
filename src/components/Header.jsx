@@ -196,13 +196,14 @@ function Header() {
         <Link
   to="/"
   className="logo"
-  style={{ cursor: "pointer", display: "flex", alignItems: "center", textDecoration: "none" }}
+  style={{ cursor: "pointer", display: "flex", alignItems: "center", textDecoration: "none", gap: "12px" }}
 >
   <img
     src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171268/mcdb_sembirlho_utr4xp.png"
     alt="MCDb — Musical Cast Database"
     style={{ height: "56px", width: "auto", display: "block" }}
   />
+  <span className="logo-texto">Musical Cast Database</span>
 </Link>
 
         <div className="header-right">
