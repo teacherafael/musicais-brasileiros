@@ -49,7 +49,7 @@ export default function Contribuir() {
             Contribuir via Pix
           </p>
           <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=musicalcastbr@gmail.com"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=00020126450014BR.GOV.BCB.PIX0123musicalcastbr%40gmail.com5204000053039865802BR5912MUSICAL%20CAST6009SAO%20PAULO62080504MCDB63047CD0"
             alt="QR Code Pix"
             style={{ width: 180, height: 180, borderRadius: 8, marginBottom: 20 }}
           />
