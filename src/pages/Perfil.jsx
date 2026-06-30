@@ -957,7 +957,7 @@ async function toggleVerificado() {
           <button
             onClick={gerarCardPerfil}
             style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "4px" }}>
-            📷 Salvar card do perfil
+            📷 Compartilhar card do perfil
           </button>
         )}
 

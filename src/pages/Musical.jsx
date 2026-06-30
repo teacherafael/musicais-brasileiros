@@ -1030,7 +1030,7 @@ function Musical() {
               </div>
               <div style={{ marginTop: "12px" }}>
                 <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
-                  {gerando ? "Gerando..." : "⬇ Baixar imagem para compartilhar"}
+                  {gerando ? "Gerando..." : "📤 Compartilhar imagem"}
                 </button>
               </div>
             </div>
