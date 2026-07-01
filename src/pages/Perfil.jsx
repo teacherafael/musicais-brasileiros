@@ -731,7 +731,10 @@ async function toggleVerificado() {
       const blob = await new Promise((resolve) =>
         canvas.toBlob(resolve, "image/png")
       )
-      if (!blob) return
+      if (!blob) {
+        alert("DIAGNÓSTICO: blob veio nulo — canvas provavelmente 'tainted' por imagem sem CORS (foto de perfil do Google?)")
+        return
+      }
 
       const arquivo = new File([blob], `mcdb-${nomePerfil || "perfil"}.png`, {
         type: "image/png",
@@ -751,6 +754,8 @@ async function toggleVerificado() {
         link.href = canvas.toDataURL("image/png")
         link.click()
       }
+    } catch (err) {
+      alert("DIAGNÓSTICO ERRO: " + err.name + " — " + err.message)
     } finally {
       el.style.display = "none"
     }
