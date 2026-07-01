@@ -34,10 +34,10 @@ export default function Contribuir() {
             O <strong>Musical Cast</strong> existe desde 2015. Mais de uma década dedicado a cobrir, documentar e celebrar o teatro musical brasileiro — sem patrocínio, sem real retorno financeiro. Só paixão.
           </p>
           <p>
-            O <strong>MCDb</strong> nasceu dessa mesma paixão: a vontade de criar o maior arquivo digital do teatro musical brasileiro. Um lugar onde qualquer pessoa pode descobrir o que foi encenado, quem esteve no palco, e o que a plateia achou.
+            O <strong>MCDb</strong> nasceu dessa mesma paixão: a vontade de criar o maior arquivo digital do teatro musical brasileiro. Um lugar onde qualquer pessoa pode descobrir o que foi encenado e quem esteve no palco e por trás das produções.
           </p>
           <p>
-            Manter isso no ar tem custo. Dias e mais dias de pesquisa, hospedagem, banco de dados, ferramentas, e anos de trabalho que nunca viraram renda. Se o MCDb já foi útil pra você — seja pra lembrar um espetáculo, descobrir um novo, ou simplesmente sentir que o teatro musical brasileiro tem o registro que merece — considere contribuir.
+            Manter isso no ar tem custo. Dias e mais dias de pesquisa, hospedagem, banco de dados e ferramentas. Se o MCDb já foi útil pra você — seja pra lembrar um espetáculo, descobrir um novo, ou simplesmente sentir que o teatro musical brasileiro tem o registro que merece — considere contribuir.
           </p>
           <p>
             Qualquer valor ajuda a manter o catálogo crescendo e o projeto independente.
