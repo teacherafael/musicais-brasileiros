@@ -13,6 +13,7 @@ const ALIASES = {
 "paula flaibann": "Paulão do Vrah",
 "daniel ribeiro": "Daniel Salve",
 "luciana bolina": "Lubo",
+"Maurício Alves": "Mau Alves",
 "janaina amorin": "Jana Amorin",
 "cleto baccic": "Baccic",
 "maria bia martins": "Maria Bia",
