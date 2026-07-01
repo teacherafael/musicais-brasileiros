@@ -1013,7 +1013,7 @@ function Musical() {
           {/* ── CARTÃO PARA COMPARTILHAR ── */}
           {votoAtual && (
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
-              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "40px", paddingLeft: "28px", paddingRight: "28px" }}>
+              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "24px", paddingLeft: "28px", paddingRight: "28px" }}>
                 {musical.capa ? (
                   <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "175px", height: "245px", objectFit: "cover", borderRadius: "10px", marginBottom: "20px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
                 ) : (
@@ -1026,7 +1026,7 @@ function Musical() {
                 <div style={{ display: "flex", gap: "4px", marginBottom: "18px" }}>{estrelasSVG(votoAtual)}</div>
                 <div style={{ width: "50px", height: "1px", background: "#ffffff", opacity: 0.12, marginBottom: "14px" }} />
                 <img src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png" alt="MCDb" crossOrigin="anonymous" style={{ width: "85px", height: "auto", marginBottom: "6px", opacity: 0.95 }} />
-                <p style={{ fontSize: "10px", color: "#999999", textAlign: "center", letterSpacing: "1px" }}>mcdb.musicalcast.com.br</p>
+                <p style={{ fontSize: "10px", color: "#999999", textAlign: "center", letterSpacing: "0.2px" }}>mcdb.musicalcast.com.br</p>
               </div>
               <div style={{ marginTop: "12px" }}>
                 <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
