@@ -19,6 +19,14 @@ function navegadorDeApp() {
   return false
 }
 
+// iOS (iPhone/iPad) roda em WebKit não importa o navegador (Chrome, Firefox, etc
+// também usam a engine do Safari por baixo). Por isso o signInWithRedirect quebra
+// em qualquer navegador do iOS, não só no Safari.
+function ehIOS() {
+  const ua = navigator.userAgent || navigator.vendor || ""
+  return /iPhone|iPad|iPod/.test(ua)
+}
+
 // Salva/atualiza nome e foto do usuário no Firestore (usado tanto no popup quanto no redirect)
 async function salvarUsuario(user) {
   if (!user) return
@@ -138,8 +146,14 @@ function Header() {
     } catch (e) {
       // Usuário fechou a janelinha sozinho: não é erro, ignora
       if (e?.code === "auth/popup-closed-by-user" || e?.code === "auth/cancelled-popup-request") return
-      // Popup bloqueado pelo navegador (comum no celular): tenta pelo redirecionamento
+      // Popup bloqueado pelo navegador (comum no celular): tenta pelo redirecionamento.
+      // No iOS isso não é confiável (qualquer navegador ali usa WebKit e perde o
+      // sessionStorage entre a ida e a volta), então no iOS só avisamos o usuário.
       if (e?.code === "auth/popup-blocked" || e?.code === "auth/operation-not-supported-in-this-environment") {
+        if (ehIOS()) {
+          alert("Não foi possível entrar agora. Se o problema continuar, tente pelo Safari.")
+          return
+        }
         try {
           await signInWithRedirect(auth, provider)
           return
