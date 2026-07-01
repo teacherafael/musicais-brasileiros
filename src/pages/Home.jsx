@@ -7,7 +7,8 @@ import CardMusical from "../components/CardMusical"
 
 const normalizar = (texto) => {
   const base = texto?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() ?? ""
-  return base.replace(/^(o|a|os|as|um|uma|the|an)\s+/, "")
+  const semArtigo = base.replace(/^(o|a|os|as|um|uma|the|an)\s+/, "")
+  return semArtigo.replace(/[.,;:!?"'()]/g, "").replace(/\s+/g, " ").trim()
 }
 
 
@@ -280,15 +281,30 @@ function scrollDestaques(direcao) {
   const musicaisFiltrados = musicais
     .filter(m => !idsExcluidos.has(m.id))
     .filter(musical => {
-      const termo = normalizar(busca)
+      const termos = normalizar(busca).split(" ").filter(Boolean)
+      const tituloNorm = normalizar(musical.titulo)
       const campos = [musical.titulo, musical.elenco, musical.elencoAdicional, musical.direcao, musical.direcaoMusical, musical.producao, musical.versionista, musical.textoOriginal, musical.musicaOriginal]
       const nomesEquipe = (musical.equipeCriativa || []).flatMap(item => item.nomes || [])
       const nomesMusicos = (musical.musicos || []).flatMap(item => item.nomes || [])
-      return [...campos, ...nomesEquipe, ...nomesMusicos].some(c => normalizar(c).includes(termo)) && (filtroAno === "" || musical.ano === filtroAno)
+      const outrosNorm = normalizar([...campos, ...nomesEquipe, ...nomesMusicos].filter(Boolean).join(" "))
+      const combinado = tituloNorm + " " + outrosNorm
+      return termos.every(t => combinado.includes(t)) && (filtroAno === "" || musical.ano === filtroAno)
     })
     .filter(musical => !ocultarVistos || !jaViSet.has(musical.id))
-    .map(musical => ({ ...musical, media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0 }))
+    .map(musical => {
+      const termoCompleto = normalizar(busca)
+      const tituloNorm = normalizar(musical.titulo)
+      let relevancia = 4
+      if (termoCompleto) {
+        if (tituloNorm === termoCompleto) relevancia = 0
+        else if (tituloNorm.startsWith(termoCompleto)) relevancia = 1
+        else if (tituloNorm.includes(termoCompleto)) relevancia = 2
+        else if (termoCompleto.split(" ").filter(Boolean).every(t => tituloNorm.includes(t))) relevancia = 3
+      }
+      return { ...musical, media: musical.totalVotos > 0 ? musical.somaEstrelas / musical.totalVotos : 0, relevancia }
+    })
     .sort((a, b) => {
+      if (busca && a.relevancia !== b.relevancia) return a.relevancia - b.relevancia
       if (ordenacao === "melhor") return b.media - a.media
       if (ordenacao === "pior") return a.media - b.media
       if (ordenacao === "mais-votados") return b.totalVotos - a.totalVotos
