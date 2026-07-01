@@ -108,6 +108,15 @@ function Sugestao() {
         Preencha as informações do musical que você quer ver na database. Campos com <span style={{ color: "#cc0000" }}>*</span> são obrigatórios. Não se preocupe se não souber tudo — preencha o que tiver.
       </p>
 
+      <div style={{ background: "#fff8e1", border: "1px solid #f0d98a", borderRadius: "8px", padding: "16px 18px", marginBottom: "32px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: "#8a6d00", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+          Atenção
+        </p>
+        <p style={{ fontSize: "14px", color: "#5c4a00", lineHeight: "1.6", margin: 0 }}>
+          O MCDb só adiciona espetáculos produzidos com os direitos autorais devidamente adquiridos. Não incluímos musicais escolares, de curso livre ou acadêmicos.
+        </p>
+      </div>
+
       {campo("Título", "titulo", true)}
 
       <div style={{ marginBottom: "16px" }}>
