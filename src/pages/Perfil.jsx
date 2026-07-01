@@ -717,8 +717,9 @@ async function toggleVerificado() {
   }
 
   async function gerarCardPerfil() {
+    alert("A: entrou na função")
     const el = document.getElementById("card-perfil-exportar")
-    if (!el) return
+    if (!el) { alert("B: elemento não encontrado"); return }
     el.style.display = "flex"
     try {
       const canvas = await html2canvas(el, {
@@ -726,36 +727,35 @@ async function toggleVerificado() {
         backgroundColor: null,
         scale: 2,
       })
+      alert("C: html2canvas OK")
 
-      // gera um Blob a partir do canvas (necessário para o compartilhamento nativo)
       const blob = await new Promise((resolve) =>
         canvas.toBlob(resolve, "image/png")
       )
-      if (!blob) {
-        alert("DIAGNÓSTICO: blob veio nulo — canvas provavelmente 'tainted' por imagem sem CORS (foto de perfil do Google?)")
-        return
-      }
+      if (!blob) { alert("D: blob veio nulo (canvas tainted?)"); return }
+      alert("E: blob OK")
 
       const arquivo = new File([blob], `mcdb-${nomePerfil || "perfil"}.png`, {
         type: "image/png",
       })
 
-      // se o navegador suporta compartilhar arquivos → abre a folha nativa (Instagram, etc.)
       if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+        alert("F: vai tentar navigator.share")
         try {
           await navigator.share({ files: [arquivo] })
+          alert("G: share concluído")
         } catch (err) {
-          if (err.name !== "AbortError") console.error(err) // ignora cancelamento
+          alert("H: share FALHOU → " + err.name + ": " + err.message)
         }
       } else {
-        // fallback: download tradicional (desktop e navegadores sem suporte)
+        alert("I: navigator.share não suportado → download")
         const link = document.createElement("a")
         link.download = `mcdb-${nomePerfil || "perfil"}.png`
         link.href = canvas.toDataURL("image/png")
         link.click()
       }
     } catch (err) {
-      alert("DIAGNÓSTICO ERRO: " + err.name + " — " + err.message)
+      alert("ERRO GERAL: " + err.name + " — " + err.message)
     } finally {
       el.style.display = "none"
     }
