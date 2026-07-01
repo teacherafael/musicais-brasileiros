@@ -1013,7 +1013,7 @@ function Musical() {
           {/* ── CARTÃO PARA COMPARTILHAR ── */}
           {votoAtual && (
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
-              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "24px", paddingLeft: "28px", paddingRight: "28px" }}>
+              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingLeft: "28px", paddingRight: "28px" }}>
                 {musical.capa ? (
                   <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "175px", height: "245px", objectFit: "cover", borderRadius: "10px", marginBottom: "20px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
                 ) : (
