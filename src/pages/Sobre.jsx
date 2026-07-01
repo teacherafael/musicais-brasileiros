@@ -41,7 +41,8 @@ function Sobre() {
         {
           titulo: "De onde veio",
           paragrafos: [
-            <>O <strong>MCDb</strong> é uma extensão do <strong>Musical Cast</strong>, podcast que fala sobre teatro musical desde <strong>2015</strong>. É algo que ele sentia que faltava: um catálogo de verdade, onde qualquer pessoa tem acesso às informações em segundos.</>
+            <>O <strong>MCDb</strong> é uma extensão do <strong>Musical Cast</strong>, podcast que fala sobre teatro musical desde <strong>2015</strong>. É algo que ele sentia que faltava: um catálogo de verdade, onde qualquer pessoa tem acesso às informações em segundos.</>,
+            <>A <strong>criação, a curadoria e a pesquisa</strong> do acervo são inteiramente de <strong>Rafael Nogueira</strong>, com a colaboração pontual de <strong>Anderson Dias</strong> e <strong>Fabio Correa</strong> no conteúdo de alguns musicais.</>
           ]
         },
         {
