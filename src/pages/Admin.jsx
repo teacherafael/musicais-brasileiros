@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 
@@ -761,7 +761,7 @@ function Admin() {
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
               <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Reportado por: {r.nome}</p>
               <div style={{ display: "flex", gap: "12px" }}>
-                <button className="btn-comentar" onClick={() => navigate(`/musical/${r.musicalId}`)}>Ver musical</button>
+                <Link className="btn-comentar" to={`/musical/${r.musicalId}`} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>Ver musical</Link>
                 <button className="btn-sair" onClick={() => resolverRelato(r.id)}>Marcar como resolvido</button>
               </div>
             </div>
