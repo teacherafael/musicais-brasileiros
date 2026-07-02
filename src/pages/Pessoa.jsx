@@ -17,6 +17,7 @@ const ALIASES = {
 "fabiana tolentino": "Bibi Tolentino",
 "fabi tolentino": "Bibi Tolentino",
 "janaina amorin": "Jana Amorin",
+"patricia athayde": "Paty Athayde",
 "cleto baccic": "Baccic",
 "maria bia martins": "Maria Bia",
 "andré padreca": "André Luiz Odin",
