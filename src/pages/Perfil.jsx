@@ -716,46 +716,42 @@ async function toggleVerificado() {
     return `https://${url}`
   }
 
-  async function gerarCardPerfil() {
-    alert("A: entrou na função")
+async function gerarCardPerfil() {
     const el = document.getElementById("card-perfil-exportar")
-    if (!el) { alert("B: elemento não encontrado"); return }
+    if (!el) return
     el.style.display = "flex"
+    // Espera o navegador pintar o elemento antes de capturar (importante no iOS)
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
     try {
       const canvas = await html2canvas(el, {
         useCORS: true,
         backgroundColor: null,
         scale: 2,
       })
-      alert("C: html2canvas OK")
 
       const blob = await new Promise((resolve) =>
         canvas.toBlob(resolve, "image/png")
       )
-      if (!blob) { alert("D: blob veio nulo (canvas tainted?)"); return }
-      alert("E: blob OK")
+      if (!blob) return
 
       const arquivo = new File([blob], `mcdb-${nomePerfil || "perfil"}.png`, {
         type: "image/png",
       })
 
       if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
-        alert("F: vai tentar navigator.share")
         try {
           await navigator.share({ files: [arquivo] })
-          alert("G: share concluído")
-        } catch (err) {
-          alert("H: share FALHOU → " + err.name + ": " + err.message)
+        } catch {
+          // usuário cancelou o compartilhamento — não é erro
         }
       } else {
-        alert("I: navigator.share não suportado → download")
         const link = document.createElement("a")
         link.download = `mcdb-${nomePerfil || "perfil"}.png`
         link.href = canvas.toDataURL("image/png")
         link.click()
       }
     } catch (err) {
-      alert("ERRO GERAL: " + err.name + " — " + err.message)
+      alert("Não foi possível gerar o card agora. Tente novamente.")
     } finally {
       el.style.display = "none"
     }
