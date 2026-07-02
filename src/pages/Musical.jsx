@@ -401,7 +401,7 @@ function Musical() {
 
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
-    const entrandoNaContagem = !jaVi && !queroVer
+    const entrandoNaContagem = !jaVi
     await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
@@ -431,14 +431,13 @@ function Musical() {
     const mRef = doc(db, "musicais", id)
     if (queroVer) {
       await deleteDoc(refQueroVer)
-      try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (e) { console.error("popularidade", e) }
       setQueroVer(false)
     } else {
-      const entrandoNaContagem = !jaVi
+      const saindoDoJaVi = jaVi
       await setDoc(refQueroVer, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refJaVi)
-      if (entrandoNaContagem) {
-        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (e) { console.error("popularidade", e) }
+      if (saindoDoJaVi) {
+        try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (e) { console.error("popularidade", e) }
       }
       setQueroVer(true)
       setJaVi(false)
@@ -455,12 +454,9 @@ function Musical() {
       try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (e) { console.error("popularidade", e) }
       setJaVi(false)
     } else {
-      const entrandoNaContagem = !queroVer
       await setDoc(refJaVi, { musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refQueroVer)
-      if (entrandoNaContagem) {
-        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (e) { console.error("popularidade", e) }
-      }
+      try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (e) { console.error("popularidade", e) }
       setJaVi(true)
       setQueroVer(false)
       setTimeout(() => { avaliacaoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }) }, 100)
@@ -831,7 +827,7 @@ function Musical() {
             </button>
             <button onClick={toggleQueroVer}
               style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
-              {queroVer ? "✓ Quero ver" : "+ Quero ver"}
+              {queroVer ? "✓ Não vi" : "+ Não vi"}
             </button>
             <button onClick={() => { navigator.clipboard.writeText(window.location.href); mostrarToast("Link copiado!") }}
               style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>

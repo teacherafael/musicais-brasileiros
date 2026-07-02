@@ -186,7 +186,7 @@ export default function CardMusical({
       <button
         onClick={e => onToggleQueroVer(e, musical)}
         style={{ background: queroVerSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)", border: queroVerSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: queroVerSet.has(musical.id) ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
-        {queroVerSet.has(musical.id) ? "★ Quero ver" : "☆ Quero ver"}
+        {queroVerSet.has(musical.id) ? "★ Não vi" : "☆ Não vi"}
       </button>
       <button
         ref={btnListasRef}

@@ -135,8 +135,8 @@ function Ranking() {
 
           {/* Coluna: Mais populares */}
           <div>
-            <p style={{ fontSize: "15px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Mais populares</p>
-            <p style={{ fontSize: "15px", color: "#aaa", marginBottom: "16px" }}>por "já vi" + "quero ver"</p>
+            <p style={{ fontSize: "15px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Mais assistidos</p>
+            <p style={{ fontSize: "15px", color: "#aaa", marginBottom: "16px" }}>por quem já assistiu</p>
             {populares.length === 0 ? (
               <p style={{ color: "#888", fontSize: "14px" }}>Nenhum musical ainda.</p>
             ) : (

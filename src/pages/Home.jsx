@@ -174,14 +174,13 @@ function scrollDestaques(direcao) {
     const mRef = doc(db, "musicais", musical.id)
     if (queroVerSet.has(musical.id)) {
       await deleteDoc(refQueroVer)
-      try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (err) { console.error("popularidade", err) }
       setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     } else {
-      const entrandoNaContagem = !jaViSet.has(musical.id)
+      const saindoDoJaVi = jaViSet.has(musical.id)
       await setDoc(refQueroVer, { musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refJaVi)
-      if (entrandoNaContagem) {
-        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (err) { console.error("popularidade", err) }
+      if (saindoDoJaVi) {
+        try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (err) { console.error("popularidade", err) }
       }
       setQueroVerSet(prev => new Set(prev).add(musical.id))
       setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
@@ -199,12 +198,9 @@ function scrollDestaques(direcao) {
       try { await updateDoc(mRef, { popularidade: increment(-1) }) } catch (err) { console.error("popularidade", err) }
       setJaViSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     } else {
-      const entrandoNaContagem = !queroVerSet.has(musical.id)
       await setDoc(refJaVi, { musicalId: musical.id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || "" })
       await deleteDoc(refQueroVer)
-      if (entrandoNaContagem) {
-        try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (err) { console.error("popularidade", err) }
-      }
+      try { await updateDoc(mRef, { popularidade: increment(1) }) } catch (err) { console.error("popularidade", err) }
       setJaViSet(prev => new Set(prev).add(musical.id))
       setQueroVerSet(prev => { const next = new Set(prev); next.delete(musical.id); return next })
     }
