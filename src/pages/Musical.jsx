@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async"
 import { useEffect, useState, useRef } from "react"
-import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc, increment } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc, increment, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -402,7 +402,7 @@ function Musical() {
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
     const entrandoNaContagem = !jaVi && !queroVer
-    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas })
+    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
     })
