@@ -15,6 +15,7 @@ const ALIASES = {
 "luciana bolina": "Lubo",
 "maurício alves": "Mau Alves",
 "fabiana tolentino": "Bibi Tolentino",
+"bhener carvalho": "Bhener",
 "fabi tolentino": "Bibi Tolentino",
 "janaina amorin": "Jana Amorin",
 "patricia athayde": "Paty Athayde",
