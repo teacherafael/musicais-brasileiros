@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
+import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -138,6 +138,8 @@ function Admin() {
   const [musicosEdicao, setMusicosEdicao] = useState([])
   const [teatrosEdicao, setTeatrosEdicao] = useState([])
   const [indiceStatus, setIndiceStatus] = useState("")
+  const [emAltaVotos, setEmAltaVotos] = useState([])
+  const [janela, setJanela] = useState("7")
 
   // Aba "Adicionar musical"
   const [formNovo, setFormNovo] = useState({ programaDigital: "" })
@@ -167,6 +169,11 @@ function Admin() {
       } else if (qual === "mensagens") {
         const snap = await getDocs(query(collection(db, "mensagens"), orderBy("data", "desc")))
         setMensagens(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } else if (qual === "emalta") {
+        const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        const q = query(collectionGroup(db, "votos"), where("data", ">=", trintaDiasAtras))
+        const snap = await getDocs(q)
+        setEmAltaVotos(snap.docs.map(d => d.data()).filter(v => v.data && v.musicalId))
       }
       setCarregadas(prev => new Set(prev).add(qual))
     } catch (e) {
@@ -573,6 +580,19 @@ function Admin() {
   const editorEquipe = renderEditorEquipe(equipeNovo, setEquipeNovo)
   const editorMusicos = renderEditorMusicos(musicosNovo, setMusicosNovo)
 
+  const cutoffJanela = Date.now() - Number(janela) * 24 * 60 * 60 * 1000
+  const rankingEmAlta = (() => {
+    const mapa = {}
+    emAltaVotos.forEach(v => {
+      const quando = v.data?.toDate ? v.data.toDate().getTime() : 0
+      if (quando < cutoffJanela) return
+      if (!mapa[v.musicalId]) mapa[v.musicalId] = { musicalId: v.musicalId, titulo: v.titulo || v.musicalId, capa: v.capa || "", count: 0, soma: 0 }
+      mapa[v.musicalId].count += 1
+      mapa[v.musicalId].soma += Number(v.estrelas) || 0
+    })
+    return Object.values(mapa).sort((a, b) => b.count - a.count)
+  })()
+
   const naoLidas = mensagens.filter(m => !m.lida).length
 
   if (!usuario) return <main><p>Carregando...</p></main>
@@ -599,6 +619,9 @@ function Admin() {
         </button>
         <button onClick={() => trocarAba("mensagens")} className={aba === "mensagens" ? "btn-comentar" : "btn-sair"}>
           Mensagens {carregadas.has("mensagens") && naoLidas > 0 && `(${naoLidas} nova${naoLidas > 1 ? "s" : ""})`}
+        </button>
+        <button onClick={() => trocarAba("emalta")} className={aba === "emalta" ? "btn-comentar" : "btn-sair"}>
+          🔥 Em alta
         </button>
       </div>
 
@@ -780,6 +803,39 @@ function Admin() {
             </div>
           ))
         )
+      ) : aba === "emalta" ? (
+        <>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            <button onClick={() => setJanela("7")} className={janela === "7" ? "btn-comentar" : "btn-sair"}>Últimos 7 dias</button>
+            <button onClick={() => setJanela("30")} className={janela === "30" ? "btn-comentar" : "btn-sair"}>Últimos 30 dias</button>
+          </div>
+          <p style={{ fontSize: "13px", color: "#888", marginBottom: "20px" }}>
+            Musicais que mais receberam avaliações no período. Visível só para admins.
+          </p>
+          {rankingEmAlta.length === 0 ? (
+            <p style={{ color: "#888" }}>Nenhuma avaliação registrada nesse período ainda.</p>
+          ) : (
+            rankingEmAlta.map((m, i) => (
+              <div key={m.musicalId} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
+                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: "700", color: "#b8960a", width: "28px", textAlign: "center", flexShrink: 0 }}>{i + 1}</span>
+                {m.capa ? (
+                  <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: "48px", height: "64px", background: "#1a1a1a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#F5C518", fontSize: "8px", textAlign: "center", padding: "4px" }}>{m.titulo}</span>
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
+                  <p style={{ fontSize: "13px", color: "#888" }}>
+                    {m.count} {m.count === 1 ? "avaliação" : "avaliações"} · média {(m.soma / m.count).toFixed(1)} ★
+                  </p>
+                </div>
+                <button className="btn-comentar" onClick={() => navigate(`/musical/${m.musicalId}`)} style={{ flexShrink: 0 }}>Ver</button>
+              </div>
+            ))
+          )}
+        </>
       ) : (
         <>
           <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "12px", padding: "16px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
