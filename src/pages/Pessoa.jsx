@@ -21,7 +21,7 @@ const ALIASES = {
 "patricia athayde": "Paty Athayde",
 "cleto baccic": "Baccic",
 "maria bia martins": "Maria Bia",
-"victor leal": "Victor Madeiros",
+"victor leal": "Victor Medeiros",
 "andré padreca": "André Luiz Odin",
 "Gabriel D'ângelo": "Gabriel D'Angelo",
 "rafael miranda": "Rafa Diverse",
