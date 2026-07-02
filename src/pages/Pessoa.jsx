@@ -23,6 +23,7 @@ const ALIASES = {
 "Gabriel D'ângelo": "Gabriel D'Angelo",
 "rafael miranda": "Rafa Diverse",
 "leonardo wagner": "Leo Wagner",
+"lurryan nascimento": "Lurryan",
 "andressa massei": "Andrezza Massei",
 "andré gomes": "André Ulo",
   "nome antigo": "Nome Atual",
