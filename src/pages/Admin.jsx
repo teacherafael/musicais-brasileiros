@@ -112,7 +112,9 @@ function montarItemIndice(id, m) {
 
 async function gerarIndiceHome() {
   const snap = await getDocs(collection(db, "musicais"))
-  const itens = snap.docs.map(d => montarItemIndice(d.id, d.data()))
+  const itens = snap.docs
+    .filter(d => d.data().status !== "rascunho")
+    .map(d => montarItemIndice(d.id, d.data()))
   await setDoc(doc(db, "indices", "home"), {
     itens,
     total: itens.length,
@@ -147,19 +149,25 @@ function Admin() {
   const [teatrosNovo, setTeatrosNovo] = useState([])
   const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
   const [musicosNovo, setMusicosNovo] = useState([])
+  const [rascunhoId, setRascunhoId] = useState(null)
+  const [rascunhosAdmin, setRascunhosAdmin] = useState([])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
 
   async function carregarAba(qual) {
-    if (qual === "adicionar" || carregadas.has(qual)) return
+    if (carregadas.has(qual)) return
     setCarregando(true)
     try {
       if (qual === "sugestoes") {
         const q = query(collection(db, "sugestoes"), where("status", "==", "pendente"), orderBy("data", "desc"))
         const snap = await getDocs(q)
         setSugestoes(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } else if (qual === "adicionar") {
+        const q = query(collection(db, "sugestoes"), where("status", "==", "rascunho_admin"), orderBy("data", "desc"))
+        const snap = await getDocs(q)
+        setRascunhosAdmin(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       } else if (qual === "relatos") {
         const snap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
         setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.tipo !== "denuncia_comentario"))
@@ -301,11 +309,28 @@ function Admin() {
     }
   }
 
-  async function publicarNovo() {
+  async function salvarNovo(status) {
     if (!formNovo.titulo || !formNovo.titulo.trim()) {
       alert("O título é obrigatório.")
       return
     }
+
+    const payload = montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo)
+
+    if (status === "rascunho") {
+      if (rascunhoId) {
+        await updateDoc(doc(db, "sugestoes", rascunhoId), { ...payload, status: "rascunho_admin" })
+        setRascunhosAdmin(prev => prev.map(r => r.id === rascunhoId ? { id: rascunhoId, ...payload, status: "rascunho_admin" } : r))
+      } else {
+        const novoRef = doc(collection(db, "sugestoes"))
+        await setDoc(novoRef, { ...payload, status: "rascunho_admin", data: new Date() })
+        setRascunhoId(novoRef.id)
+        setRascunhosAdmin(prev => [{ id: novoRef.id, ...payload, status: "rascunho_admin" }, ...prev])
+      }
+      alert("Rascunho salvo! Ele fica aqui mesmo na aba \"Adicionar musical\" até você publicar.")
+      return
+    }
+
     const slug = (formNovo.titulo
       .toLowerCase()
       .normalize("NFD")
@@ -320,8 +345,6 @@ function Admin() {
       if (!window.confirm(`Já existe um musical com esse título ("${formNovo.titulo}"). Publicar vai SOBRESCREVER o existente e zerar as avaliações. Continuar?`)) return
     }
 
-    const payload = montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo)
-
     await setDoc(doc(db, "musicais", slug), {
       ...payload,
       teatrosAdicionais: [],
@@ -330,16 +353,53 @@ function Admin() {
       dataCriacao: new Date()
     })
 
+    if (rascunhoId) {
+      try { await deleteDoc(doc(db, "sugestoes", rascunhoId)) } catch (e) { /* não bloqueia a publicação */ }
+      setRascunhosAdmin(prev => prev.filter(r => r.id !== rascunhoId))
+    }
+
     setMusicais(prev => [{ id: slug, titulo: formNovo.titulo, direcao: payload.direcao, ano: formNovo.ano, capa: capaNovo }, ...prev])
-    setFormNovo({})
+    setFormNovo({ programaDigital: "" })
     setCapaNovo("")
     setTeatrosNovo([])
     setEquipeNovo(equipeInicial())
     setMusicosNovo([])
+    setRascunhoId(null)
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
     setAba("musicais")
     carregarAba("musicais")
+  }
+
+  function continuarRascunho(r) {
+    setFormNovo({
+      titulo: r.titulo || "",
+      tituloOriginal: r.tituloOriginal || "",
+      sinopse: r.sinopse || "",
+      elenco: r.elenco || "",
+      elencoAdicional: r.elencoAdicional || "",
+      ano: r.ano || "",
+      programaDigital: r.programaDigital || "",
+    })
+    setEquipeNovo(equipeDeDocumento(r))
+    setMusicosNovo(musicosDeDocumento(r))
+    setTeatrosNovo(teatrosDeDocumento(r))
+    setCapaNovo(r.capa || "")
+    setRascunhoId(r.id)
+  }
+
+  async function deletarRascunho(id, titulo) {
+    if (!window.confirm(`Deletar o rascunho "${titulo || "sem título"}"? Esta ação não pode ser desfeita.`)) return
+    await deleteDoc(doc(db, "sugestoes", id))
+    setRascunhosAdmin(prev => prev.filter(r => r.id !== id))
+    if (rascunhoId === id) {
+      setRascunhoId(null)
+      setFormNovo({ programaDigital: "" })
+      setCapaNovo("")
+      setTeatrosNovo([])
+      setEquipeNovo(equipeInicial())
+      setMusicosNovo([])
+    }
   }
 
   function abrirEdicaoSugestao(s) {
@@ -611,7 +671,7 @@ function Admin() {
           Sugestões pendentes {carregadas.has("sugestoes") && sugestoes.length > 0 && `(${sugestoes.length})`}
         </button>
         <button onClick={() => trocarAba("adicionar")} className={aba === "adicionar" ? "btn-comentar" : "btn-sair"}>
-          ➕ Adicionar musical
+          ➕ Adicionar musical {carregadas.has("adicionar") && rascunhosAdmin.length > 0 && `(${rascunhosAdmin.length} rascunho${rascunhosAdmin.length > 1 ? "s" : ""})`}
         </button>
         <button onClick={() => trocarAba("relatos")} className={aba === "relatos" ? "btn-comentar" : "btn-sair"}>
           Relatos de erro {carregadas.has("relatos") && relatos.length > 0 && `(${relatos.length})`}
@@ -715,6 +775,22 @@ function Admin() {
           ))
         )
       ) : aba === "adicionar" ? (
+        <>
+          {rascunhosAdmin.length > 0 && (
+            <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", marginBottom: "12px" }}>Rascunhos salvos</h2>
+              {rascunhosAdmin.map(r => (
+                <div key={r.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 0", borderTop: "1px solid #f0e6b8" }}>
+                  <p style={{ flex: 1, fontSize: "14px", fontWeight: "600", margin: 0 }}>{r.titulo || "(sem título)"}</p>
+                  <button className="btn-comentar" onClick={() => continuarRascunho(r)}>✏️ Continuar editando</button>
+                  <button onClick={() => deletarRascunho(r.id, r.titulo)}
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    Deletar
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>Adicionar musical</h2>
           <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px", lineHeight: "1.5" }}>
@@ -744,11 +820,19 @@ function Admin() {
             )}
           </div>
 
+          {rascunhoId && (
+            <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
+              📝 Editando um rascunho salvo. Publicar ou salvar vai atualizar este mesmo item.
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <button className="btn-comentar" onClick={publicarNovo}>Publicar musical</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]) }}>Limpar</button>
+            <button className="btn-comentar" onClick={() => salvarNovo("publicado")}>✅ Publicar musical</button>
+            <button className="btn-sair" onClick={() => salvarNovo("rascunho")}>💾 Salvar rascunho</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setRascunhoId(null) }}>Limpar</button>
           </div>
         </div>
+        </>
       ) : aba === "relatos" ? (
         relatos.length === 0 ? (
           <p style={{ color: "#888" }}>Nenhum relato de erro.</p>
