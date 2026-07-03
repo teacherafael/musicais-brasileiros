@@ -350,6 +350,7 @@ function Admin() {
       elenco: s.elenco || "",
       elencoAdicional: s.elencoAdicional || "",
       ano: s.ano || "",
+      programaDigital: s.programaDigital || "",
     })
     setEquipeEdicao(equipeDeDocumento(s))
     setMusicosEdicao(musicosDeDocumento(s))
@@ -407,6 +408,7 @@ function Admin() {
       teatros: Array.isArray(sugestao.teatros) ? sugestao.teatros : [],
       musicos: Array.isArray(sugestao.musicos) ? sugestao.musicos : [],
       capa: capas[sugestao.id] || sugestao.capa || "",
+      programaDigital: sugestao.programaDigital || "",
       totalVotos: 0,
       somaEstrelas: 0,
       dataCriacao: new Date()
@@ -645,6 +647,7 @@ function Admin() {
                   {renderEditorMusicos(musicosEdicao, setMusicosEdicao)}
                   {campoSugestao("Ano", "ano")}
                   {renderEditorTeatros(teatrosEdicao, setTeatrosEdicao, moverTeatroEdicao)}
+                  {campoSugestao("Link do programa digital (opcional)", "programaDigital")}
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
                       URL da capa (opcional)
