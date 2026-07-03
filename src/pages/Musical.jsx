@@ -37,11 +37,11 @@ const ESSENCIAL_CAMPO = {
 }
 // Complementares: gravam dentro do array equipeCriativa
 const COMPLEMENTARES = [
-  "Direção Residente", "Assistência de Direção", "Direção de Movimento", "Coordenação Artística",
-"Supervisão Musical", "Assistência de Direção Musical", "Regência", "Preparação Vocal", "Arranjos/Orquestração",
-  "Coreografia", "Assistência de Coreografia",
-  "Cenografia", "Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
-  "Direção de Produção", "Produção Geral", "Produção Executiva", "Produtor Associado",
+  "Direção Residente", "Direção Artística", "Direção Associada", "Assistência de Direção", "Coordenação Artística",
+  "Supervisão Musical", "Assistência de Direção Musical", "Regência", "Preparação Vocal", "Arranjos/Orquestração",
+  "Coreografia", "Assistência de Coreografia", "Direção de Movimento", "Coreografia Associada",
+  "Cenografia", "Assistente de Cenografia", "Cenotécnica", "Figurino", "Assistente de Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
+  "Direção de Produção", "Coordenação de Produção", "Produção Geral", "Produção Executiva", "Assistente de Produção", "Produtor Associado",
 ]
 
 // Bloco "Equipe" da exibição: complementares na ordem fixa + cargos livres ao final
