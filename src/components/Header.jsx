@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { setDoc, doc, collection, onSnapshot, updateDoc, getDocs } from "firebase/firestore"
+import { setDoc, doc, collection, onSnapshot, updateDoc, query, orderBy, limit } from "firebase/firestore"
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth"
 import { auth, provider, db } from "../firebase"
 import { useNavigate, Link } from "react-router-dom"
@@ -70,7 +70,7 @@ function Header() {
       setNotificacoes([])
       return
     }
-    const q = collection(db, "notificacoes", usuario.uid, "itens")
+    const q = query(collection(db, "notificacoes", usuario.uid, "itens"), orderBy("data", "desc"), limit(20))
     const unsub = onSnapshot(q, (snap) => {
       const lista = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
@@ -99,11 +99,10 @@ function Header() {
 
   async function marcarTodasLidas() {
     if (!usuario) return
-    const snap = await getDocs(collection(db, "notificacoes", usuario.uid, "itens"))
     await Promise.all(
-      snap.docs
-        .filter(d => !d.data().lida)
-        .map(d => updateDoc(d.ref, { lida: true }))
+      notificacoes
+        .filter(n => !n.lida)
+        .map(n => updateDoc(doc(db, "notificacoes", usuario.uid, "itens", n.id), { lida: true }))
     )
   }
 
