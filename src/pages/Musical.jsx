@@ -48,6 +48,7 @@ const COMPLEMENTARES = [
 function equipeSecundariaOrdenada(equipeCriativa) {
   if (!equipeCriativa || equipeCriativa.length === 0) return []
   const fixas = COMPLEMENTARES
+    .filter(funcao => funcao !== "Coreografia")
     .map(funcao => equipeCriativa.find(item => item.funcao === funcao && item.nomes && item.nomes.length > 0))
     .filter(Boolean)
   const conhecidas = [...ESSENCIAIS, ...COMPLEMENTARES, "Músicos"]
@@ -582,6 +583,7 @@ function Musical() {
     : montarEquipeDeStrings(musical.direcao, musical.direcaoMusical)
   const itemDirecao = equipeBase.find(e => e.funcao === "Direção")
   const itemDirecaoMusical = equipeBase.find(e => e.funcao === "Direção Musical")
+  const itemCoreografia = equipeBase.find(e => e.funcao === "Coreografia" && e.nomes && e.nomes.length > 0)
 
   const inputEquipeStyle = { flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }
   const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }
@@ -742,9 +744,9 @@ function Musical() {
                   {itemDirecaoMusical ? nomesClicaveis(itemDirecaoMusical.nomes.join(", ")) : nomesClicaveis(musical.direcaoMusical)}
                 </p>
               )}
-              {musical.versionista && (
+              {itemCoreografia && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
-                  <strong style={{ color: "#1a1a1a" }}>Versionista:</strong>{" "}{nomesClicaveis(musical.versionista)}
+                  <strong style={{ color: "#1a1a1a" }}>Coreografia:</strong>{" "}{nomesClicaveis(itemCoreografia.nomes.join(", "))}
                 </p>
               )}
               {musical.textoOriginal && (
@@ -755,6 +757,11 @@ function Musical() {
               {musical.musicaOriginal && (
                 <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
                   <strong style={{ color: "#1a1a1a" }}>Música original:</strong>{" "}{nomesClicaveis(musical.musicaOriginal)}
+                </p>
+              )}
+              {musical.versionista && (
+                <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
+                  <strong style={{ color: "#1a1a1a" }}>Versionista:</strong>{" "}{nomesClicaveis(musical.versionista)}
                 </p>
               )}
               {musical.producao && (
