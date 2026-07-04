@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react"
-import { setDoc, doc, collection, onSnapshot, updateDoc, query, orderBy, limit } from "firebase/firestore"
+import { setDoc, doc, getDoc, collection, onSnapshot, updateDoc, query, orderBy, limit } from "firebase/firestore"
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth"
 import { auth, provider, db } from "../firebase"
 import { useNavigate, Link } from "react-router-dom"
+import emailjs from "@emailjs/browser"
 
 // Detecta se o site foi aberto dentro de um navegador de app (WhatsApp, Instagram, etc.)
 function navegadorDeApp() {
@@ -30,10 +31,25 @@ function ehIOS() {
 // Salva/atualiza nome e foto do usuário no Firestore (usado tanto no popup quanto no redirect)
 async function salvarUsuario(user) {
   if (!user) return
-  await setDoc(doc(db, "usuarios", user.uid), {
+  const refUsuario = doc(db, "usuarios", user.uid)
+  const docSnap = await getDoc(refUsuario)
+  await setDoc(refUsuario, {
     nome: user.displayName,
     foto: user.photoURL,
   }, { merge: true })
+  // Só no primeiro cadastro: dispara o e-mail de boas-vindas
+  if (!docSnap.exists() && user.email) {
+    try {
+      await emailjs.send(
+        "service_n04arq6",
+        "template_xmcjq1c",
+        { nome: user.displayName || "", email: user.email },
+        { publicKey: "S64BV4jJFtAi5B-Sd" }
+      )
+    } catch (e) {
+      console.error("Falha ao enviar e-mail de boas-vindas:", e)
+    }
+  }
 }
 
 function Header() {
