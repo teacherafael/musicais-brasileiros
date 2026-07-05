@@ -22,6 +22,7 @@ const ALIASES = {
 "nathália borges": "Nani Porto",
 "cleto baccic": "Baccic",
 "maria bia martins": "Maria Bia",
+"jennifer do nascimento": "Jennifer Nascimento",
 "victor leal": "Victor Medeiros",
 "andré padreca": "André Luiz Odin",
 "Gabriel D'ângelo": "Gabriel D'Angelo",
