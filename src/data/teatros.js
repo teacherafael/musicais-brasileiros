@@ -636,7 +636,7 @@ export const teatros = [
   {
     id: "teatro-unip",
     nomeOficial: "Teatro UNIP",
-    aliases: [],
+    aliases: ["Teatro da UNIP"],
     endereco: "SGAS I SGAS 913,",
     bairro: "Asa Sul",
     cidade: "Brasília – DF",
