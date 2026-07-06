@@ -1016,19 +1016,19 @@ function Musical() {
           {/* ── CARTÃO PARA COMPARTILHAR ── */}
           {votoAtual && (
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
-              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingLeft: "28px", paddingRight: "28px" }}>
+              <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "50px", paddingBottom: "56px", paddingLeft: "28px", paddingRight: "28px", boxSizing: "border-box" }}>
                 {musical.capa ? (
-                  <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "175px", height: "245px", objectFit: "cover", borderRadius: "10px", marginBottom: "20px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
+                  <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "158px", height: "221px", objectFit: "cover", borderRadius: "10px", marginBottom: "16px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
                 ) : (
-                  <div style={{ width: "175px", height: "245px", background: "#1a1a1a", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
+                  <div style={{ width: "158px", height: "221px", background: "#1a1a1a", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
                     <span style={{ color: "#F5C518", fontSize: "13px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
                   </div>
                 )}
-                <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "19px", fontWeight: "700", color: "#ffffff", textAlign: "center", marginBottom: "5px", lineHeight: 1.2 }}>{musical.titulo}</p>
-                <p style={{ fontSize: "11px", color: "#999999", textAlign: "center", marginBottom: "14px", letterSpacing: "0.3px" }}>Dir. {musical.direcao || "—"}</p>
-                <div style={{ display: "flex", gap: "4px", marginBottom: "18px" }}>{estrelasSVG(votoAtual)}</div>
-                <div style={{ width: "50px", height: "1px", background: "#ffffff", opacity: 0.12, marginBottom: "14px" }} />
-                <img src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png" alt="MCDb" crossOrigin="anonymous" style={{ width: "85px", height: "auto", marginBottom: "6px", opacity: 0.95 }} />
+                <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#ffffff", textAlign: "center", marginBottom: "4px", lineHeight: 1.2 }}>{musical.titulo}</p>
+                <p style={{ fontSize: "11px", color: "#999999", textAlign: "center", marginBottom: "10px", letterSpacing: "0.3px" }}>Dir. {musical.direcao || "—"}</p>
+                <div style={{ display: "flex", gap: "4px", marginBottom: "14px" }}>{estrelasSVG(votoAtual)}</div>
+                <div style={{ width: "50px", height: "1px", background: "#ffffff", opacity: 0.12, marginBottom: "10px" }} />
+                <img src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png" alt="MCDb" crossOrigin="anonymous" style={{ width: "76px", height: "auto", marginBottom: "5px", opacity: 0.95 }} />
                 <p style={{ fontSize: "10px", color: "#999999", textAlign: "center", letterSpacing: "0.2px" }}>mcdb.musicalcast.com.br</p>
               </div>
               <div style={{ marginTop: "12px" }}>
