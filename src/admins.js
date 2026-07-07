@@ -4,6 +4,7 @@ export const ADMINS = [
   "LFDNXIXywqQrLsDLobaGzOOmok03",
   "ddN3y50zE5X56aQPQzhL17hw8m83",
   "5WGYySuddjR4PhZOiu6g99XdBK33",
+  "1WCpYUQCXFZt8IUEep8N71Tvwro2",
 ]
 
 // Recebe o "user" do Firebase Auth (ou o uid direto) e devolve true se for admin.
