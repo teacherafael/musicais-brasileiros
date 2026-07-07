@@ -28,7 +28,7 @@ export const teatros = [
   {
     id: "teatro-renault",
     nomeOficial: "Teatro Renault",
-    aliases: ["Teatro Abril"],
+    aliases: ["Teatro Paramount", "Teatro Abril"],
     endereco: "Avenida Brigadeiro Luís Antônio, 411",
     bairro: "Bela Vista",
     cidade: "São Paulo – SP",
