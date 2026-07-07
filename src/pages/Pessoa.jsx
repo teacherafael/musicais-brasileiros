@@ -90,10 +90,15 @@ function Pessoa() {
           ]
           const nomesEquipe = (m.equipeCriativa || []).flatMap(item => item.nomes || [])
           const nomesMusicos = (m.musicos || []).flatMap(item => item.nomes || [])
-          const todosCampos = [...campos, ...nomesEquipe, ...nomesMusicos]
-          // Busca pelo nome atual E por todos os aliases
+          // Campos de texto livre (elenco, direção etc.) têm múltiplos nomes separados por vírgula
+          const nomesDosCampos = campos
+            .filter(Boolean)
+            .flatMap(c => c.split(","))
+            .map(n => n.trim())
+          const todosCampos = [...nomesDosCampos, ...nomesEquipe, ...nomesMusicos]
+          // Busca por correspondência EXATA do nome atual OU de qualquer alias
           return todosCampos.some(c =>
-            todosOsNomes.some(n => normalizar(c).includes(normalizar(n)))
+            todosOsNomes.some(n => normalizar(c) === normalizar(n))
           )
         })
         .sort((a, b) => Number(a.ano) - Number(b.ano))
