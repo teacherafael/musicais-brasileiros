@@ -108,6 +108,15 @@ function Sugestao() {
         Preencha as informações do musical que você quer ver na database. Campos com <span style={{ color: "#cc0000" }}>*</span> são obrigatórios. Não se preocupe se não souber tudo — preencha o que tiver.
       </p>
 
+      <div style={{ background: "#fff8e1", border: "1px solid #f0d98a", borderRadius: "8px", padding: "16px 18px", marginBottom: "16px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: "#8a6d00", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+          Antes de sugerir
+        </p>
+        <p style={{ fontSize: "14px", color: "#5c4a00", lineHeight: "1.6", margin: 0 }}>
+          Por favor, confira na <a href="/" style={{ color: "#8a6d00", fontWeight: "700", textDecoration: "underline" }}>busca da Home</a> se o musical já não está cadastrado antes de enviar. Muitas sugestões recentes são de produções que já existem na database.
+        </p>
+      </div>
+
       <div style={{ background: "#fff8e1", border: "1px solid #f0d98a", borderRadius: "8px", padding: "16px 18px", marginBottom: "32px" }}>
         <p style={{ fontSize: "13px", fontWeight: "700", color: "#8a6d00", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
           Atenção
