@@ -92,6 +92,20 @@ const LABELS = {
   4.5: "Excelente", 5: "Obra-prima"
 }
 
+// Gera uma versão menor/otimizada da URL do Cloudinary para a grade de miniaturas
+function cloudinaryThumb(url, largura = 400) {
+  if (!url || !url.includes("/upload/")) return url
+  return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`)
+}
+
+// Compatibilidade: itens da galeria podem ser string (formato antigo) ou { url, credito }
+function urlDaFoto(foto) {
+  return typeof foto === "string" ? foto : (foto?.url || "")
+}
+function creditoDaFoto(foto) {
+  return typeof foto === "string" ? "" : (foto?.credito || "")
+}
+
 function Estrelas({ votoAtual, onVotar }) {
   const [hover, setHover] = useState(0)
 
@@ -170,6 +184,7 @@ function Musical() {
   const [gerando, setGerando] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
+  const [fotoAberta, setFotoAberta] = useState(null)
   const cartaoRef = useRef(null)
   const avaliacaoRef = useRef(null)
 
@@ -303,7 +318,12 @@ function Musical() {
       elenco: musical.elenco || "", elencoAdicional: musical.elencoAdicional || "",
       ano: musical.ano || "", teatro: musical.teatro || "",
       capa: musical.capa || "", programaDigital: musical.programaDigital || "",
-      tituloOriginal: musical.tituloOriginal || ""
+      tituloOriginal: musical.tituloOriginal || "",
+      galeria: (musical.galeria || []).map(foto => {
+        const url = urlDaFoto(foto)
+        const credito = creditoDaFoto(foto)
+        return credito ? `${url} | ${credito}` : url
+      }).join("\n")
     })
     setEquipeEdicao(equipeParaEditor(musical))
     let listaTeatros = musical.teatros || []
@@ -366,8 +386,18 @@ function Musical() {
       .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
       .filter(item => item.local && item.nomes.length > 0)
 
+    const galeriaLimpa = (formEdicao.galeria || "")
+      .split("\n")
+      .map(linha => linha.trim())
+      .filter(Boolean)
+      .map(linha => {
+        const [url, ...resto] = linha.split("|")
+        return { url: url.trim(), credito: resto.join("|").trim() }
+      })
+
     const dadosFinais = {
       ...formEdicao,
+      galeria: galeriaLimpa,
       direcao: planos.direcao,
       direcaoMusical: planos.direcaoMusical,
       versionista: planos.versionista,
@@ -706,6 +736,7 @@ function Musical() {
           </div>
 
           {campo("URL da capa", "capa")}
+          {campo("Galeria de fotos (uma URL do Cloudinary por linha)", "galeria", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
 
           {formEdicao.capa && (
@@ -966,6 +997,61 @@ function Musical() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {musical.galeria && musical.galeria.length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Galeria</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "8px" }}>
+                {musical.galeria.map((foto, i) => (
+                  <img
+                    key={i}
+                    src={cloudinaryThumb(urlDaFoto(foto), 300)}
+                    alt={`${musical.titulo} — foto ${i + 1}`}
+                    loading="lazy"
+                    onClick={() => setFotoAberta(i)}
+                    style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px", cursor: "pointer", border: "1px solid #e8e8e4" }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {fotoAberta !== null && (
+            <div
+              onClick={() => setFotoAberta(null)}
+              style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.9)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", boxSizing: "border-box" }}
+            >
+              <button
+                onClick={() => setFotoAberta(null)}
+                style={{ position: "absolute", top: "20px", right: "24px", background: "none", border: "none", color: "#fff", fontSize: "28px", cursor: "pointer", lineHeight: 1 }}
+              >✕</button>
+              {musical.galeria.length > 1 && (
+                <button
+                  onClick={e => { e.stopPropagation(); setFotoAberta(p => (p - 1 + musical.galeria.length) % musical.galeria.length) }}
+                  style={{ position: "absolute", left: "16px", background: "none", border: "none", color: "#fff", fontSize: "36px", cursor: "pointer", padding: "8px" }}
+                >‹</button>
+              )}
+              <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "100%", maxHeight: "100%" }}>
+                <img
+                  src={urlDaFoto(musical.galeria[fotoAberta])}
+                  alt={`${musical.titulo} — foto ${fotoAberta + 1}`}
+                  style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: "8px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
+                />
+                {creditoDaFoto(musical.galeria[fotoAberta]) && (
+                  <p style={{ color: "#ccc", fontSize: "13px", marginTop: "10px", textAlign: "center" }}>
+                    {creditoDaFoto(musical.galeria[fotoAberta])}
+                  </p>
+                )}
+              </div>
+              {musical.galeria.length > 1 && (
+                <button
+                  onClick={e => { e.stopPropagation(); setFotoAberta(p => (p + 1) % musical.galeria.length) }}
+                  style={{ position: "absolute", right: "16px", background: "none", border: "none", color: "#fff", fontSize: "36px", cursor: "pointer", padding: "8px" }}
+                >›</button>
+              )}
             </div>
           )}
 
