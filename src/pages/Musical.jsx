@@ -744,7 +744,7 @@ function Musical() {
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
 
           {formEdicao.capa && (
-            <img src={formEdicao.capa} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
+            <img src={otimizarImagem(formEdicao.capa, 160)} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
           )}
           <div style={{ display: "flex", gap: "12px" }}>
             <button className="btn-comentar" onClick={salvarEdicaoMusical}>Salvar alterações</button>
@@ -1040,7 +1040,7 @@ function Musical() {
               )}
               <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "100%", maxHeight: "100%" }}>
                 <img
-                  src={urlDaFoto(musical.galeria[fotoAberta])}
+                  src={cloudinaryThumb(urlDaFoto(musical.galeria[fotoAberta]), 1000)}
                   alt={`${musical.titulo} — foto ${fotoAberta + 1}`}
                   style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: "8px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
                 />
@@ -1108,7 +1108,7 @@ function Musical() {
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
               <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "50px", paddingBottom: "56px", paddingLeft: "28px", paddingRight: "28px", boxSizing: "border-box" }}>
                 {musical.capa ? (
-                  <img src={musical.capa} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "158px", height: "221px", objectFit: "cover", borderRadius: "10px", marginBottom: "16px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
+                  <img src={otimizarImagem(musical.capa, 320)} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "158px", height: "221px", objectFit: "cover", borderRadius: "10px", marginBottom: "16px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
                 ) : (
                   <div style={{ width: "158px", height: "221px", background: "#1a1a1a", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
                     <span style={{ color: "#F5C518", fontSize: "13px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>

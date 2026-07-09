@@ -3,6 +3,11 @@ import { getDoc, doc } from "firebase/firestore"
 import { db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
+function otimizarImagem(url, largura) {
+  if (!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`);
+}
+
 function CardRanking({ musical, index, navigate, contador, labelSingular, labelPlural, mostrarContador = true }) {
   return (
     <div
@@ -39,7 +44,7 @@ function CardRanking({ musical, index, navigate, contador, labelSingular, labelP
       </div>
 
       {musical.capa ? (
-        <img src={musical.capa} alt={musical.titulo} style={{ width: "36px", height: "50px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+        <img src={otimizarImagem(musical.capa, 80)} alt={musical.titulo} style={{ width: "36px", height: "50px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
       ) : (
         <div style={{ width: "36px", height: "50px", background: "#1a1a1a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <span style={{ color: "#F5C518", fontSize: "7px", textAlign: "center", padding: "3px" }}>{musical.titulo}</span>
