@@ -55,6 +55,19 @@ module.exports = async (req, res) => {
     return res.status(500).json({ erro: "Credenciais do R2 não configuradas na Vercel." });
   }
 
+  // DIAGNÓSTICO TEMPORÁRIO — remover depois
+  if (req.query && req.query.diag === "1") {
+    return res.status(200).json({
+      accountId_len: (process.env.R2_ACCOUNT_ID || "").length,
+      accountId_preview: (process.env.R2_ACCOUNT_ID || "").slice(0, 6),
+      accessKey_len: (process.env.R2_ACCESS_KEY_ID || "").length,
+      secretKey_len: (process.env.R2_SECRET_ACCESS_KEY || "").length,
+      bucket: process.env.R2_BUCKET_NAME || "(vazio)",
+      publicUrl: process.env.R2_PUBLIC_URL || "(vazio)",
+      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    });
+  }
+
   try {
     const corpo = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
     const { imagemBase64, nomeArquivo, pasta } = corpo;
