@@ -1104,7 +1104,7 @@ function Musical() {
           </div>
 
           {/* ── CARTÃO PARA COMPARTILHAR ── */}
-          {votoAtual && (
+          {(jaVi || votoAtual) && (
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
               <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "50px", paddingBottom: "56px", paddingLeft: "28px", paddingRight: "28px", boxSizing: "border-box" }}>
                 {musical.capa ? (
@@ -1116,7 +1116,11 @@ function Musical() {
                 )}
                 <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#ffffff", textAlign: "center", marginBottom: "4px", lineHeight: 1.2 }}>{musical.titulo}</p>
                 <p style={{ fontSize: "11px", color: "#999999", textAlign: "center", marginBottom: "10px", letterSpacing: "0.3px" }}>Dir. {musical.direcao || "—"}</p>
-                <div style={{ display: "flex", gap: "4px", marginBottom: "14px" }}>{estrelasSVG(votoAtual)}</div>
+                {votoAtual ? (
+                  <div style={{ display: "flex", gap: "4px", marginBottom: "14px" }}>{estrelasSVG(votoAtual)}</div>
+                ) : (
+                  <p style={{ fontSize: "13px", color: "#F5C518", fontWeight: "600", letterSpacing: "0.5px", marginBottom: "14px" }}>✓ Já vi</p>
+                )}
                 <div style={{ width: "50px", height: "1px", background: "#ffffff", opacity: 0.12, marginBottom: "10px" }} />
                 <img src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png" alt="MCDb" crossOrigin="anonymous" style={{ width: "76px", height: "auto", marginBottom: "5px", opacity: 0.95 }} />
                 <p style={{ fontSize: "10px", color: "#999999", textAlign: "center", letterSpacing: "0.2px" }}>mcdb.musicalcast.com.br</p>
