@@ -27,6 +27,7 @@ const ALIASES = {
 "andré padreca": "André Luiz Odin",
 "Gabriel D'ângelo": "Gabriel D'Angelo",
 "rafael miranda": "Rafa Diverse",
+"maria claudia raia": "Claudia Raia",
 "leonardo wagner": "Leo Wagner",
 "lurryan nascimento": "Lurryan",
 "julio mancini": "Julio Assad",
