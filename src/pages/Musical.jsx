@@ -24,6 +24,10 @@ function nomesClicaveis(texto) {
     </span>
   ))
 }
+function otimizarImagem(url, largura) {
+  if (!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`);
+}
 
 // Essenciais: gravam nos campos planos do Firestore (busca/Home/Pessoa dependem deles)
 const ESSENCIAIS = ["Direção", "Direção Musical", "Versionista", "Texto Original", "Música Original", "Produtora"]
@@ -753,7 +757,7 @@ function Musical() {
           <div className="musical-header">
             <div className="musical-poster">
               {musical.capa
-                ? <img src={musical.capa} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
+                ? <img src={otimizarImagem(musical.capa, 500)} alt={musical.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
                 : musical.titulo}
             </div>
             <div>
