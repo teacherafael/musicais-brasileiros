@@ -11,6 +11,27 @@ const normalizar = (texto) => {
   return semArtigo.replace(/[.,;:!?"'()]/g, "").replace(/\s+/g, " ").trim()
 }
 
+const PESO_BAYESIANO = 5
+
+function calcularMediaGeral(lista) {
+  const comVotos = lista.filter(m => m.totalVotos > 0)
+  if (comVotos.length === 0) return 0
+  const totalSoma = comVotos.reduce((acc, m) => acc + m.somaEstrelas, 0)
+  const totalVotos = comVotos.reduce((acc, m) => acc + m.totalVotos, 0)
+  return totalVotos > 0 ? totalSoma / totalVotos : 0
+}
+
+function calcularNotaBayesiana(musical, mediaGeral) {
+  const v = musical.totalVotos || 0
+  const R = v > 0 ? musical.somaEstrelas / v : 0
+  return (v / (v + PESO_BAYESIANO)) * R + (PESO_BAYESIANO / (v + PESO_BAYESIANO)) * mediaGeral
+}
+
+function ordenarPorBayesiana(lista) {
+  const mediaGeral = calcularMediaGeral(lista)
+  return [...lista].sort((a, b) => calcularNotaBayesiana(b, mediaGeral) - calcularNotaBayesiana(a, mediaGeral))
+}
+
 
 function Home() {
   const [musicais, setMusicais] = useState([])
@@ -138,7 +159,7 @@ function scrollDestaques(direcao) {
         if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
           const lista = indiceSnap.data().itens.map(m => ({ ...m, id: m.id, dataCriacao: m.dataCriacao || null }))
           setMusicais(lista)
-          setDestaques(lista.filter(m => m.destaque === true).slice(0, 10))
+          setDestaques(ordenarPorBayesiana(lista.filter(m => m.destaque === true)).slice(0, 10))
           setCarregando(false)
           return
         }
