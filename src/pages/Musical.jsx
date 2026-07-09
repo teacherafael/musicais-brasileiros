@@ -25,8 +25,21 @@ function nomesClicaveis(texto) {
   ))
 }
 function otimizarImagem(url, largura) {
-  if (!url || !url.includes("/upload/")) return url;
-  return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`);
+  if (!url) return url;
+  // Imagens do Cloudflare R2: já geramos duas versões (-800 e -400).
+  // Escolhemos a menor quando a largura pedida for pequena; senão, a grande.
+  if (url.includes("r2.dev")) {
+    const querPequena = largura <= 400;
+    return url
+      .replace("-800.webp", querPequena ? "-400.webp" : "-800.webp")
+      .replace("-400.webp", querPequena ? "-400.webp" : "-800.webp");
+  }
+  // Imagens do Cloudinary: otimização por transformação na URL.
+  if (url.includes("/upload/")) {
+    return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`);
+  }
+  // Qualquer outra fonte (Postimages, links soltos): usa como está.
+  return url;
 }
 
 // Essenciais: gravam nos campos planos do Firestore (busca/Home/Pessoa dependem deles)
@@ -186,6 +199,7 @@ function Musical() {
   const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [musicosEdicao, setMusicosEdicao] = useState([])
   const [gerando, setGerando] = useState(false)
+  const [enviandoCapa, setEnviandoCapa] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
   const [fotoAberta, setFotoAberta] = useState(null)
@@ -315,7 +329,42 @@ function Musical() {
       }
     }
   }
+async function fazerUploadCapa(arquivo) {
+    if (!arquivo) return
+    if (!arquivo.type.startsWith("image/")) {
+      mostrarToast("Selecione um arquivo de imagem.")
+      return
+    }
+    setEnviandoCapa(true)
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = () => reject(new Error("Falha ao ler o arquivo"))
+        reader.readAsDataURL(arquivo)
+      })
 
+      const resposta = await fetch("/api/upload-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imagemBase64: base64,
+          nomeArquivo: arquivo.name,
+          pasta: "capas",
+        }),
+      })
+      const dados = await resposta.json()
+      if (!resposta.ok || !dados.urlGrande) {
+        throw new Error(dados.erro || "Erro no upload")
+      }
+      // Guardamos a versão grande (-800) no campo capa; a pequena é derivada na exibição
+      setFormEdicao(prev => ({ ...prev, capa: dados.urlGrande }))
+      mostrarToast("Capa enviada com sucesso!")
+    } catch (e) {
+      mostrarToast("Erro ao enviar a capa. Tente novamente.")
+    }
+    setEnviandoCapa(false)
+  }
   function abrirEdicao() {
     setFormEdicao({
       titulo: musical.titulo || "", sinopse: musical.sinopse || "",
@@ -739,7 +788,31 @@ function Musical() {
             </button>
           </div>
 
-          {campo("URL da capa", "capa")}
+<div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+              Capa
+            </label>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapa ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoCapa ? "wait" : "pointer" }}>
+                {enviandoCapa ? "Enviando..." : "📤 Enviar imagem"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={enviandoCapa}
+                  onChange={e => { fazerUploadCapa(e.target.files[0]); e.target.value = "" }}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <span style={{ fontSize: "13px", color: "#aaa" }}>ou cole uma URL abaixo</span>
+            </div>
+            <input
+              type="text"
+              value={formEdicao.capa || ""}
+              onChange={e => setFormEdicao(prev => ({ ...prev, capa: e.target.value }))}
+              placeholder="https://..."
+              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
+            />
+          </div>
           {campo("Galeria de fotos (uma URL do Cloudinary por linha)", "galeria", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
 

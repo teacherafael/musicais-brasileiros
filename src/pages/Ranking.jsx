@@ -4,8 +4,20 @@ import { db } from "../firebase"
 import { useNavigate } from "react-router-dom"
 
 function otimizarImagem(url, largura) {
-  if (!url || !url.includes("/upload/")) return url;
-  return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`);
+  if (!url) return url;
+  // R2: escolhe entre as versões já geradas (-400 pequena, -800 grande)
+  if (url.includes("r2.dev")) {
+    const querPequena = largura <= 400;
+    return url
+      .replace("-800.webp", querPequena ? "-400.webp" : "-800.webp")
+      .replace("-400.webp", querPequena ? "-400.webp" : "-800.webp");
+  }
+  // Cloudinary: transformação na URL
+  if (url.includes("/upload/")) {
+    return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`);
+  }
+  // Outras fontes: usa como está
+  return url;
 }
 
 function CardRanking({ musical, index, navigate, contador, labelSingular, labelPlural, mostrarContador = true }) {

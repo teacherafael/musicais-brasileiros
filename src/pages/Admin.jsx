@@ -151,6 +151,7 @@ function Admin() {
   const [musicosNovo, setMusicosNovo] = useState([])
   const [rascunhoId, setRascunhoId] = useState(null)
   const [rascunhosAdmin, setRascunhosAdmin] = useState([])
+  const [enviandoCapaNovo, setEnviandoCapaNovo] = useState(false)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -308,7 +309,40 @@ function Admin() {
       programaDigital: form.programaDigital || "",
     }
   }
+async function fazerUploadCapaNovo(arquivo) {
+    if (!arquivo) return
+    if (!arquivo.type.startsWith("image/")) {
+      alert("Selecione um arquivo de imagem.")
+      return
+    }
+    setEnviandoCapaNovo(true)
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = () => reject(new Error("Falha ao ler o arquivo"))
+        reader.readAsDataURL(arquivo)
+      })
 
+      const resposta = await fetch("/api/upload-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imagemBase64: base64,
+          nomeArquivo: arquivo.name,
+          pasta: "capas",
+        }),
+      })
+      const dados = await resposta.json()
+      if (!resposta.ok || !dados.urlGrande) {
+        throw new Error(dados.erro || "Erro no upload")
+      }
+      setCapaNovo(dados.urlGrande)
+    } catch (e) {
+      alert("Erro ao enviar a capa. Tente novamente.")
+    }
+    setEnviandoCapaNovo(false)
+  }
   async function salvarNovo(status) {
     if (!formNovo.titulo || !formNovo.titulo.trim()) {
       alert("O título é obrigatório.")
@@ -810,9 +844,22 @@ function Admin() {
           {campoNovo("Link do programa digital (opcional)", "programaDigital")}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
-              URL da capa (opcional)
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+              Capa (opcional)
             </label>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaNovo ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoCapaNovo ? "wait" : "pointer" }}>
+                {enviandoCapaNovo ? "Enviando..." : "📤 Enviar imagem"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={enviandoCapaNovo}
+                  onChange={e => { fazerUploadCapaNovo(e.target.files[0]); e.target.value = "" }}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <span style={{ fontSize: "13px", color: "#aaa" }}>ou cole uma URL abaixo</span>
+            </div>
             <input type="text" placeholder="https://..." value={capaNovo} onChange={e => setCapaNovo(e.target.value)}
               style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
             {capaNovo && (

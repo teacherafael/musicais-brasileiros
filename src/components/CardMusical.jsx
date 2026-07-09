@@ -1,6 +1,23 @@
 import { useEffect, useState, useRef } from "react"
 import { createPortal } from "react-dom"
 
+function otimizarCapa(url, largura) {
+  if (!url) return url
+  // R2: escolhe entre as versões já geradas (-400 pequena, -800 grande)
+  if (url.includes("r2.dev")) {
+    const querPequena = largura <= 400
+    return url
+      .replace("-800.webp", querPequena ? "-400.webp" : "-800.webp")
+      .replace("-400.webp", querPequena ? "-400.webp" : "-800.webp")
+  }
+  // Cloudinary: transformação na URL
+  if (url.includes("/upload/")) {
+    return url.replace("/upload/", `/upload/w_${largura},c_limit,q_auto,f_auto/`)
+  }
+  // Outras fontes: usa como está
+  return url
+}
+
 export default function CardMusical({
   musical, tamanho,
   usuario, jaViSet, queroVerSet, listas, musicaisNasListas,
@@ -209,7 +226,7 @@ export default function CardMusical({
         >
           <div style={{ width: "140px", height: "200px", marginBottom: "10px", borderRadius: "6px", overflow: "hidden", position: "relative" }}>
             {musical.capa
-              ? <img src={musical.capa?.replace("/upload/", "/upload/w_280,c_limit,q_auto,f_auto/")} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ? <img src={otimizarCapa(musical.capa, 280)} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>}
             {barraBotoes}
           </div>
@@ -241,7 +258,7 @@ export default function CardMusical({
       >
         <div style={{ width: "100%", aspectRatio: "2/3", position: "relative", overflow: "hidden" }}>
           {musical.capa
-            ? <img src={musical.capa?.replace("/upload/", "/upload/w_400,c_limit,q_auto,f_auto/")} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <img src={otimizarCapa(musical.capa, 400)} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "12px", textAlign: "center" }}>{musical.titulo}</div>}
           {barraBotoes}
         </div>
