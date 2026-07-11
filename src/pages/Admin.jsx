@@ -64,6 +64,11 @@ function musicosDeDocumento(doc) {
   }))
 }
 
+function fontesDeDocumento(doc) {
+  if (!Array.isArray(doc.fontes)) return []
+  return doc.fontes.map(f => ({ descricao: f.descricao || "", link: f.link || "" }))
+}
+
 function teatrosDeDocumento(doc) {
   if (!Array.isArray(doc.teatros)) return []
   return doc.teatros.map(t => ({
@@ -139,6 +144,7 @@ function Admin() {
   const [equipeEdicao, setEquipeEdicao] = useState(equipeInicial())
   const [musicosEdicao, setMusicosEdicao] = useState([])
   const [teatrosEdicao, setTeatrosEdicao] = useState([])
+  const [fontesEdicao, setFontesEdicao] = useState([])
   const [indiceStatus, setIndiceStatus] = useState("")
   const [emAltaVotos, setEmAltaVotos] = useState([])
   const [janela, setJanela] = useState("7")
@@ -149,6 +155,7 @@ function Admin() {
   const [teatrosNovo, setTeatrosNovo] = useState([])
   const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
   const [musicosNovo, setMusicosNovo] = useState([])
+  const [fontesNovo, setFontesNovo] = useState([])
   const [rascunhoId, setRascunhoId] = useState(null)
   const [rascunhosAdmin, setRascunhosAdmin] = useState([])
   const [enviandoCapaNovo, setEnviandoCapaNovo] = useState(false)
@@ -262,7 +269,7 @@ function Admin() {
 
   // ── Monta o payload final a partir dos estados do editor ────────────────────
 
-  function montarPayload(form, equipe, musicos, teatros, capa) {
+  function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
     const teatrosLimpos = teatros
       .map(item => ({
         ano: item.ano.trim(),
@@ -289,6 +296,10 @@ function Admin() {
       .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
       .filter(item => item.local && item.nomes.length > 0)
 
+    const fontesLimpas = (fontes || [])
+      .map(item => ({ descricao: item.descricao.trim(), link: item.link.trim() }))
+      .filter(item => item.descricao)
+
     return {
       titulo: form.titulo || "",
       tituloOriginal: form.tituloOriginal || "",
@@ -308,6 +319,7 @@ function Admin() {
       musicos: musicosLimpos,
       capa: capa || "",
       programaDigital: form.programaDigital || "",
+      fontes: fontesLimpas,
     }
   }
 async function fazerUploadCapaNovo(arquivo) {
@@ -386,7 +398,7 @@ async function fazerUploadCapaNovo(arquivo) {
       return
     }
 
-    const payload = montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo)
+    const payload = montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo)
 
     if (status === "rascunho") {
       if (rascunhoId) {
@@ -435,6 +447,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setTeatrosNovo([])
     setEquipeNovo(equipeInicial())
     setMusicosNovo([])
+    setFontesNovo([])
     setRascunhoId(null)
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
@@ -455,6 +468,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setEquipeNovo(equipeDeDocumento(r))
     setMusicosNovo(musicosDeDocumento(r))
     setTeatrosNovo(teatrosDeDocumento(r))
+    setFontesNovo(fontesDeDocumento(r))
     setCapaNovo(r.capa || "")
     setRascunhoId(r.id)
   }
@@ -470,6 +484,7 @@ async function fazerUploadCapaNovo(arquivo) {
       setTeatrosNovo([])
       setEquipeNovo(equipeInicial())
       setMusicosNovo([])
+      setFontesNovo([])
     }
   }
 
@@ -486,12 +501,13 @@ async function fazerUploadCapaNovo(arquivo) {
     setEquipeEdicao(equipeDeDocumento(s))
     setMusicosEdicao(musicosDeDocumento(s))
     setTeatrosEdicao(teatrosDeDocumento(s))
+    setFontesEdicao(fontesDeDocumento(s))
     setCapas(prev => ({ ...prev, [s.id]: s.capa || prev[s.id] || "" }))
     setEditandoSugestao(s.id)
   }
 
   async function salvarEdicaoSugestao(sugestaoId) {
-    const payload = montarPayload(formSugestao, equipeEdicao, musicosEdicao, teatrosEdicao, capas[sugestaoId] || "")
+    const payload = montarPayload(formSugestao, equipeEdicao, musicosEdicao, teatrosEdicao, capas[sugestaoId] || "", fontesEdicao)
     await updateDoc(doc(db, "sugestoes", sugestaoId), payload)
     setSugestoes(prev => prev.map(s => s.id === sugestaoId ? { ...s, ...payload } : s))
     setEditandoSugestao(null)
@@ -499,6 +515,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setEquipeEdicao(equipeInicial())
     setMusicosEdicao([])
     setTeatrosEdicao([])
+    setFontesEdicao([])
   }
 
   async function aprovar(sugestao) {
@@ -540,6 +557,7 @@ async function fazerUploadCapaNovo(arquivo) {
       musicos: Array.isArray(sugestao.musicos) ? sugestao.musicos : [],
       capa: capas[sugestao.id] || sugestao.capa || "",
       programaDigital: sugestao.programaDigital || "",
+      fontes: Array.isArray(sugestao.fontes) ? sugestao.fontes : [],
       totalVotos: 0,
       somaEstrelas: 0,
       dataCriacao: new Date()
@@ -677,6 +695,33 @@ async function fazerUploadCapaNovo(arquivo) {
     )
   }
 
+  // Editor de fontes genérico
+  function renderEditorFontes(fontes, setFontes) {
+    return (
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+          Fontes (de onde a informação foi tirada)
+        </label>
+        {fontes.map((item, i) => (
+          <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+            <input type="text" placeholder="Descrição (ex: Folha de S.Paulo, 12/03/1998)" value={item.descricao}
+              onChange={e => { const novo = [...fontes]; novo[i] = { ...novo[i], descricao: e.target.value }; setFontes(novo) }}
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+            <input type="text" placeholder="Link (opcional)" value={item.link}
+              onChange={e => { const novo = [...fontes]; novo[i] = { ...novo[i], link: e.target.value }; setFontes(novo) }}
+              style={{ width: "200px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+            <button onClick={() => setFontes(fontes.filter((_, idx) => idx !== i))}
+              style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+          </div>
+        ))}
+        <button onClick={() => setFontes([...fontes, { descricao: "", link: "" }])}
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          + Adicionar fonte
+        </button>
+      </div>
+    )
+  }
+
   // Editor de teatros genérico
   function renderEditorTeatros(teatros, setTeatros, moverTeatro) {
     return (
@@ -799,9 +844,10 @@ async function fazerUploadCapaNovo(arquivo) {
                       <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
                     )}
                   </div>
+                  {renderEditorFontes(fontesEdicao, setFontesEdicao)}
                   <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
                     <button className="btn-comentar" onClick={() => salvarEdicaoSugestao(s.id)}>Salvar edição</button>
-                    <button className="btn-sair" onClick={() => { setEditandoSugestao(null); setFormSugestao({}); setEquipeEdicao(equipeInicial()); setMusicosEdicao([]); setTeatrosEdicao([]) }}>Cancelar</button>
+                    <button className="btn-sair" onClick={() => { setEditandoSugestao(null); setFormSugestao({}); setEquipeEdicao(equipeInicial()); setMusicosEdicao([]); setTeatrosEdicao([]); setFontesEdicao([]) }}>Cancelar</button>
                   </div>
                 </>
               ) : (
@@ -922,6 +968,8 @@ async function fazerUploadCapaNovo(arquivo) {
             )}
           </div>
 
+          {renderEditorFontes(fontesNovo, setFontesNovo)}
+
           {rascunhoId && (
             <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
               📝 Editando um rascunho salvo. Publicar ou salvar vai atualizar este mesmo item.
@@ -931,7 +979,7 @@ async function fazerUploadCapaNovo(arquivo) {
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={() => salvarNovo("publicado")}>✅ Publicar musical</button>
             <button className="btn-sair" onClick={() => salvarNovo("rascunho")}>💾 Salvar rascunho</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setRascunhoId(null) }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setFontesNovo([]); setRascunhoId(null) }}>Limpar</button>
           </div>
         </div>
         </>

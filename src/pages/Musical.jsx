@@ -198,6 +198,7 @@ function Musical() {
   const [equipeEdicao, setEquipeEdicao] = useState([])
   const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [musicosEdicao, setMusicosEdicao] = useState([])
+  const [fontesEdicao, setFontesEdicao] = useState([])
   const [gerando, setGerando] = useState(false)
   const [enviandoCapa, setEnviandoCapa] = useState(false)
   const [toast, setToast] = useState(null)
@@ -390,6 +391,8 @@ async function fazerUploadCapa(arquivo) {
     // Carrega músicos existentes ou começa vazio
     const musicosExistentes = Array.isArray(musical.musicos) ? musical.musicos : []
     setMusicosEdicao(musicosExistentes.map(item => ({ local: item.local || "", nomesTexto: (item.nomes || []).join(", ") })))
+    const fontesExistentes = Array.isArray(musical.fontes) ? musical.fontes : []
+    setFontesEdicao(fontesExistentes.map(f => ({ descricao: f.descricao || "", link: f.link || "" })))
     setEditandoMusical(true)
   }
 
@@ -439,6 +442,10 @@ async function fazerUploadCapa(arquivo) {
       .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
       .filter(item => item.local && item.nomes.length > 0)
 
+    const fontesLimpas = fontesEdicao
+      .map(item => ({ descricao: item.descricao.trim(), link: item.link.trim() }))
+      .filter(item => item.descricao)
+
     const galeriaLimpa = (formEdicao.galeria || "")
       .split("\n")
       .map(linha => linha.trim())
@@ -462,6 +469,7 @@ async function fazerUploadCapa(arquivo) {
       teatros: teatrosLimpos,
       teatrosAdicionais: [],
       musicos: musicosLimpos,
+      fontes: fontesLimpas,
     }
     await updateDoc(doc(db, "musicais", id), dadosFinais)
     setMusical(prev => ({ ...prev, ...dadosFinais }))
@@ -815,6 +823,29 @@ async function fazerUploadCapa(arquivo) {
           </div>
           {campo("Galeria de fotos (uma URL do Cloudinary por linha)", "galeria", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
+
+          {/* Editor de fontes */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+              Fontes (de onde a informação foi tirada)
+            </label>
+            {fontesEdicao.map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                <input type="text" placeholder="Descrição (ex: Folha de S.Paulo, 12/03/1998)" value={item.descricao}
+                  onChange={e => { const novo = [...fontesEdicao]; novo[i] = { ...novo[i], descricao: e.target.value }; setFontesEdicao(novo) }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <input type="text" placeholder="Link (opcional)" value={item.link}
+                  onChange={e => { const novo = [...fontesEdicao]; novo[i] = { ...novo[i], link: e.target.value }; setFontesEdicao(novo) }}
+                  style={{ width: "200px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                <button onClick={() => setFontesEdicao(fontesEdicao.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+              </div>
+            ))}
+            <button onClick={() => setFontesEdicao([...fontesEdicao, { descricao: "", link: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              + Adicionar fonte
+            </button>
+          </div>
 
           {formEdicao.capa && (
             <img src={otimizarImagem(formEdicao.capa, 160)} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
@@ -1203,6 +1234,27 @@ async function fazerUploadCapa(arquivo) {
                   {gerando ? "Gerando..." : "📤 Compartilhar imagem"}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ── FONTES ── */}
+          {Array.isArray(musical.fontes) && musical.fontes.some(f => f && f.descricao) && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Fontes</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
+                {musical.fontes.filter(f => f && f.descricao).map((f, i) => (
+                  <li key={i} style={{ fontSize: "13px", color: "#666", lineHeight: 1.4 }}>
+                    {f.link ? (
+                      <a href={f.link} target="_blank" rel="noopener noreferrer" style={{ color: "#b8960a", textDecoration: "none", borderBottom: "1px dotted #b8960a" }}>
+                        {f.descricao}
+                      </a>
+                    ) : (
+                      f.descricao
+                    )}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
