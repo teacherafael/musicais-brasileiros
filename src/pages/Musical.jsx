@@ -606,9 +606,13 @@ async function fazerUploadCapa(arquivo) {
       // só começa a baixar quando o cartão monta, então pode não estar pronta no clique)
       const imagensCartao = Array.from(cartaoRef.current.querySelectorAll("img"))
       await Promise.all(imagensCartao.map(img =>
-        (img.complete && img.naturalWidth > 0)
+        img.complete
           ? Promise.resolve()
-          : new Promise(resolve => { img.onload = resolve; img.onerror = resolve })
+          : new Promise(resolve => {
+              img.onload = resolve
+              img.onerror = resolve
+              setTimeout(resolve, 3000) // trava de segurança: nunca espera mais que 3s
+            })
       ))
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
