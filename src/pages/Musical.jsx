@@ -616,6 +616,24 @@ async function fazerUploadCapa(arquivo) {
       ))
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
+      // Embute a capa como data URL antes de capturar. No iOS o html2canvas não puxa
+      // a imagem remota a tempo; baixando via fetch e "colando" no cartão, ela sempre entra.
+      const capaImg = cartaoRef.current.querySelector("img[data-capa]")
+      if (capaImg && musical.capa) {
+        try {
+          const resp = await fetch(otimizarImagem(musical.capa, 320), { mode: "cors", cache: "reload" })
+          const blob = await resp.blob()
+          const dataUrl = await new Promise((resolve, reject) => {
+            const leitor = new FileReader()
+            leitor.onload = () => resolve(leitor.result)
+            leitor.onerror = reject
+            leitor.readAsDataURL(blob)
+          })
+          capaImg.src = dataUrl
+          await new Promise(resolve => { capaImg.onload = resolve; setTimeout(resolve, 3000) })
+        } catch (e) { /* se falhar, gera o cartão sem a capa em vez de travar */ }
+      }
+
       const canvas = await html2canvas(cartaoRef.current, { useCORS: true, scale: 2, backgroundColor: null })
 
       const blob = await new Promise((resolve) =>
@@ -1233,7 +1251,7 @@ async function fazerUploadCapa(arquivo) {
             <div style={{ marginTop: "16px", marginBottom: "8px" }}>
               <div ref={cartaoRef} style={{ position: "absolute", left: "-9999px", top: "-9999px", background: "linear-gradient(160deg, #2f2f2f 0%, #1c1c1c 100%)", width: "270px", height: "480px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "50px", paddingBottom: "56px", paddingLeft: "28px", paddingRight: "28px", boxSizing: "border-box" }}>
                 {musical.capa ? (
-                  <img src={otimizarImagem(musical.capa, 320) + "?card"} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "158px", height: "221px", objectFit: "cover", borderRadius: "10px", marginBottom: "16px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
+                  <img data-capa="1" src={otimizarImagem(musical.capa, 320) + "?card"} alt={musical.titulo} crossOrigin="anonymous" style={{ width: "158px", height: "221px", objectFit: "cover", borderRadius: "10px", marginBottom: "16px", boxShadow: "0 12px 32px rgba(0,0,0,0.55)" }} />
                 ) : (
                   <div style={{ width: "158px", height: "221px", background: "#1a1a1a", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
                     <span style={{ color: "#F5C518", fontSize: "13px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
