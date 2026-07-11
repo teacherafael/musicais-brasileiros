@@ -1226,7 +1226,7 @@ async function fazerUploadCapa(arquivo) {
                   <p style={{ fontSize: "13px", color: "#F5C518", fontWeight: "600", letterSpacing: "0.5px", marginBottom: "14px" }}>✓ Já vi</p>
                 )}
                 <div style={{ width: "50px", height: "1px", background: "#ffffff", opacity: 0.12, marginBottom: "10px" }} />
-                <img src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png" alt="MCDb" crossOrigin="anonymous" style={{ width: "76px", height: "auto", marginBottom: "5px", opacity: 0.95 }} />
+                <img src="https://pub-c2de81da01f44e4aa685a9b28614c01d.r2.dev/logo/mcdb-logo.png" alt="MCDb" crossOrigin="anonymous" style={{ width: "76px", height: "auto", marginBottom: "5px", opacity: 0.95 }} />
                 <p style={{ fontSize: "10px", color: "#999999", textAlign: "center", letterSpacing: "0.2px" }}>mcdb.musicalcast.com.br</p>
               </div>
               <div style={{ marginTop: "12px" }}>
