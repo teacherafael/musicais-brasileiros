@@ -625,6 +625,14 @@ export const teatros = [
     bairro: "Parque Brasil 500",
     cidade: "Paulínia – SP",
   },
+     {
+    id: "cineteatro-sao-luiz",
+    nomeOficial: "Cineteatro São Luiz",
+    aliases: [],
+    endereco: "R. Major Facundo, 500",
+    bairro: "Centro",
+    cidade: "Fortaleza – CE",
+  },
   {
     id: "teatro-universitario",
     nomeOficial: "Teatro Universitário",
