@@ -602,6 +602,16 @@ async function fazerUploadCapa(arquivo) {
     if (!cartaoRef.current) return
     setGerando(true)
     try {
+      // Espera as imagens do cartão carregarem antes de capturar (a capa -400.webp
+      // só começa a baixar quando o cartão monta, então pode não estar pronta no clique)
+      const imagensCartao = Array.from(cartaoRef.current.querySelectorAll("img"))
+      await Promise.all(imagensCartao.map(img =>
+        (img.complete && img.naturalWidth > 0)
+          ? Promise.resolve()
+          : new Promise(resolve => { img.onload = resolve; img.onerror = resolve })
+      ))
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
       const canvas = await html2canvas(cartaoRef.current, { useCORS: true, scale: 2, backgroundColor: null })
 
       const blob = await new Promise((resolve) =>
@@ -649,8 +659,15 @@ async function fazerUploadCapa(arquivo) {
     return [1, 2, 3, 4, 5].map(i => {
       const cheia = nota >= i
       const meia = nota >= i - 0.5 && nota < i
-      const cor = (cheia || meia) ? "#F5C518" : "rgba(255,255,255,0.15)"
-      return <span key={i} style={{ color: cor, fontSize: "24px" }}>★</span>
+      if (meia) {
+        return (
+          <span key={i} style={{ position: "relative", display: "inline-block", fontSize: "24px", lineHeight: 1 }}>
+            <span style={{ color: "rgba(255,255,255,0.15)" }}>★</span>
+            <span style={{ position: "absolute", left: 0, top: 0, width: "50%", overflow: "hidden", color: "#F5C518" }}>★</span>
+          </span>
+        )
+      }
+      return <span key={i} style={{ color: cheia ? "#F5C518" : "rgba(255,255,255,0.15)", fontSize: "24px", lineHeight: 1 }}>★</span>
     })
   }
 
