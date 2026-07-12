@@ -4,87 +4,18 @@ import { db, auth } from "../firebase"
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
-
-// Essenciais: gravam nos campos planos do Firestore (busca/Home/Pessoa dependem deles)
-const ESSENCIAIS = ["Direção", "Direção Musical", "Versionista", "Texto Original", "Música Original", "Produtora"]
-const ESSENCIAL_CAMPO = {
-  "Direção": "direcao",
-  "Direção Musical": "direcaoMusical",
-  "Versionista": "versionista",
-  "Texto Original": "textoOriginal",
-  "Música Original": "musicaOriginal",
-  "Produtora": "producao",
-}
-// Complementares: gravam dentro do array equipeCriativa
-const COMPLEMENTARES = [
-  "Direção Residente", "Direção Artística", "Direção Associada", "Assistência de Direção", "Coordenação Artística",
-  "Supervisão Musical", "Assistência de Direção Musical", "Regência", "Preparação Vocal", "Arranjos/Orquestração",
-  "Coreografia", "Assistência de Coreografia", "Direção de Movimento", "Coreografia Associada",
-  "Cenografia", "Assistente de Cenografia", "Cenotécnica", "Figurino", "Assistente de Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
-  "Direção de Produção", "Coordenação de Produção", "Produção Geral", "Produção Executiva", "Assistente de Produção", "Produtor Associado",
-]
-
-function equipeInicial() {
-  return [
-    ...ESSENCIAIS.map(funcao => ({ funcao, nomesTexto: "", essencial: true })),
-    ...COMPLEMENTARES.map(funcao => ({ funcao, nomesTexto: "", essencial: false })),
-  ]
-}
-
-// Preenche equipeInicial() com dados vindos de um documento (sugestão ou musical)
-function equipeDeDocumento(doc) {
-  const base = equipeInicial()
-  // Preenche essenciais dos campos planos
-  if (doc.direcao) base.find(r => r.funcao === "Direção").nomesTexto = doc.direcao
-  if (doc.direcaoMusical) base.find(r => r.funcao === "Direção Musical").nomesTexto = doc.direcaoMusical
-  if (doc.versionista) base.find(r => r.funcao === "Versionista").nomesTexto = doc.versionista
-  if (doc.textoOriginal) base.find(r => r.funcao === "Texto Original").nomesTexto = doc.textoOriginal
-  if (doc.musicaOriginal) base.find(r => r.funcao === "Música Original").nomesTexto = doc.musicaOriginal
-  if (doc.producao) base.find(r => r.funcao === "Produtora").nomesTexto = doc.producao
-  // Preenche complementares do equipeCriativa
-  if (Array.isArray(doc.equipeCriativa)) {
-    doc.equipeCriativa.forEach(item => {
-      const row = base.find(r => !r.essencial && !r.livre && r.funcao === item.funcao)
-      if (row) {
-        row.nomesTexto = Array.isArray(item.nomes) ? item.nomes.join(", ") : (item.nomes || "")
-      } else if (item.funcao) {
-        // cargo livre não listado nos COMPLEMENTARES
-        base.push({ funcao: item.funcao, nomesTexto: Array.isArray(item.nomes) ? item.nomes.join(", ") : (item.nomes || ""), livre: true, cargoTexto: item.funcao })
-      }
-    })
-  }
-  return base
-}
-
-function musicosDeDocumento(doc) {
-  if (!Array.isArray(doc.musicos)) return []
-  return doc.musicos.map(m => ({
-    local: m.local || "",
-    nomesTexto: Array.isArray(m.nomes) ? m.nomes.join(", ") : (m.nomes || "")
-  }))
-}
-
-function fontesDeDocumento(doc) {
-  if (!Array.isArray(doc.fontes)) return []
-  return doc.fontes.map(f => ({ descricao: f.descricao || "", link: f.link || "" }))
-}
-
-function teatrosDeDocumento(doc) {
-  if (!Array.isArray(doc.teatros)) return []
-  return doc.teatros.map(t => ({
-    ano: t.ano || "",
-    teatrosTexto: Array.isArray(t.teatros) ? t.teatros.join(", ") : (t.teatros || "")
-  }))
-}
-
-function montarEquipeDeStrings(direcao, direcaoMusical) {
-  const equipe = []
-  const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
-  const dm = (direcaoMusical || "").split(",").map(n => n.trim()).filter(Boolean)
-  if (d.length > 0) equipe.push({ funcao: "Direção", nomes: d })
-  if (dm.length > 0) equipe.push({ funcao: "Direção Musical", nomes: dm })
-  return equipe
-}
+import {
+  ESSENCIAIS,
+  ESSENCIAL_CAMPO,
+  COMPLEMENTARES,
+  equipeInicial,
+  equipeDeDocumento,
+  musicosDeDocumento,
+  fontesDeDocumento,
+  teatrosDeDocumento,
+  montarEquipeDeStrings,
+  montarPayload,
+} from "../musicalSchema"
 
 function montarItemIndice(id, m) {
   return {
@@ -267,61 +198,7 @@ function Admin() {
     setTeatrosEdicao(novo)
   }
 
-  // ── Monta o payload final a partir dos estados do editor ────────────────────
-
-  function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
-    const teatrosLimpos = teatros
-      .map(item => ({
-        ano: item.ano.trim(),
-        teatros: item.teatrosTexto.split(",").map(t => t.trim()).filter(Boolean)
-      }))
-      .filter(item => item.ano && item.teatros.length > 0)
-
-    const planos = {}
-    ESSENCIAIS.forEach(funcao => {
-      const row = equipe.find(r => r.essencial && r.funcao === funcao)
-      const nomes = row ? row.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) : []
-      planos[ESSENCIAL_CAMPO[funcao]] = nomes.join(", ")
-    })
-
-    const equipeCriativa = equipe
-      .filter(r => !r.essencial)
-      .map(r => ({
-        funcao: r.livre ? (r.cargoTexto || "").trim() : r.funcao,
-        nomes: r.nomesTexto.split(",").map(n => n.trim()).filter(Boolean)
-      }))
-      .filter(e => e.funcao && e.nomes.length > 0)
-
-    const musicosLimpos = musicos
-      .map(item => ({ local: item.local.trim(), nomes: item.nomesTexto.split(",").map(n => n.trim()).filter(Boolean) }))
-      .filter(item => item.local && item.nomes.length > 0)
-
-    const fontesLimpas = (fontes || [])
-      .map(item => ({ descricao: item.descricao.trim(), link: item.link.trim() }))
-      .filter(item => item.descricao)
-
-    return {
-      titulo: form.titulo || "",
-      tituloOriginal: form.tituloOriginal || "",
-      sinopse: form.sinopse || "",
-      direcao: planos.direcao,
-      direcaoMusical: planos.direcaoMusical,
-      versionista: planos.versionista,
-      textoOriginal: planos.textoOriginal,
-      musicaOriginal: planos.musicaOriginal,
-      producao: planos.producao,
-      equipeCriativa,
-      elenco: form.elenco || "",
-      elencoAdicional: form.elencoAdicional || "",
-      ano: form.ano || "",
-      teatro: teatrosLimpos[0]?.teatros[0] || "",
-      teatros: teatrosLimpos,
-      musicos: musicosLimpos,
-      capa: capa || "",
-      programaDigital: form.programaDigital || "",
-      fontes: fontesLimpas,
-    }
-  }
+  // ── montarPayload agora vem de ../musicalSchema (fonte única) ────────────────
 async function fazerUploadCapaNovo(arquivo) {
     if (!arquivo) return
     if (!arquivo.type.startsWith("image/")) {
@@ -533,31 +410,33 @@ async function fazerUploadCapaNovo(arquivo) {
       if (!window.confirm(`Já existe um musical com esse título ("${sugestao.titulo}"). Publicar vai SOBRESCREVER o existente e zerar as avaliações. Continuar?`)) return
     }
 
-    // Monta equipeCriativa a partir dos campos já salvos na sugestão
-    const equipeCriativaFinal = Array.isArray(sugestao.equipeCriativa) && sugestao.equipeCriativa.length > 0
-      ? sugestao.equipeCriativa
-      : montarEquipeDeStrings(sugestao.direcao, sugestao.direcaoMusical)
+    // Reconstrói tudo via tradutor: lê tanto o formato novo quanto o antigo,
+    // resgatando dados de sugestões antigas que se perderiam de outra forma.
+    const payload = montarPayload(
+      {
+        titulo: sugestao.titulo,
+        tituloOriginal: sugestao.tituloOriginal,
+        sinopse: sugestao.sinopse,
+        elenco: sugestao.elenco,
+        elencoAdicional: sugestao.elencoAdicional,
+        ano: sugestao.ano,
+        programaDigital: sugestao.programaDigital,
+      },
+      equipeDeDocumento(sugestao),
+      musicosDeDocumento(sugestao),
+      teatrosDeDocumento(sugestao),
+      capas[sugestao.id] || sugestao.capa || "",
+      fontesDeDocumento(sugestao),
+    )
+
+    // Rede de segurança: se por acaso não veio nenhuma equipe, reconstrói a
+    // partir das strings de direção antigas.
+    if (payload.equipeCriativa.length === 0) {
+      payload.equipeCriativa = montarEquipeDeStrings(sugestao.direcao, sugestao.direcaoMusical)
+    }
 
     await setDoc(doc(db, "musicais", slug), {
-      titulo: sugestao.titulo || "",
-      tituloOriginal: sugestao.tituloOriginal || "",
-      sinopse: sugestao.sinopse || "",
-      direcao: sugestao.direcao || "",
-      direcaoMusical: sugestao.direcaoMusical || "",
-      equipeCriativa: equipeCriativaFinal,
-      producao: sugestao.producao || "",
-      elenco: sugestao.elenco || "",
-      elencoAdicional: sugestao.elencoAdicional || "",
-      versionista: sugestao.versionista || "",
-      textoOriginal: sugestao.textoOriginal || "",
-      musicaOriginal: sugestao.musicaOriginal || "",
-      ano: sugestao.ano || "",
-      teatro: sugestao.teatro || (Array.isArray(sugestao.teatros) && sugestao.teatros[0]?.teatros?.[0]) || "",
-      teatros: Array.isArray(sugestao.teatros) ? sugestao.teatros : [],
-      musicos: Array.isArray(sugestao.musicos) ? sugestao.musicos : [],
-      capa: capas[sugestao.id] || sugestao.capa || "",
-      programaDigital: sugestao.programaDigital || "",
-      fontes: Array.isArray(sugestao.fontes) ? sugestao.fontes : [],
+      ...payload,
       totalVotos: 0,
       somaEstrelas: 0,
       dataCriacao: new Date()
