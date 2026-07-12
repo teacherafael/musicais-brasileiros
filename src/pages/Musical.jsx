@@ -9,6 +9,7 @@ import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
+import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, montarEquipeDeStrings } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -42,24 +43,7 @@ function otimizarImagem(url, largura) {
   return url;
 }
 
-// Essenciais: gravam nos campos planos do Firestore (busca/Home/Pessoa dependem deles)
-const ESSENCIAIS = ["Direção", "Direção Musical", "Versionista", "Texto Original", "Música Original", "Produtora"]
-const ESSENCIAL_CAMPO = {
-  "Direção": "direcao",
-  "Direção Musical": "direcaoMusical",
-  "Versionista": "versionista",
-  "Texto Original": "textoOriginal",
-  "Música Original": "musicaOriginal",
-  "Produtora": "producao",
-}
-// Complementares: gravam dentro do array equipeCriativa
-const COMPLEMENTARES = [
-  "Direção Residente", "Direção Artística", "Direção Associada", "Assistência de Direção", "Coordenação Artística",
-  "Supervisão Musical", "Assistência de Direção Musical", "Regência", "Preparação Vocal", "Arranjos/Orquestração",
-  "Coreografia", "Assistência de Coreografia", "Direção de Movimento", "Coreografia Associada",
-  "Cenografia", "Assistente de Cenografia", "Cenotécnica", "Figurino", "Assistente de Figurino", "Design de Luz", "Design de Som", "Visagismo", "Perucaria",
-  "Direção de Produção", "Coordenação de Produção", "Produção Geral", "Produção Executiva", "Assistente de Produção", "Produtor Associado",
-]
+// ESSENCIAIS, ESSENCIAL_CAMPO e COMPLEMENTARES agora vêm de ../musicalSchema (fonte única)
 
 // Bloco "Equipe" da exibição: complementares na ordem fixa + cargos livres ao final
 function equipeSecundariaOrdenada(equipeCriativa) {
@@ -75,14 +59,7 @@ function equipeSecundariaOrdenada(equipeCriativa) {
   return [...fixas, ...livres]
 }
 
-function montarEquipeDeStrings(direcao, direcaoMusical) {
-  const equipe = []
-  const d = (direcao || "").split(",").map(n => n.trim()).filter(Boolean)
-  const dm = (direcaoMusical || "").split(",").map(n => n.trim()).filter(Boolean)
-  if (d.length > 0) equipe.push({ funcao: "Direção", nomes: d })
-  if (dm.length > 0) equipe.push({ funcao: "Direção Musical", nomes: dm })
-  return equipe
-}
+// montarEquipeDeStrings agora vem de ../musicalSchema (fonte única)
 
 // Monta as linhas do editor: essenciais (de equipeCriativa ou do campo plano) + complementares + livres
 function equipeParaEditor(musical) {
