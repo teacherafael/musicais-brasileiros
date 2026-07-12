@@ -754,8 +754,8 @@ async function fazerUploadCapa(arquivo) {
             </button>
           </div>
 
-          {campo("Elenco de estreia", "elenco")}
-          {campo("Elenco adicional", "elencoAdicional")}
+          {campo("Elenco de estreia", "elenco", true)}
+          {campo("Elenco adicional", "elencoAdicional", true)}
 
           {/* Editor de músicos por local */}
           <div style={{ marginBottom: "20px" }}>
@@ -763,13 +763,13 @@ async function fazerUploadCapa(arquivo) {
               Músicos (por local)
             </label>
             {musicosEdicao.map((item, i) => (
-              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
                 <input type="text" placeholder="Local (ex: São Paulo)" value={item.local}
                   onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], local: e.target.value }; setMusicosEdicao(novo) }}
                   style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
-                <input type="text" placeholder="Nomes (separados por vírgula)" value={item.nomesTexto}
+                <textarea placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} rows={3}
                   onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], nomesTexto: e.target.value }; setMusicosEdicao(novo) }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
                 <button onClick={() => setMusicosEdicao(musicosEdicao.filter((_, idx) => idx !== i))}
                   style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
