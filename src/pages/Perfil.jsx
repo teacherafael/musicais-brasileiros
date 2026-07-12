@@ -768,8 +768,12 @@ async function gerarCardPerfil() {
 
   if (carregando) return <main><p>Carregando...</p></main>
 
+  const normalizarBusca = (t) =>
+    (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+
+  const buscaTop3Norm = normalizarBusca(buscaTop3)
   const musicaisFiltradosTop3 = Object.values(musicais).filter(m =>
-    m.titulo.toLowerCase().includes(buscaTop3.toLowerCase())
+    normalizarBusca(m.titulo).includes(buscaTop3Norm)
   )
 
   // Monta o objeto "musical" completo a partir de um item de lista (que tem dados resumidos)
