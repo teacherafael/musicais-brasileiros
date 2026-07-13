@@ -241,6 +241,14 @@ export const teatros = [
     bairro: "Copacabana",
     cidade: "Rio de Janeiro – RJ",
   },
+   {
+    id: "teatro-ecovilla-ri-happy-rj",
+    nomeOficial: "Teatro EcoVilla Ri Happy",
+    aliases: [],
+    endereco: "R. Jardim Botânico, 1008",
+    bairro: "Jardim Botânico",
+    cidade: "Rio de Janeiro – RJ",
+  },
     {
     id: "teatro-nova-iguacu",
     nomeOficial: "Teatro Nova Iguaçu Petrobras",
