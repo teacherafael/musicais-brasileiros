@@ -561,6 +561,14 @@ export const teatros = [
     bairro: "Centro",
     cidade: "Curitiba – PR",
   },
+    {
+    id: "teatro-fernanda-montenegro-pr",
+    nomeOficial: "Teatro Fernanda Montenegro (PR)",
+    aliases: [],
+    endereco: "Shopping Novo, R. Cel. Dulcídio, 517",
+    bairro: "Batel",
+    cidade: "Curitiba – PR",
+  },
    {
     id: "teatro-positivo",
     nomeOficial: "Teatro Positivo",
