@@ -59,6 +59,7 @@ function Pessoa() {
   const navigate = useNavigate()
   const [musicais, setMusicais] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [entidade, setEntidade] = useState(null)
 
   const nomeDecodificado = decodeURIComponent(nome).trim()
   const nomeLower = nomeDecodificado.toLowerCase()
@@ -119,11 +120,85 @@ function Pessoa() {
     buscar()
   }, [nomeBusca])
 
+  // Perfil enriquecido (coleção "entidades"), lido sob demanda — 1 leitura extra só nesta página
+  useEffect(() => {
+    if (nomeCanonicoDoAlias) return // aguarda o redirect pro nome canônico
+    async function buscarEntidade() {
+      try {
+        const id = normalizar(nomeDecodificado)
+        const snap = await getDoc(doc(db, "entidades", id))
+        if (snap.exists() && snap.data().publicado) {
+          setEntidade(snap.data())
+        } else {
+          setEntidade(null)
+        }
+      } catch (e) {
+        setEntidade(null)
+      }
+    }
+    buscarEntidade()
+  }, [nomeBusca])
+
   return (
     <main>
       <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
       <p className="section-label">Musical Cast Database</p>
       <h1 className="page-title">{nomeDecodificado}</h1>
+
+      {entidade && (
+        <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap", marginTop: "16px", marginBottom: "8px" }}>
+          {entidade.imagem && (
+            entidade.tipoImagem === "logo" ? (
+              <div style={{ flexShrink: 0 }}>
+                <img src={entidade.imagem} alt={entidade.nome} style={{ maxWidth: "200px", maxHeight: "120px", objectFit: "contain", display: "block" }} />
+              </div>
+            ) : (
+              <div style={{ width: "120px", height: "120px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0" }}>
+                <img src={entidade.imagem} alt={entidade.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            )
+          )}
+
+          <div style={{ flex: 1, minWidth: "240px" }}>
+            {entidade.bio && (
+              <p style={{ fontSize: "15px", lineHeight: 1.6, color: "#333", margin: "0 0 12px" }}>{entidade.bio}</p>
+            )}
+            {entidade.formacao && (
+              <p style={{ fontSize: "14px", color: "#666", margin: "0 0 6px" }}>
+                <strong style={{ color: "#333" }}>Formação:</strong> {entidade.formacao}
+              </p>
+            )}
+            {entidade.contato && (
+              <p style={{ fontSize: "14px", color: "#666", margin: "0 0 6px" }}>
+                <strong style={{ color: "#333" }}>Contato:</strong> {entidade.contato}
+              </p>
+            )}
+            {Array.isArray(entidade.destaques) && entidade.destaques.length > 0 && (
+              <p style={{ fontSize: "14px", color: "#666", margin: "6px 0 0" }}>
+                <strong style={{ color: "#333" }}>Destaques:</strong> {entidade.destaques.join(" · ")}
+              </p>
+            )}
+            {entidade.links && (
+              <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "12px" }}>
+                {entidade.links.instagram && (
+                  <a href={"https://instagram.com/" + entidade.links.instagram.replace(/^@/, "")} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>Instagram</a>
+                )}
+                {entidade.links.site && (
+                  <a href={entidade.links.site} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>Site</a>
+                )}
+                {entidade.links.email && (
+                  <a href={"mailto:" + entidade.links.email} style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>E-mail</a>
+                )}
+                {(entidade.links.extras || []).map((ex, i) => (
+                  ex && ex.url && ex.label ? (
+                    <a key={i} href={ex.url} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>{ex.label}</a>
+                  ) : null
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
         {carregando ? "Carregando..." : `${musicais.length} ${musicais.length === 1 ? "musical encontrado" : "musicais encontrados"}`}
       </p>

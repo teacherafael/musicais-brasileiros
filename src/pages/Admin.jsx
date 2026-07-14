@@ -17,6 +17,9 @@ import {
   montarPayload,
 } from "../musicalSchema"
 
+const normalizarNome = (texto) =>
+  (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+
 function montarItemIndice(id, m) {
   return {
     id,
@@ -92,6 +95,13 @@ function Admin() {
   const [enviandoCapaNovo, setEnviandoCapaNovo] = useState(false)
   const [enviandoCapaSugestao, setEnviandoCapaSugestao] = useState(null)
 
+  // Aba "Entidades" (perfis enriquecidos de artistas, produtoras e assessorias)
+  const [entidades, setEntidades] = useState([])
+  const [formEntidade, setFormEntidade] = useState({ tipo: "artista", tipoImagem: "foto" })
+  const [extrasEntidade, setExtrasEntidade] = useState([])
+  const [editandoEntidadeId, setEditandoEntidadeId] = useState(null)
+  const [enviandoImagemEntidade, setEnviandoImagemEntidade] = useState(false)
+
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
   }, [])
@@ -122,6 +132,9 @@ function Admin() {
         const q = query(collectionGroup(db, "votos"), where("data", ">=", trintaDiasAtras))
         const snap = await getDocs(q)
         setEmAltaVotos(snap.docs.map(d => d.data()).filter(v => v.data && v.musicalId))
+      } else if (qual === "entidades") {
+        const snap = await getDocs(collection(db, "entidades"))
+        setEntidades(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.nome || "").localeCompare(b.nome || "")))
       }
       setCarregadas(prev => new Set(prev).add(qual))
     } catch (e) {
@@ -475,6 +488,136 @@ async function fazerUploadCapaNovo(arquivo) {
     setMensagens(prev => prev.filter(m => m.id !== mensagemId))
   }
 
+  // ── Entidades (perfis enriquecidos) ─────────────────────────────────────────
+
+  async function fazerUploadImagemEntidade(arquivo) {
+    if (!arquivo) return
+    if (!arquivo.type.startsWith("image/")) {
+      alert("Selecione um arquivo de imagem.")
+      return
+    }
+    setEnviandoImagemEntidade(true)
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = () => reject(new Error("Falha ao ler o arquivo"))
+        reader.readAsDataURL(arquivo)
+      })
+      const resposta = await fetch("/api/upload-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imagemBase64: base64,
+          nomeArquivo: arquivo.name,
+          pasta: "entidades",
+        }),
+      })
+      const dados = await resposta.json()
+      if (!resposta.ok || !dados.urlGrande) {
+        throw new Error(dados.erro || "Erro no upload")
+      }
+      setFormEntidade(prev => ({ ...prev, imagem: dados.urlGrande }))
+    } catch (e) {
+      alert("Erro ao enviar a imagem. Tente novamente.")
+    }
+    setEnviandoImagemEntidade(false)
+  }
+
+  function limparFormEntidade() {
+    setFormEntidade({ tipo: "artista", tipoImagem: "foto" })
+    setExtrasEntidade([])
+    setEditandoEntidadeId(null)
+  }
+
+  function editarEntidade(e) {
+    setFormEntidade({
+      tipo: e.tipo || "artista",
+      nome: e.nome || "",
+      bio: e.bio || "",
+      imagem: e.imagem || "",
+      tipoImagem: e.tipoImagem || "foto",
+      instagram: e.links?.instagram || "",
+      site: e.links?.site || "",
+      email: e.links?.email || "",
+      formacao: e.formacao || "",
+      contato: e.contato || "",
+      destaques: Array.isArray(e.destaques) ? e.destaques.join(", ") : "",
+      publicado: e.publicado === true,
+    })
+    setExtrasEntidade(Array.isArray(e.links?.extras) ? e.links.extras.map(x => ({ ...x })) : [])
+    setEditandoEntidadeId(e.id)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  async function salvarEntidade() {
+    const nome = (formEntidade.nome || "").trim()
+    if (!nome) {
+      alert("O nome é obrigatório.")
+      return
+    }
+    const novoId = normalizarNome(nome)
+    if (!novoId) {
+      alert("Nome inválido.")
+      return
+    }
+
+    const extrasLimpos = extrasEntidade
+      .map(x => ({ label: (x.label || "").trim(), url: (x.url || "").trim() }))
+      .filter(x => x.label && x.url)
+
+    const destaquesArray = (formEntidade.destaques || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+
+    const payload = {
+      tipo: formEntidade.tipo || "artista",
+      nome,
+      bio: (formEntidade.bio || "").trim(),
+      imagem: (formEntidade.imagem || "").trim(),
+      tipoImagem: formEntidade.tipoImagem || "foto",
+      links: {
+        instagram: (formEntidade.instagram || "").trim(),
+        site: (formEntidade.site || "").trim(),
+        email: (formEntidade.email || "").trim(),
+        extras: extrasLimpos,
+      },
+      formacao: (formEntidade.formacao || "").trim(),
+      contato: (formEntidade.contato || "").trim(),
+      destaques: destaquesArray,
+      publicado: formEntidade.publicado === true,
+    }
+
+    if (editandoEntidadeId && editandoEntidadeId !== novoId) {
+      const jaExiste = await getDoc(doc(db, "entidades", novoId))
+      if (jaExiste.exists()) {
+        if (!window.confirm(`Já existe uma entidade com o ID "${novoId}". Salvar vai sobrescrevê-la. Continuar?`)) return
+      }
+      await deleteDoc(doc(db, "entidades", editandoEntidadeId))
+    } else if (!editandoEntidadeId) {
+      const jaExiste = await getDoc(doc(db, "entidades", novoId))
+      if (jaExiste.exists()) {
+        if (!window.confirm(`Já existe uma entidade com esse nome ("${nome}"). Salvar vai sobrescrevê-la. Continuar?`)) return
+      }
+    }
+
+    await setDoc(doc(db, "entidades", novoId), payload)
+    setEntidades(prev => {
+      const semAntigo = prev.filter(x => x.id !== editandoEntidadeId && x.id !== novoId)
+      return [{ id: novoId, ...payload }, ...semAntigo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""))
+    })
+    limparFormEntidade()
+    alert("Entidade salva!")
+  }
+
+  async function deletarEntidade(id, nome) {
+    if (!window.confirm(`Deletar a entidade "${nome}"? Esta ação não pode ser desfeita.`)) return
+    await deleteDoc(doc(db, "entidades", id))
+    setEntidades(prev => prev.filter(x => x.id !== id))
+    if (editandoEntidadeId === id) limparFormEntidade()
+  }
+
   // ── Renderizadores de campos ─────────────────────────────────────────────────
 
   const campoSugestao = (label, chave, multiline = false) => (
@@ -487,6 +630,21 @@ async function fazerUploadCapaNovo(arquivo) {
           style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
       ) : (
         <input type="text" value={formSugestao[chave] || ""} onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+      )}
+    </div>
+  )
+
+  const campoEntidade = (label, chave, multiline = false, placeholder = "") => (
+    <div style={{ marginBottom: "12px" }}>
+      <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+        {label}
+      </label>
+      {multiline ? (
+        <textarea value={formEntidade[chave] || ""} onChange={ev => setFormEntidade(prev => ({ ...prev, [chave]: ev.target.value }))} placeholder={placeholder}
+          style={{ width: "100%", height: "90px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
+      ) : (
+        <input type="text" value={formEntidade[chave] || ""} onChange={ev => setFormEntidade(prev => ({ ...prev, [chave]: ev.target.value }))} placeholder={placeholder}
           style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
       )}
     </div>
@@ -679,6 +837,9 @@ async function fazerUploadCapaNovo(arquivo) {
         </button>
         <button onClick={() => trocarAba("emalta")} className={aba === "emalta" ? "btn-comentar" : "btn-sair"}>
           🔥 Em alta
+        </button>
+        <button onClick={() => trocarAba("entidades")} className={aba === "entidades" ? "btn-comentar" : "btn-sair"}>
+          🎭 Entidades {carregadas.has("entidades") && entidades.length > 0 && `(${entidades.length})`}
         </button>
       </div>
 
@@ -948,6 +1109,135 @@ async function fazerUploadCapaNovo(arquivo) {
                   </p>
                 </div>
                 <button className="btn-comentar" onClick={() => navigate(`/musical/${m.musicalId}`)} style={{ flexShrink: 0 }}>Ver</button>
+              </div>
+            ))
+          )}
+        </>
+      ) : aba === "entidades" ? (
+        <>
+          <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "24px" }}>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>
+              {editandoEntidadeId ? "Editar entidade" : "Nova entidade"}
+            </h2>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px", lineHeight: "1.5" }}>
+              Perfil que aparece no topo da página <strong>/pessoa/nome</strong>. O <strong>nome</strong> precisa bater com a grafia usada nos créditos dos musicais.
+            </p>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo</label>
+              <select value={formEntidade.tipo || "artista"} onChange={ev => setFormEntidade(prev => ({ ...prev, tipo: ev.target.value }))}
+                style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+                <option value="artista">Artista</option>
+                <option value="produtora">Produtora</option>
+                <option value="assessoria">Assessoria de imprensa</option>
+              </select>
+            </div>
+
+            {campoEntidade("Nome (igual aos créditos)", "nome")}
+            {campoEntidade("Bio", "bio", true)}
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo de imagem</label>
+              <select value={formEntidade.tipoImagem || "foto"} onChange={ev => setFormEntidade(prev => ({ ...prev, tipoImagem: ev.target.value }))}
+                style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+                <option value="foto">Foto (recorta em quadrado)</option>
+                <option value="logo">Logo (exibe inteira)</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Imagem</label>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoImagemEntidade ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoImagemEntidade ? "wait" : "pointer" }}>
+                  {enviandoImagemEntidade ? "Enviando..." : "📤 Enviar imagem"}
+                  <input type="file" accept="image/*" disabled={enviandoImagemEntidade}
+                    onChange={ev => { fazerUploadImagemEntidade(ev.target.files[0]); ev.target.value = "" }}
+                    style={{ display: "none" }} />
+                </label>
+                <span style={{ fontSize: "13px", color: "#aaa" }}>ou cole uma URL abaixo</span>
+              </div>
+              <input type="text" placeholder="https://..." value={formEntidade.imagem || ""} onChange={ev => setFormEntidade(prev => ({ ...prev, imagem: ev.target.value }))}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
+              {formEntidade.imagem && (
+                formEntidade.tipoImagem === "logo" ? (
+                  <img src={formEntidade.imagem} alt="Preview" style={{ maxWidth: "160px", maxHeight: "90px", objectFit: "contain", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "4px", background: "#fafafa" }} />
+                ) : (
+                  <img src={formEntidade.imagem} alt="Preview" style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "8px", border: "1px solid #e8e8e4" }} />
+                )
+              )}
+            </div>
+
+            {campoEntidade("Instagram (@ ou usuário)", "instagram", false, "ex: estamosaqui")}
+            {campoEntidade("Site", "site", false, "https://...")}
+            {campoEntidade("E-mail", "email")}
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Links extras</label>
+              {extrasEntidade.map((ex, i) => (
+                <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                  <input type="text" placeholder="Rótulo (ex: TikTok)" value={ex.label || ""}
+                    onChange={ev => { const novo = [...extrasEntidade]; novo[i] = { ...novo[i], label: ev.target.value }; setExtrasEntidade(novo) }}
+                    style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                  <input type="text" placeholder="https://..." value={ex.url || ""}
+                    onChange={ev => { const novo = [...extrasEntidade]; novo[i] = { ...novo[i], url: ev.target.value }; setExtrasEntidade(novo) }}
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  <button onClick={() => setExtrasEntidade(extrasEntidade.filter((_, idx) => idx !== i))}
+                    style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+                </div>
+              ))}
+              <button onClick={() => setExtrasEntidade([...extrasEntidade, { label: "", url: "" }])}
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+                + Adicionar link
+              </button>
+            </div>
+
+            {campoEntidade("Formação (opcional)", "formacao")}
+            {campoEntidade("Contato para contratação (opcional)", "contato")}
+            {campoEntidade("Destaques (separados por vírgula, opcional)", "destaques", true, "ex: Wicked, O Fantasma da Ópera")}
+
+            <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <input type="checkbox" id="publicadoEntidade" checked={formEntidade.publicado === true}
+                onChange={ev => setFormEntidade(prev => ({ ...prev, publicado: ev.target.checked }))}
+                style={{ width: "18px", height: "18px", cursor: "pointer" }} />
+              <label htmlFor="publicadoEntidade" style={{ fontSize: "14px", color: "#333", cursor: "pointer" }}>
+                Publicado (visível na página). Desmarque para deixar como rascunho.
+              </label>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <button className="btn-comentar" onClick={salvarEntidade}>
+                {editandoEntidadeId ? "Salvar alterações" : "Criar entidade"}
+              </button>
+              <button className="btn-sair" onClick={limparFormEntidade}>
+                {editandoEntidadeId ? "Cancelar edição" : "Limpar"}
+              </button>
+            </div>
+          </div>
+
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "12px" }}>Entidades cadastradas</h2>
+          {entidades.length === 0 ? (
+            <p style={{ color: "#888" }}>Nenhuma entidade cadastrada ainda.</p>
+          ) : (
+            entidades.map(e => (
+              <div key={e.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
+                {e.imagem ? (
+                  <img src={e.imagem} alt={e.nome} style={{ width: "56px", height: "56px", objectFit: e.tipoImagem === "logo" ? "contain" : "cover", borderRadius: "8px", flexShrink: 0, background: "#fafafa", border: "1px solid #f0f0f0" }} />
+                ) : (
+                  <div style={{ width: "56px", height: "56px", background: "#f0f0f0", borderRadius: "8px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#bbb", fontSize: "20px" }}>🎭</div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "2px" }}>
+                    {e.nome} {!e.publicado && <span style={{ fontSize: "11px", fontWeight: "600", color: "#cc7a00", background: "#fff3e0", borderRadius: "4px", padding: "2px 6px", marginLeft: "6px" }}>rascunho</span>}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#888", textTransform: "capitalize" }}>{e.tipo}</p>
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexShrink: 0, flexWrap: "wrap" }}>
+                  <button className="btn-comentar" onClick={() => navigate(`/pessoa/${encodeURIComponent(e.nome)}`)}>Ver</button>
+                  <button onClick={() => editarEntidade(e)}
+                    style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>✏️ Editar</button>
+                  <button onClick={() => deletarEntidade(e.id, e.nome)}
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>Deletar</button>
+                </div>
               </div>
             ))
           )}
