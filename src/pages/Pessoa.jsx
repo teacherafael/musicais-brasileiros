@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { doc, getDoc } from "firebase/firestore"
-import { db } from "../firebase"
+import { db, auth } from "../firebase"
+import { onAuthStateChanged } from "firebase/auth"
+import { ADMINS } from "../admins"
 import { useParams, useNavigate } from "react-router-dom"
 
 // Mapeamento de aliases para nome canônico
@@ -84,6 +86,13 @@ function Pessoa() {
   const [musicais, setMusicais] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [entidade, setEntidade] = useState(null)
+  const [ehAdmin, setEhAdmin] = useState(false)
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, (user) => {
+      setEhAdmin(!!user && ADMINS.includes(user.uid))
+    })
+  }, [])
 
   const nomeDecodificado = decodeURIComponent(nome).trim()
   const nomeLower = nomeDecodificado.toLowerCase()
@@ -234,6 +243,14 @@ function Pessoa() {
                     <a key={i} href={ex.url} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>{ex.label}</a>
                   ) : null
                 ))}
+              </div>
+            )}
+            {ehAdmin && (
+              <div style={{ marginTop: "16px" }}>
+                <button onClick={() => navigate("/admin?editar=" + encodeURIComponent(entidade.nome))}
+                  style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                  ✏️ Editar perfil
+                </button>
               </div>
             )}
           </div>

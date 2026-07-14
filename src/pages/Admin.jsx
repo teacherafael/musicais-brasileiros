@@ -150,7 +150,29 @@ function Admin() {
 
   useEffect(() => {
     if (usuario && ADMINS.includes(usuario.uid)) {
-      carregarAba(aba)
+      const params = new URLSearchParams(window.location.search)
+      const editarNome = params.get("editar")
+      if (editarNome) {
+        // Veio da página da Pessoa com "?editar=Nome": abre a aba Entidades já editando.
+        setAba("entidades")
+        ;(async () => {
+          const snap = await getDocs(collection(db, "entidades"))
+          const lista = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.nome || "").localeCompare(b.nome || ""))
+          setEntidades(lista)
+          setCarregadas(prev => new Set(prev).add("entidades"))
+          const alvo = lista.find(e => normalizarNome(e.nome) === normalizarNome(editarNome))
+          if (alvo) {
+            editarEntidade(alvo)
+          } else {
+            // Não existe ainda: deixa o nome preenchido pra facilitar criar (inofensivo na opção A).
+            setFormEntidade({ tipo: "artista", tipoImagem: "foto", nome: decodeURIComponent(editarNome) })
+          }
+          setCarregando(false)
+          window.history.replaceState({}, "", "/admin")
+        })()
+      } else {
+        carregarAba(aba)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario])
