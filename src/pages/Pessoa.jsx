@@ -41,6 +41,7 @@ const ALIASES = {
 "andressa massei": "Andrezza Massei",
 "sandro conte febras": "Sandro Conte",
 "andré gomes": "André Ulo",
+"fábula entretenimento": "Touché Entretenimento",
   "nome antigo": "Nome Atual",
   "outro nome antigo": "Nome Atual",
   
