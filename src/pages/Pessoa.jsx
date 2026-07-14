@@ -146,22 +146,38 @@ function Pessoa() {
       <h1 className="page-title">{nomeDecodificado}</h1>
 
       {entidade && (
-        <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap", marginTop: "16px", marginBottom: "8px" }}>
+        <div style={{
+          background: "#fff",
+          border: "1px solid #e8e8e4",
+          borderRadius: "12px",
+          padding: "24px",
+          marginTop: "20px",
+          marginBottom: "28px",
+          display: "flex",
+          gap: "28px",
+          alignItems: "center",
+          flexWrap: "wrap"
+        }}>
           {entidade.imagem && (
             entidade.tipoImagem === "logo" ? (
-              <div style={{ flexShrink: 0 }}>
-                <img src={entidade.imagem} alt={entidade.nome} style={{ maxWidth: "200px", maxHeight: "120px", objectFit: "contain", display: "block" }} />
+              <div style={{ flex: "0 0 auto", maxWidth: "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <img src={entidade.imagem} alt={entidade.nome} style={{ maxWidth: "100%", maxHeight: "120px", objectFit: "contain", display: "block" }} />
               </div>
             ) : (
-              <div style={{ width: "120px", height: "120px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0" }}>
+              <div style={{ width: "128px", height: "128px", borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "#f0f0f0", border: "1px solid #eee" }}>
                 <img src={entidade.imagem} alt={entidade.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
             )
           )}
 
           <div style={{ flex: 1, minWidth: "240px" }}>
+            {entidade.tipo && (
+              <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 8px" }}>
+                {entidade.tipo === "produtora" ? "Produtora" : entidade.tipo === "assessoria" ? "Assessoria de imprensa" : "Artista"}
+              </p>
+            )}
             {entidade.bio && (
-              <p style={{ fontSize: "15px", lineHeight: 1.6, color: "#333", margin: "0 0 12px" }}>{entidade.bio}</p>
+              <p style={{ fontSize: "15px", lineHeight: 1.65, color: "#333", margin: "0 0 12px" }}>{entidade.bio}</p>
             )}
             {entidade.formacao && (
               <p style={{ fontSize: "14px", color: "#666", margin: "0 0 6px" }}>
@@ -178,20 +194,20 @@ function Pessoa() {
                 <strong style={{ color: "#333" }}>Destaques:</strong> {entidade.destaques.join(" · ")}
               </p>
             )}
-            {entidade.links && (
-              <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "12px" }}>
+            {entidade.links && (entidade.links.instagram || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
                 {entidade.links.instagram && (
-                  <a href={"https://instagram.com/" + entidade.links.instagram.replace(/^@/, "")} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>Instagram</a>
+                  <a href={"https://instagram.com/" + entidade.links.instagram.replace(/^@/, "")} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>Instagram</a>
                 )}
                 {entidade.links.site && (
-                  <a href={entidade.links.site} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>Site</a>
+                  <a href={entidade.links.site} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>Site</a>
                 )}
                 {entidade.links.email && (
-                  <a href={"mailto:" + entidade.links.email} style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>E-mail</a>
+                  <a href={"mailto:" + entidade.links.email} style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>E-mail</a>
                 )}
                 {(entidade.links.extras || []).map((ex, i) => (
                   ex && ex.url && ex.label ? (
-                    <a key={i} href={ex.url} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>{ex.label}</a>
+                    <a key={i} href={ex.url} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>{ex.label}</a>
                   ) : null
                 ))}
               </div>
@@ -199,7 +215,7 @@ function Pessoa() {
           </div>
         </div>
       )}
-      <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: "-8px" }}>
+      <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: entidade ? "4px" : "-8px" }}>
         {carregando ? "Carregando..." : `${musicais.length} ${musicais.length === 1 ? "musical encontrado" : "musicais encontrados"}`}
       </p>
 
