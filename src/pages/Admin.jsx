@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore"
+import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
@@ -487,6 +487,25 @@ async function fazerUploadCapaNovo(arquivo) {
     setSugestoes(prev => prev.filter(s => s.id !== sugestaoId))
   }
 
+  async function mandarMensagemParaSugestor(sugestorUid) {
+    if (!sugestorUid) return
+    const conversasSnap = await getDocs(
+      query(collection(db, "conversas"), where("participantes", "array-contains", usuario.uid))
+    )
+    const conversaExistente = conversasSnap.docs.find(d => d.data().participantes.includes(sugestorUid))
+    if (conversaExistente) {
+      navigate(`/mensagens/${conversaExistente.id}`)
+    } else {
+      const novaConversa = await addDoc(collection(db, "conversas"), {
+        participantes: [usuario.uid, sugestorUid],
+        ultimaMensagem: "",
+        ultimaMensagemData: serverTimestamp(),
+        naoLidas: { [usuario.uid]: 0, [sugestorUid]: 0 },
+      })
+      navigate(`/mensagens/${novaConversa.id}`)
+    }
+  }
+
   async function resolverRelato(relatoId) {
     await deleteDoc(doc(db, "relatorios", relatoId))
     setRelatos(prev => prev.filter(r => r.id !== relatoId))
@@ -937,7 +956,15 @@ async function fazerUploadCapaNovo(arquivo) {
                       <strong>Músicos:</strong> {s.musicos.map(m => `${m.local}: ${Array.isArray(m.nomes) ? m.nomes.join(", ") : m.nomes}`).join(" · ")}
                     </p>
                   )}
-                  <p style={{ fontSize: "13px", color: "#888", marginTop: "12px", marginBottom: "16px" }}>Sugerido por: {s.nome}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginTop: "12px", marginBottom: "16px" }}>
+                    <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>Sugerido por: {s.nome}</p>
+                    {s.userId && s.userId !== usuario.uid && (
+                      <button onClick={() => mandarMensagemParaSugestor(s.userId)}
+                        style={{ background: "transparent", color: "#555", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
+                        💬 Mandar mensagem
+                      </button>
+                    )}
+                  </div>
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
                       Capa (opcional)
