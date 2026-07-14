@@ -97,6 +97,14 @@ export const teatros = [
     bairro: "Bela Vista",
     cidade: "São Paulo – SP",
   },
+      {
+    id: "teatro-imprensa",
+    nomeOficial: "Teatro Imprensa",
+    aliases: [],
+    endereco: "Rua Jaceguai, 400",
+    bairro: "Bela Vista",
+    cidade: "São Paulo – SP",
+  },
   {
     id: "teatro-carlos-gomes",
     nomeOficial: "Teatro Carlos Gomes",
