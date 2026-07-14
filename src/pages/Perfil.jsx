@@ -1153,7 +1153,7 @@ async function gerarCardPerfil() {
             {isProprioPerfil ? "Clique em editar para escolher seus 5 musicais favoritos." : "Nenhum favorito definido ainda."}
           </p>
         ) : (
-          <div className="top5-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "12px" }}>
+          <div className="top5-grid">
             {top3.map((item, i) => (
               <a key={item.id} href={"/musical/" + item.musicalId} className="card-musical"
                 style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", border: "2px solid #F5C518", padding: "8px" }}

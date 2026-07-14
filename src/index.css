@@ -481,3 +481,28 @@ color: #efefef;
     display: none;
   }
 }
+/* ===== Top 5 do perfil ===== */
+.top5-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .top5-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .top5-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .top5-grid > a {
+    flex: 0 0 44%;
+    scroll-snap-align: start;
+  }
+}
