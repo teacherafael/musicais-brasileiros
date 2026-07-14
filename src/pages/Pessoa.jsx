@@ -54,6 +54,30 @@ const normalizar = (texto) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
 
+// Traduz a marcação simples da bio em negrito e links de pessoa.
+// **texto** vira negrito. [[Nome]] vira link pra /pessoa/Nome.
+// [[texto|Nome]] mostra "texto" mas linka pra /pessoa/Nome.
+const renderBio = (texto) => {
+  if (!texto) return null
+  const partes = (texto || "").split(/(\*\*[^*]+\*\*|\[\[[^\]]+\]\])/g)
+  return partes.map((parte, i) => {
+    if (parte.startsWith("**") && parte.endsWith("**")) {
+      return <strong key={i}>{parte.slice(2, -2)}</strong>
+    }
+    if (parte.startsWith("[[") && parte.endsWith("]]")) {
+      const conteudo = parte.slice(2, -2)
+      const [rotulo, alvo] = conteudo.includes("|") ? conteudo.split("|") : [conteudo, conteudo]
+      return (
+        <a key={i} href={"/pessoa/" + encodeURIComponent(alvo.trim())}
+          style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600 }}>
+          {rotulo.trim()}
+        </a>
+      )
+    }
+    return parte
+  })
+}
+
 function Pessoa() {
   const { nome } = useParams()
   const navigate = useNavigate()
@@ -177,7 +201,7 @@ function Pessoa() {
               </p>
             )}
             {entidade.bio && (
-              <p style={{ fontSize: "15px", lineHeight: 1.65, color: "#333", margin: "0 0 12px" }}>{entidade.bio}</p>
+              <p style={{ fontSize: "15px", lineHeight: 1.65, color: "#333", margin: "0 0 12px", whiteSpace: "pre-wrap" }}>{renderBio(entidade.bio)}</p>
             )}
             {entidade.formacao && (
               <p style={{ fontSize: "14px", color: "#666", margin: "0 0 6px" }}>
