@@ -5,6 +5,7 @@ import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import ReportarErro from "../components/ReportarErro"
+import PainelDebugAdmin from "../components/PainelDebugAdmin"
 import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
@@ -1276,6 +1277,7 @@ async function fazerUploadCapa(arquivo) {
 
           <hr className="divider" />
           <ReportarErro musicalId={id} musicalTitulo={musical.titulo} usuario={usuario} />
+          <PainelDebugAdmin musical={musical} usuario={usuario} />
         </>
       )}
     </main>
