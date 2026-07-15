@@ -9,7 +9,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Applebot).*"
+          "value": ".*(Googlebot|Bingbot|DuckDuckBot|facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Applebot).*"
         }
       ],
       "destination": "/api/og-musical?id=:id"
