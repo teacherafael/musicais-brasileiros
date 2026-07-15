@@ -21,6 +21,8 @@ function SeloVerificado() {
 
 function Perfil() {
   const { userId } = useParams()
+  const [cardPronto, setCardPronto] = useState(null)
+  const [gerandoCard, setGerandoCard] = useState(false)
   const navigate = useNavigate()
   const [usuarioLogado, setUsuarioLogado] = useState(null)
   const [votos, setVotos] = useState([])
@@ -713,43 +715,50 @@ async function toggleVerificado() {
     return `https://${url}`
   }
 
-async function gerarCardPerfil() {
+  // ── Card do perfil: gerar (1º toque) → preview → compartilhar (2º toque) ──
+  // O Chrome no iOS invalida o "gesto do usuário" depois de awaits longos,
+  // então o navigator.share() precisa rodar num toque separado e limpo.
+  async function gerarCardPerfil() {
     const el = document.getElementById("card-perfil-exportar")
-    if (!el) return
-    if (el.dataset.gerando === "1") return
-    el.dataset.gerando = "1"
+    if (!el || gerandoCard) return
+    setGerandoCard(true)
     el.style.display = "flex"
 
-    // Pré-carrega imagens externas como data URL (evita o html2canvas
-    // baixar tudo durante a captura, que é o que causa a lentidão)
     const imgs = Array.from(el.querySelectorAll("img"))
     const originais = imgs.map((img) => img.src)
-    await Promise.all(
-      imgs.map(async (img, i) => {
-        const src = originais[i]
-        if (!src || src.startsWith("data:")) return
-        try {
-          const resp = await fetch(src, { mode: "cors" })
-          const blob = await resp.blob()
-          const dataUrl = await new Promise((res, rej) => {
-            const fr = new FileReader()
-            fr.onload = () => res(fr.result)
-            fr.onerror = rej
-            fr.readAsDataURL(blob)
-          })
-          await new Promise((res) => {
-            img.onload = res
-            img.onerror = res
-            img.src = dataUrl
-          })
-        } catch {
-          // se falhar, mantém o src original — o useCORS ainda tenta
-        }
-      })
-    )
-    // Espera o navegador pintar o elemento antes de capturar (importante no iOS)
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+
     try {
+      // Pré-carrega imagens externas como data URL (evita o html2canvas
+      // baixar tudo durante a captura, que é o que causa a lentidão)
+      await Promise.all(
+        imgs.map(async (img, i) => {
+          const src = originais[i]
+          if (!src || src.startsWith("data:")) return
+          try {
+            const resp = await fetch(src, { mode: "cors" })
+            const blob = await resp.blob()
+            const dataUrl = await new Promise((res, rej) => {
+              const fr = new FileReader()
+              fr.onload = () => res(fr.result)
+              fr.onerror = rej
+              fr.readAsDataURL(blob)
+            })
+            await new Promise((res) => {
+              img.onload = res
+              img.onerror = res
+              img.src = dataUrl
+            })
+          } catch {
+            // se falhar, mantém o src original — o useCORS ainda tenta
+          }
+        })
+      )
+
+      // Espera o navegador pintar o elemento antes de capturar
+      await new Promise((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(r))
+      )
+
       const canvas = await html2canvas(el, {
         useCORS: true,
         backgroundColor: null,
@@ -760,33 +769,46 @@ async function gerarCardPerfil() {
       const blob = await new Promise((resolve) =>
         canvas.toBlob(resolve, "image/png")
       )
-      if (!blob) return
+      if (!blob) throw new Error("canvas vazio")
 
-      const arquivo = new File([blob], `mcdb-${nomePerfil || "perfil"}.png`, {
-        type: "image/png",
-      })
+      const nomeArquivo = `mcdb-${nomePerfil || "perfil"}.png`
+      const arquivo = new File([blob], nomeArquivo, { type: "image/png" })
 
-      if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
-        try {
-          await navigator.share({ files: [arquivo] })
-        } catch (e) {
-          alert("share falhou: " + e.name + " — " + e.message)
-        }
-      } else {
-        const link = document.createElement("a")
-        link.download = `mcdb-${nomePerfil || "perfil"}.png`
-        link.href = canvas.toDataURL("image/png")
-        link.click()
-      }
+      setCardPronto({ arquivo, url: URL.createObjectURL(blob), nomeArquivo })
     } catch (err) {
-      alert("Não foi possível gerar o card agora. Tente novamente.")
+      console.error("Erro ao gerar card:", err)
+      mostrarToast("Não foi possível gerar o card agora. Tente novamente.")
     } finally {
       imgs.forEach((img, i) => {
         img.src = originais[i]
       })
       el.style.display = "none"
-      el.dataset.gerando = "0"
+      setGerandoCard(false)
     }
+  }
+
+  function fecharPreviewCard() {
+    if (cardPronto) URL.revokeObjectURL(cardPronto.url)
+    setCardPronto(null)
+  }
+
+  async function compartilharCardPronto() {
+    if (!cardPronto) return
+    // Nenhum await antes daqui: o gesto do toque precisa chegar "fresco"
+    // no navigator.share(), senão o Chrome iOS dispara NotAllowedError.
+    try {
+      await navigator.share({ files: [cardPronto.arquivo] })
+    } catch {
+      // usuário cancelou — não é erro
+    }
+  }
+
+  function baixarCardPronto() {
+    if (!cardPronto) return
+    const link = document.createElement("a")
+    link.download = cardPronto.nomeArquivo
+    link.href = cardPronto.url
+    link.click()
   }
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
@@ -993,9 +1015,48 @@ async function gerarCardPerfil() {
         {isProprioPerfil && (
           <button
             onClick={gerarCardPerfil}
-            style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "4px" }}>
-            📷 Compartilhar card do perfil
+            disabled={gerandoCard}
+            style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: gerandoCard ? "wait" : "pointer", opacity: gerandoCard ? 0.6 : 1, marginTop: "4px" }}>
+            {gerandoCard ? "Gerando..." : "📷 Compartilhar card do perfil"}
           </button>
+        )}
+
+        {/* Preview do card gerado — o compartilhamento acontece aqui, num toque limpo */}
+        {cardPronto && (
+          <div
+            onClick={fecharPreviewCard}
+            style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
+              zIndex: 9999, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", padding: "20px", gap: "16px",
+            }}
+          >
+            <img
+              src={cardPronto.url}
+              alt="Card do perfil"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "100%", maxHeight: "62vh", borderRadius: "8px", boxShadow: "0 4px 24px rgba(0,0,0,0.5)" }}
+            />
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}
+            >
+              {typeof navigator !== "undefined" && navigator.canShare && navigator.canShare({ files: [cardPronto.arquivo] }) && (
+                <button onClick={compartilharCardPronto}
+                  style={{ padding: "12px 22px", background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
+                  📤 Compartilhar
+                </button>
+              )}
+              <button onClick={baixarCardPronto}
+                style={{ padding: "12px 22px", background: "transparent", color: "#fff", border: "1px solid #fff", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
+                ⬇️ Baixar
+              </button>
+              <button onClick={fecharPreviewCard}
+                style={{ padding: "12px 22px", background: "transparent", color: "#aaa", border: "1px solid #555", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer" }}>
+                Fechar
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Card oculto para exportação — proporção Stories (9:16) */}
