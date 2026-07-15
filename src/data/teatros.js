@@ -20,7 +20,7 @@ export const teatros = [
     {
     id: "teatro-procopio-ferreira",
     nomeOficial: "Teatro Procópio Ferreira",
-    aliases: [""],
+    aliases: [],
     endereco: "Rua Augusta, 2823",
     bairro: "Cerqueira César",
     cidade: "São Paulo – SP",
@@ -204,7 +204,7 @@ export const teatros = [
   {
     id: "teatro-bradesco-sp",
     nomeOficial: "Teatro Bradesco",
-    aliases: [""],
+    aliases: [],
     endereco: "Rua Palestra Itália, 500",
     bairro: "Perdizes",
     cidade: "São Paulo – SP",
@@ -280,14 +280,6 @@ export const teatros = [
     endereco: "Av. Bartolomeu Mitre, 1110",
     bairro: "Lagoa",
     cidade: "Rio de Janeiro – RJ",
-  },
-  {
-    id: "teatro-estudio",
-    nomeOficial: "Teatro Estúdio",
-    aliases: [],
-    endereco: "Rua Conselheiro Nébias, 891",
-    bairro: "Campos Elísios",
-    cidade: "São Paulo – SP",
   },
    {
     id: "teatro-faap",
@@ -650,7 +642,7 @@ export const teatros = [
     cidade: "Salvador – BA",
   },
    {
-    id: "Theatro-Municipal-de-Paulinia",
+    id: "theatro-municipal-de-paulinia",
     nomeOficial: "Theatro Municipal de Paulínia",
     aliases: [],
     endereco: "Av. José Lozano Araújo, 1551",
@@ -700,7 +692,7 @@ export function encontrarTeatroPorNome(nome) {
     teatros.find(
       (t) =>
         normalizar(t.nomeOficial) === nomeNorm ||
-        t.aliases.some((a) => normalizar(a) === nomeNorm)
+        t.aliases.some((a) => a && normalizar(a) === nomeNorm)
     ) || null
   );
 }
