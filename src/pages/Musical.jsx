@@ -10,6 +10,7 @@ import html2canvas from "html2canvas"
 import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
+import ModalContribuir, { registrarAvaliacao } from "../components/ModalContribuir";
 import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, montarEquipeDeStrings } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
@@ -181,6 +182,7 @@ function Musical() {
   const [enviandoCapa, setEnviandoCapa] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
+  const [marcoContribuir, setMarcoContribuir] = useState(null)
   const [fotoAberta, setFotoAberta] = useState(null)
   const cartaoRef = useRef(null)
   const avaliacaoRef = useRef(null)
@@ -472,6 +474,7 @@ async function fazerUploadCapa(arquivo) {
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
     const entrandoNaContagem = !jaVi
+    const votoNovo = votoAtual === null
     await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
@@ -485,6 +488,13 @@ async function fazerUploadCapa(arquivo) {
     setJaVi(true)
     setQueroVer(false)
     mostrarToast("Avaliação salva!")
+
+    // Só conta avaliação nova (mudar a nota de um voto existente não conta).
+    // O modal aparece com atraso para o toast de confirmação passar antes.
+    if (votoNovo) {
+      const marco = registrarAvaliacao()
+      if (marco) setTimeout(() => setMarcoContribuir(marco), 1500)
+    }
   }
 
   async function removerVoto() {
@@ -714,6 +724,8 @@ async function fazerUploadCapa(arquivo) {
           {toast}
         </div>
       )}
+
+      <ModalContribuir marco={marcoContribuir} onFechar={() => setMarcoContribuir(null)} />
 
       <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
 
