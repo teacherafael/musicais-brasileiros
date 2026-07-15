@@ -6,6 +6,7 @@ import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
 import { ehAdmin } from "../admins"
 import CardMusical from "../components/CardMusical"
 import html2canvas from "html2canvas"
+import logoCard from "../assets/mcdb-logo-card.png"
 
 function SeloVerificado() {
   return (
@@ -715,7 +716,37 @@ async function toggleVerificado() {
 async function gerarCardPerfil() {
     const el = document.getElementById("card-perfil-exportar")
     if (!el) return
+    if (el.dataset.gerando === "1") return
+    el.dataset.gerando = "1"
     el.style.display = "flex"
+
+    // Pré-carrega imagens externas como data URL (evita o html2canvas
+    // baixar tudo durante a captura, que é o que causa a lentidão)
+    const imgs = Array.from(el.querySelectorAll("img"))
+    const originais = imgs.map((img) => img.src)
+    await Promise.all(
+      imgs.map(async (img, i) => {
+        const src = originais[i]
+        if (!src || src.startsWith("data:")) return
+        try {
+          const resp = await fetch(src, { mode: "cors" })
+          const blob = await resp.blob()
+          const dataUrl = await new Promise((res, rej) => {
+            const fr = new FileReader()
+            fr.onload = () => res(fr.result)
+            fr.onerror = rej
+            fr.readAsDataURL(blob)
+          })
+          await new Promise((res) => {
+            img.onload = res
+            img.onerror = res
+            img.src = dataUrl
+          })
+        } catch {
+          // se falhar, mantém o src original — o useCORS ainda tenta
+        }
+      })
+    )
     // Espera o navegador pintar o elemento antes de capturar (importante no iOS)
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
     try {
@@ -723,6 +754,7 @@ async function gerarCardPerfil() {
         useCORS: true,
         backgroundColor: null,
         scale: 2,
+        logging: false,
       })
 
       const blob = await new Promise((resolve) =>
@@ -749,7 +781,11 @@ async function gerarCardPerfil() {
     } catch (err) {
       alert("Não foi possível gerar o card agora. Tente novamente.")
     } finally {
+      imgs.forEach((img, i) => {
+        img.src = originais[i]
+      })
       el.style.display = "none"
+      el.dataset.gerando = "0"
     }
   }
 
@@ -977,7 +1013,7 @@ async function gerarCardPerfil() {
         }}>
           {/* Logo */}
           <img
-            src="https://res.cloudinary.com/drk7o6h0p/image/upload/v1782171496/copy_of_mcdb_sembirlho_utr4xp.png"
+           src={logoCard}
             alt="MCDb"
             crossOrigin="anonymous"
             style={{ width: "120px", marginBottom: "40px" }}
