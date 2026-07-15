@@ -1,7 +1,8 @@
-{
+﻿{
   "rewrites": [
     { "source": "/__/auth/:path*", "destination": "https://musicais-br-database.firebaseapp.com/__/auth/:path*" },
     { "source": "/__/firebase/:path*", "destination": "https://musicais-br-database.firebaseapp.com/__/firebase/:path*" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     {
       "source": "/musical/:id",
       "has": [
