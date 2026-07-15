@@ -769,8 +769,8 @@ async function gerarCardPerfil() {
       if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
         try {
           await navigator.share({ files: [arquivo] })
-        } catch {
-          // usuário cancelou o compartilhamento — não é erro
+        } catch (e) {
+          alert("share falhou: " + e.name + " — " + e.message)
         }
       } else {
         const link = document.createElement("a")
