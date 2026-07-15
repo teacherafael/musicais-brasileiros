@@ -97,12 +97,11 @@ module.exports = async function handler(req, res) {
     const tituloPagina = ano ? `${titulo} (${ano})` : titulo
 
     // ---- Ficha técnica ----
-    // "Produção" fica sem link de propósito: produtora não é pessoa.
     let ficha = ""
     ficha += linhaTexto("Ano", ano)
     ficha += linhaLinks("Direção", str(f.direcao), "pessoa")
     ficha += linhaLinks("Direção Musical", str(f.direcaoMusical), "pessoa")
-    ficha += linhaTexto("Produção", str(f.producao))
+    ficha += linhaLinks("Produção", str(f.producao), "pessoa")
     ficha += linhaLinks("Versão Brasileira", str(f.versionista), "pessoa")
     ficha += linhaLinks("Texto Original", str(f.textoOriginal), "pessoa")
     ficha += linhaLinks("Música Original", str(f.musicaOriginal), "pessoa")

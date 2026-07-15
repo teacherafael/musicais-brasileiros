@@ -4,51 +4,10 @@ import { db, auth } from "../firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 import { useParams, useNavigate } from "react-router-dom"
+import ALIASES from "../aliases.json"
 
 // Mapeamento de aliases para nome canônico
 // Chave: nome antigo (lowercase), Valor: nome atual (como aparece nos créditos)
-const ALIASES = {
-  "frederico silveira": "Fred Silveira",
-  "luci salutes": "Luci Saluzzi",
-  "fabiane bang": "Fabi Bang",
-  "janaina zuba": "Zuba Janaina",
-"paula flaibann": "Paulão do Vrah",
-"vitor beire": "Victor Mühlethaler",
-"joão victor bastos": "JV Fiori",
-"daniel ribeiro": "Daniel Salve",
-"danielle winits": "Dani Winits",
-"luciana bollina": "Lubo",
-"adriana vitor lessa": "Adriana Lessa",
-"maurício alves": "Mau Alves",
-"fabiana tolentino": "Bibi Tolentino",
-"cristian monteiro": "Cris Mont",
-"bhener carvalho": "Bhener",
-"rupa figueira": "Rupa",
-"fabi tolentino": "Bibi Tolentino",
-"janaina amorin": "Jana Amorin",
-"patricia athayde": "Paty Athayde",
-"nathália borges": "Nani Porto",
-"cleto baccic": "Baccic",
-"maria bia martins": "Maria Bia",
-"verónica valenttino": "Valenttino",
-"rubem gabira": "Ruben Gabira",
-"jennifer do nascimento": "Jennifer Nascimento",
-"victor leal": "Victor Medeiros",
-"andré padreca": "André Luiz Odin",
-"gabriel d'ângelo": "Gabriel D'Angelo",
-"rafael miranda": "Rafa Diverse",
-"maria claudia raia": "Claudia Raia",
-"leonardo wagner": "Leo Wagner",
-"lurryan nascimento": "Lurryan",
-"julio mancini": "Julio Assad",
-"andressa massei": "Andrezza Massei",
-"sandro conte febras": "Sandro Conte",
-"andré gomes": "André Ulo",
-"fábula entretenimento": "Touché Entretenimento",
-  "nome antigo": "Nome Atual",
-  "outro nome antigo": "Nome Atual",
-  
-}
 
 // Remove acentos e deixa minúsculo, pra busca tolerante a acentuação
 const normalizar = (texto) =>

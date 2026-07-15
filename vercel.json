@@ -5,14 +5,13 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     {
       "source": "/musical/:id",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(Googlebot|Bingbot|DuckDuckBot|facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Applebot).*"
-        }
-      ],
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*(Googlebot|Bingbot|DuckDuckBot|facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Applebot).*" }],
       "destination": "/api/og-musical?id=:id"
+    },
+    {
+      "source": "/pessoa/:nome",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*(Googlebot|Bingbot|DuckDuckBot|facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Applebot).*" }],
+      "destination": "/api/og-pessoa?nome=:nome"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
