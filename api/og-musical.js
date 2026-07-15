@@ -2,6 +2,10 @@
 // Serve uma versão em HTML puro da ficha do musical para crawlers
 // (WhatsApp, Facebook, Googlebot etc). Usuários com JS nunca veem isso.
 //
+// Os nomes viram links para /pessoa/ e /teatro/, igual na SPA. É assim
+// que o Googlebot descobre as páginas de artista e de teatro sem
+// precisar de sitemap gigante.
+//
 // Roteado pelo vercel.json via rewrite condicional por user-agent.
 
 function esc(s) {
@@ -24,8 +28,42 @@ function mapa(valor) {
   return (valor && valor.mapValue && valor.mapValue.fields) || {}
 }
 
-// Uma linha da ficha técnica. Some se estiver vazia.
-function linha(rotulo, valor) {
+// Um link para /pessoa/Nome ou /teatro/Nome
+function link(base, nome) {
+  const limpo = String(nome || "").trim()
+  if (!limpo) return ""
+  const href = `/${base}/${encodeURIComponent(limpo)}`
+  return `<a href="${esc(href)}">${esc(limpo)}</a>`
+}
+
+// "A, B, C" -> "<a>A</a>, <a>B</a>, <a>C</a>"
+function linksDeTexto(base, texto) {
+  return String(texto || "")
+    .split(",")
+    .map((n) => n.trim())
+    .filter(Boolean)
+    .map((n) => link(base, n))
+    .join(", ")
+}
+
+// Array de stringValue -> links
+function linksDeArray(base, valores) {
+  return valores
+    .map((v) => str(v).trim())
+    .filter(Boolean)
+    .map((n) => link(base, n))
+    .join(", ")
+}
+
+// Linha da ficha com nomes linkados. Some se estiver vazia.
+function linhaLinks(rotulo, texto, base) {
+  const html = linksDeTexto(base, texto)
+  if (!html) return ""
+  return `<p><strong>${esc(rotulo)}:</strong> ${html}</p>`
+}
+
+// Linha da ficha em texto puro (sem link).
+function linhaTexto(rotulo, valor) {
   if (!valor || !String(valor).trim()) return ""
   return `<p><strong>${esc(rotulo)}:</strong> ${esc(valor)}</p>`
 }
@@ -59,16 +97,17 @@ module.exports = async function handler(req, res) {
     const tituloPagina = ano ? `${titulo} (${ano})` : titulo
 
     // ---- Ficha técnica ----
+    // "Produção" fica sem link de propósito: produtora não é pessoa.
     let ficha = ""
-    ficha += linha("Ano", ano)
-    ficha += linha("Direção", str(f.direcao))
-    ficha += linha("Direção Musical", str(f.direcaoMusical))
-    ficha += linha("Produção", str(f.producao))
-    ficha += linha("Versão Brasileira", str(f.versionista))
-    ficha += linha("Texto Original", str(f.textoOriginal))
-    ficha += linha("Música Original", str(f.musicaOriginal))
-    ficha += linha("Elenco", str(f.elenco))
-    ficha += linha("Elenco Adicional", str(f.elencoAdicional))
+    ficha += linhaTexto("Ano", ano)
+    ficha += linhaLinks("Direção", str(f.direcao), "pessoa")
+    ficha += linhaLinks("Direção Musical", str(f.direcaoMusical), "pessoa")
+    ficha += linhaTexto("Produção", str(f.producao))
+    ficha += linhaLinks("Versão Brasileira", str(f.versionista), "pessoa")
+    ficha += linhaLinks("Texto Original", str(f.textoOriginal), "pessoa")
+    ficha += linhaLinks("Música Original", str(f.musicaOriginal), "pessoa")
+    ficha += linhaLinks("Elenco", str(f.elenco), "pessoa")
+    ficha += linhaLinks("Elenco Adicional", str(f.elencoAdicional), "pessoa")
 
     // ---- Teatros (array de { teatros: [], ano }) ----
     let teatrosHtml = ""
@@ -77,17 +116,18 @@ module.exports = async function handler(req, res) {
       const itens = listaTeatros
         .map((t) => {
           const campos = mapa(t)
-          const nomes = arr(campos.teatros)
-            .map((n) => str(n))
-            .filter(Boolean)
-            .join(", ")
+          const nomes = linksDeArray("teatro", arr(campos.teatros))
           const anoT = str(campos.ano)
           if (!nomes) return ""
-          return `<li>${esc(nomes)}${anoT ? ` — ${esc(anoT)}` : ""}</li>`
+          return `<li>${nomes}${anoT ? ` — ${esc(anoT)}` : ""}</li>`
         })
         .filter(Boolean)
         .join("")
       if (itens) teatrosHtml = `<h2>Teatros</h2><ul>${itens}</ul>`
+    } else if (str(f.teatro)) {
+      // Registros antigos usavam o campo único "teatro"
+      const antigo = linksDeTexto("teatro", str(f.teatro))
+      if (antigo) teatrosHtml = `<h2>Teatros</h2><p>${antigo}</p>`
     }
 
     // ---- Equipe criativa (array de { funcao, nomes: [] }) ----
@@ -98,12 +138,9 @@ module.exports = async function handler(req, res) {
         .map((b) => {
           const campos = mapa(b)
           const funcao = str(campos.funcao)
-          const nomes = arr(campos.nomes)
-            .map((n) => str(n))
-            .filter(Boolean)
-            .join(", ")
+          const nomes = linksDeArray("pessoa", arr(campos.nomes))
           if (!funcao || !nomes) return ""
-          return `<p><strong>${esc(funcao)}:</strong> ${esc(nomes)}</p>`
+          return `<p><strong>${esc(funcao)}:</strong> ${nomes}</p>`
         })
         .filter(Boolean)
         .join("")
@@ -118,12 +155,9 @@ module.exports = async function handler(req, res) {
         .map((b) => {
           const campos = mapa(b)
           const local = str(campos.local)
-          const nomes = arr(campos.nomes)
-            .map((n) => str(n))
-            .filter(Boolean)
-            .join(", ")
+          const nomes = linksDeArray("pessoa", arr(campos.nomes))
           if (!nomes) return ""
-          return `<p>${local ? `<strong>${esc(local)}:</strong> ` : ""}${esc(nomes)}</p>`
+          return `<p>${local ? `<strong>${esc(local)}:</strong> ` : ""}${nomes}</p>`
         })
         .filter(Boolean)
         .join("")
@@ -162,7 +196,7 @@ module.exports = async function handler(req, res) {
   ${equipeHtml}
   ${musicosHtml}
   <hr />
-  <p><a href="${esc(ogUrl)}">Ver no MCDb — Musical Cast Database</a></p>
+  <p><a href="/">MCDb — Musical Cast Database</a> | <a href="/ranking">Ranking</a></p>
 </body>
 </html>`)
   } catch (e) {
