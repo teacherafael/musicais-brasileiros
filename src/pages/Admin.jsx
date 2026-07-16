@@ -81,6 +81,7 @@ function Admin() {
   const [fontesEdicao, setFontesEdicao] = useState([])
   const [indiceStatus, setIndiceStatus] = useState("")
   const [emAltaVotos, setEmAltaVotos] = useState([])
+  const [capasAtuais, setCapasAtuais] = useState({})
   const [janela, setJanela] = useState("7")
 
   // Aba "Adicionar musical"
@@ -130,8 +131,16 @@ function Admin() {
       } else if (qual === "emalta") {
         const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         const q = query(collectionGroup(db, "votos"), where("data", ">=", trintaDiasAtras))
-        const snap = await getDocs(q)
+        const [snap, indiceSnap] = await Promise.all([
+          getDocs(q),
+          getDoc(doc(db, "indices", "home"))
+        ])
         setEmAltaVotos(snap.docs.map(d => d.data()).filter(v => v.data && v.musicalId))
+        const mapaCapas = {}
+        if (indiceSnap.exists()) {
+          (indiceSnap.data().itens || []).forEach(it => { mapaCapas[it.id] = it.capa || "" })
+        }
+        setCapasAtuais(mapaCapas)
       } else if (qual === "entidades") {
         const snap = await getDocs(collection(db, "entidades"))
         setEntidades(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.nome || "").localeCompare(b.nome || "")))
@@ -842,7 +851,7 @@ async function fazerUploadCapaNovo(arquivo) {
     emAltaVotos.forEach(v => {
       const quando = v.data?.toDate ? v.data.toDate().getTime() : 0
       if (quando < cutoffJanela) return
-      if (!mapa[v.musicalId]) mapa[v.musicalId] = { musicalId: v.musicalId, titulo: v.titulo || v.musicalId, capa: v.capa || "", count: 0, soma: 0 }
+      if (!mapa[v.musicalId]) mapa[v.musicalId] = { musicalId: v.musicalId, titulo: v.titulo || v.musicalId, capa: capasAtuais[v.musicalId] || v.capa || "", count: 0, soma: 0 }
       mapa[v.musicalId].count += 1
       mapa[v.musicalId].soma += Number(v.estrelas) || 0
     })
