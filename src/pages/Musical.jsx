@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async"
 import { useEffect, useState, useRef } from "react"
-import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc, increment, serverTimestamp } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, deleteDoc, increment, serverTimestamp, runTransaction } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
@@ -475,7 +475,41 @@ async function fazerUploadCapa(arquivo) {
     if (!usuario) return mostrarToast("Faça login para votar.")
     const entrandoNaContagem = !jaVi
     const votoNovo = votoAtual === null
-    await setDoc(doc(db, "musicais", id, "votos", usuario.uid), { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
+
+    const votoRef = doc(db, "musicais", id, "votos", usuario.uid)
+    const musicalRef = doc(db, "musicais", id)
+
+    await runTransaction(db, async (transaction) => {
+      const [votoSnap, musicalSnap] = await Promise.all([
+        transaction.get(votoRef),
+        transaction.get(musicalRef),
+      ])
+      const dadosMusical = musicalSnap.data() || {}
+      let totalVotos = Number(dadosMusical.totalVotos) || 0
+      let somaEstrelas = Number(dadosMusical.somaEstrelas) || 0
+      const distribuicao = {
+        "0.5": 0, "1": 0, "1.5": 0, "2": 0, "2.5": 0,
+        "3": 0, "3.5": 0, "4": 0, "4.5": 0, "5": 0,
+        ...(dadosMusical.distribuicao || {}),
+      }
+
+      if (votoSnap.exists()) {
+        const notaAnterior = Number(votoSnap.data().estrelas)
+        totalVotos = Math.max(0, totalVotos - 1)
+        somaEstrelas -= notaAnterior
+        const chaveAntiga = String(notaAnterior)
+        if (distribuicao[chaveAntiga] !== undefined) distribuicao[chaveAntiga] = Math.max(0, distribuicao[chaveAntiga] - 1)
+      }
+
+      totalVotos += 1
+      somaEstrelas += estrelas
+      const chaveNova = String(estrelas)
+      distribuicao[chaveNova] = (distribuicao[chaveNova] || 0) + 1
+
+      transaction.set(votoRef, { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
+      transaction.update(musicalRef, { totalVotos, somaEstrelas, distribuicao })
+    })
+
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
     })
@@ -498,7 +532,27 @@ async function fazerUploadCapa(arquivo) {
   }
 
   async function removerVoto() {
-    await deleteDoc(doc(db, "musicais", id, "votos", usuario.uid))
+    const votoRef = doc(db, "musicais", id, "votos", usuario.uid)
+    const musicalRef = doc(db, "musicais", id)
+
+    await runTransaction(db, async (transaction) => {
+      const [votoSnap, musicalSnap] = await Promise.all([
+        transaction.get(votoRef),
+        transaction.get(musicalRef),
+      ])
+      if (!votoSnap.exists()) return
+      const notaAnterior = Number(votoSnap.data().estrelas)
+      const dadosMusical = musicalSnap.data() || {}
+      const totalVotos = Math.max(0, (Number(dadosMusical.totalVotos) || 0) - 1)
+      const somaEstrelas = (Number(dadosMusical.somaEstrelas) || 0) - notaAnterior
+      const distribuicao = { ...(dadosMusical.distribuicao || {}) }
+      const chave = String(notaAnterior)
+      if (distribuicao[chave] !== undefined) distribuicao[chave] = Math.max(0, distribuicao[chave] - 1)
+
+      transaction.delete(votoRef)
+      transaction.update(musicalRef, { totalVotos, somaEstrelas, distribuicao })
+    })
+
     setVotoAtual(null)
     setConfirmandoRemocao(false)
     mostrarToast("Avaliação removida.")
