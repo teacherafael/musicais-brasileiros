@@ -1259,8 +1259,8 @@ async function toggleVerificado() {
                   {i + 1}
                 </div>
                 <div style={{ width: "100%", aspectRatio: "2/3", marginBottom: "8px" }}>
-                  {item.capa
-                    ? <img src={item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }} />
+                  {(musicais[item.musicalId]?.capa || item.capa)
+                    ? <img src={musicais[item.musicalId]?.capa || item.capa} alt={item.titulo} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }} />
                     : <div style={{ width: "100%", height: "100%", background: "#333", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{item.titulo}</div>
                   }
                 </div>
