@@ -511,6 +511,15 @@ async function fazerUploadCapa(arquivo) {
 
         console.log("[DEBUG voto] depois:", { totalVotos, somaEstrelas, distribuicao })
 
+        transaction.set(votoRef, { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
+        transaction.update(musicalRef, { totalVotos, somaEstrelas, distribuicao })
+      })
+      console.log("[DEBUG voto] transação concluída com sucesso")
+    } catch (erroTransacao) {
+      console.error("[DEBUG voto] ERRO na transação:", erroTransacao)
+      throw erroTransacao
+    }
+
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
     })
