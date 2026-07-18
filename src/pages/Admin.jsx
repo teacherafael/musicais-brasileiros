@@ -1094,7 +1094,15 @@ async function fazerUploadCapaNovo(arquivo) {
                 <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518" }}>{r.musicalTitulo}</p>
               </div>
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
-              <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>Reportado por: {r.nome}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "16px" }}>
+                <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>Reportado por: {r.nome}</p>
+                {r.userId && r.userId !== usuario.uid && (
+                  <button onClick={() => mandarMensagemParaSugestor(r.userId)}
+                    style={{ background: "transparent", color: "#555", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
+                    💬 Mandar mensagem
+                  </button>
+                )}
+              </div>
               <div style={{ display: "flex", gap: "12px" }}>
                 <Link className="btn-comentar" to={`/musical/${r.musicalId}`} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>Ver musical</Link>
                 <button className="btn-sair" onClick={() => resolverRelato(r.id)}>Marcar como resolvido</button>
