@@ -479,46 +479,36 @@ async function fazerUploadCapa(arquivo) {
     const votoRef = doc(db, "musicais", id, "votos", usuario.uid)
     const musicalRef = doc(db, "musicais", id)
 
-    try {
-      await runTransaction(db, async (transaction) => {
-        const [votoSnap, musicalSnap] = await Promise.all([
-          transaction.get(votoRef),
-          transaction.get(musicalRef),
-        ])
-        const dadosMusical = musicalSnap.data() || {}
-        let totalVotos = Number(dadosMusical.totalVotos) || 0
-        let somaEstrelas = Number(dadosMusical.somaEstrelas) || 0
-        const distribuicao = {
-          "0.5": 0, "1": 0, "1.5": 0, "2": 0, "2.5": 0,
-          "3": 0, "3.5": 0, "4": 0, "4.5": 0, "5": 0,
-          ...(dadosMusical.distribuicao || {}),
-        }
+    await runTransaction(db, async (transaction) => {
+      const [votoSnap, musicalSnap] = await Promise.all([
+        transaction.get(votoRef),
+        transaction.get(musicalRef),
+      ])
+      const dadosMusical = musicalSnap.data() || {}
+      let totalVotos = Number(dadosMusical.totalVotos) || 0
+      let somaEstrelas = Number(dadosMusical.somaEstrelas) || 0
+      const distribuicao = {
+        "0.5": 0, "1": 0, "1.5": 0, "2": 0, "2.5": 0,
+        "3": 0, "3.5": 0, "4": 0, "4.5": 0, "5": 0,
+        ...(dadosMusical.distribuicao || {}),
+      }
 
-        console.log("[DEBUG voto] antes:", { totalVotos, somaEstrelas, distribuicao: { ...distribuicao } })
+      if (votoSnap.exists()) {
+        const notaAnterior = Number(votoSnap.data().estrelas)
+        totalVotos = Math.max(0, totalVotos - 1)
+        somaEstrelas -= notaAnterior
+        const chaveAntiga = String(notaAnterior)
+        if (distribuicao[chaveAntiga] !== undefined) distribuicao[chaveAntiga] = Math.max(0, distribuicao[chaveAntiga] - 1)
+      }
 
-        if (votoSnap.exists()) {
-          const notaAnterior = Number(votoSnap.data().estrelas)
-          totalVotos = Math.max(0, totalVotos - 1)
-          somaEstrelas -= notaAnterior
-          const chaveAntiga = String(notaAnterior)
-          if (distribuicao[chaveAntiga] !== undefined) distribuicao[chaveAntiga] = Math.max(0, distribuicao[chaveAntiga] - 1)
-        }
+      totalVotos += 1
+      somaEstrelas += estrelas
+      const chaveNova = String(estrelas)
+      distribuicao[chaveNova] = (distribuicao[chaveNova] || 0) + 1
 
-        totalVotos += 1
-        somaEstrelas += estrelas
-        const chaveNova = String(estrelas)
-        distribuicao[chaveNova] = (distribuicao[chaveNova] || 0) + 1
-
-        console.log("[DEBUG voto] depois:", { totalVotos, somaEstrelas, distribuicao })
-
-        transaction.set(votoRef, { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
-        transaction.update(musicalRef, { totalVotos, somaEstrelas, distribuicao })
-      })
-      console.log("[DEBUG voto] transação concluída com sucesso")
-    } catch (erroTransacao) {
-      console.error("[DEBUG voto] ERRO na transação:", erroTransacao)
-      throw erroTransacao
-    }
+      transaction.set(votoRef, { estrelas, data: serverTimestamp(), musicalId: id, titulo: musical.titulo, capa: musical.capa || null })
+      transaction.update(musicalRef, { totalVotos, somaEstrelas, distribuicao })
+    })
 
     await setDoc(doc(db, "usuarios", usuario.uid, "jaVi", id), {
       musicalId: id, titulo: musical.titulo, capa: musical.capa || null, direcao: musical.direcao || ""
