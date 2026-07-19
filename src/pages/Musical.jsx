@@ -169,6 +169,7 @@ function Musical() {
   const navigate = useNavigate()
   const [musical, setMusical] = useState(null)
   const [usuario, setUsuario] = useState(null)
+  const [authResolved, setAuthResolved] = useState(false)
   const [votoAtual, setVotoAtual] = useState(null)
   const [queroVer, setQueroVer] = useState(false)
   const [jaVi, setJaVi] = useState(false)
@@ -201,7 +202,7 @@ function Musical() {
   const [salvandoSessao, setSalvandoSessao] = useState(false)
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => setUsuario(user))
+    onAuthStateChanged(auth, (user) => { setUsuario(user); setAuthResolved(true) })
   }, [])
 
   useEffect(() => {
@@ -715,6 +716,18 @@ async function fazerUploadCapa(arquivo) {
 
   if (!musical) return <main><p>Carregando...</p></main>
 
+  if (musical.arquivado === true) {
+    if (!authResolved) return <main><p>Carregando...</p></main>
+    if (!ehAdmin(usuario)) {
+      return (
+        <main>
+          <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
+          <p style={{ fontSize: "18px", color: "#888", marginTop: "40px", textAlign: "center" }}>Musical não encontrado.</p>
+        </main>
+      )
+    }
+  }
+
   const equipeSecundaria = equipeSecundariaOrdenada(musical.equipeCriativa)
   const musicosExibicao = Array.isArray(musical.musicos) ? musical.musicos.filter(m => m.local && m.nomes && m.nomes.length > 0) : []
   const temBlocoEquipe = equipeSecundaria.length > 0 || musicosExibicao.length > 0
@@ -782,6 +795,12 @@ async function fazerUploadCapa(arquivo) {
       <ModalContribuir marco={marcoContribuir} onFechar={() => setMarcoContribuir(null)} />
 
       <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
+
+      {musical.arquivado === true && (
+        <div style={{ background: "#fff3e0", border: "1px solid #ffcc80", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px", color: "#8a5a00" }}>
+          📦 Este musical está <strong>arquivado</strong>. Ele não aparece na Home, na busca nem no ranking, e só admins conseguem abrir esta página. Para reexibi-lo, use o botão "Desarquivar" no Admin.
+        </div>
+      )}
 
       {editandoMusical ? (
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "24px", marginBottom: "32px" }}>

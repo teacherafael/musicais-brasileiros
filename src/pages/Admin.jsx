@@ -53,6 +53,7 @@ async function gerarIndiceHome() {
   const snap = await getDocs(collection(db, "musicais"))
   const itens = snap.docs
     .filter(d => d.data().status !== "rascunho")
+    .filter(d => d.data().arquivado !== true)
     .map(d => montarItemIndice(d.id, d.data()))
   await setDoc(doc(db, "indices", "home"), {
     itens,
@@ -68,6 +69,7 @@ function Admin() {
   const [sugestoes, setSugestoes] = useState([])
   const [relatos, setRelatos] = useState([])
   const [musicais, setMusicais] = useState([])
+  const [arquivados, setArquivados] = useState([])
   const [mensagens, setMensagens] = useState([])
   const [aba, setAba] = useState("sugestoes")
   const [carregando, setCarregando] = useState(true)
@@ -125,6 +127,13 @@ function Admin() {
       } else if (qual === "musicais") {
         const snap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
         setMusicais(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } else if (qual === "arquivados") {
+        const snap = await getDocs(query(collection(db, "musicais"), where("arquivado", "==", true)))
+        setArquivados(
+          snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+        )
       } else if (qual === "mensagens") {
         const snap = await getDocs(query(collection(db, "mensagens"), orderBy("data", "desc")))
         setMensagens(snap.docs.map(d => ({ id: d.id, ...d.data() })))
@@ -527,6 +536,24 @@ async function fazerUploadCapaNovo(arquivo) {
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a deleção */ }
   }
 
+  async function arquivarMusical(musicalId, titulo, estaArquivado) {
+    const acao = estaArquivado ? "desarquivar" : "arquivar"
+    if (!window.confirm(`Deseja ${acao} "${titulo}"?`)) return
+    await updateDoc(doc(db, "musicais", musicalId), { arquivado: !estaArquivado })
+    if (estaArquivado) {
+      // Desarquivando: sai da lista de arquivados, volta pra publicados.
+      const alvo = arquivados.find(m => m.id === musicalId)
+      setArquivados(prev => prev.filter(m => m.id !== musicalId))
+      if (alvo) setMusicais(prev => [{ ...alvo, arquivado: false }, ...prev.filter(m => m.id !== musicalId)])
+    } else {
+      // Arquivando: sai de publicados, entra em arquivados.
+      const alvo = musicais.find(m => m.id === musicalId)
+      setMusicais(prev => prev.filter(m => m.id !== musicalId))
+      if (alvo) setArquivados(prev => [{ ...alvo, arquivado: true }, ...prev.filter(m => m.id !== musicalId)])
+    }
+    try { await gerarIndiceHome() } catch (e) { /* não bloqueia */ }
+  }
+
   async function marcarMensagemLida(mensagemId) {
     await updateDoc(doc(db, "mensagens", mensagemId), { lida: true })
     setMensagens(prev => prev.map(m => m.id === mensagemId ? { ...m, lida: true } : m))
@@ -880,7 +907,10 @@ async function fazerUploadCapaNovo(arquivo) {
           Relatos de erro {carregadas.has("relatos") && relatos.length > 0 && `(${relatos.length})`}
         </button>
         <button onClick={() => trocarAba("musicais")} className={aba === "musicais" ? "btn-comentar" : "btn-sair"}>
-          Musicais publicados {carregadas.has("musicais") && `(${musicais.length})`}
+          Musicais publicados {carregadas.has("musicais") && `(${musicais.filter(m => m.arquivado !== true).length})`}
+        </button>
+        <button onClick={() => trocarAba("arquivados")} className={aba === "arquivados" ? "btn-comentar" : "btn-sair"}>
+          📦 Arquivados {carregadas.has("arquivados") && arquivados.length > 0 && `(${arquivados.length})`}
         </button>
         <button onClick={() => trocarAba("mensagens")} className={aba === "mensagens" ? "btn-comentar" : "btn-sair"}>
           Mensagens {carregadas.has("mensagens") && naoLidas > 0 && `(${naoLidas} nova${naoLidas > 1 ? "s" : ""})`}
@@ -1146,6 +1176,45 @@ async function fazerUploadCapaNovo(arquivo) {
             </div>
           ))
         )
+      ) : aba === "arquivados" ? (
+        <>
+          <p style={{ fontSize: "13px", color: "#888", marginBottom: "20px", lineHeight: "1.5" }}>
+            Musicais arquivados não aparecem na Home, na busca nem no ranking, e a página deles fica bloqueada para quem não é admin. O documento continua intacto — desarquivar devolve tudo ao normal.
+          </p>
+          {arquivados.length === 0 ? (
+            <p style={{ color: "#888" }}>Nenhum musical arquivado.</p>
+          ) : (
+            arquivados.map(m => (
+              <div key={m.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
+                {m.capa ? (
+                  <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: "48px", height: "64px", background: "#1a1a1a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#F5C518", fontSize: "8px", textAlign: "center", padding: "4px" }}>{m.titulo}</span>
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>
+                    {m.titulo}
+                    <span style={{ fontSize: "11px", fontWeight: "600", color: "#cc7a00", background: "#fff3e0", borderRadius: "4px", padding: "2px 6px", marginLeft: "8px" }}>arquivado</span>
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#888" }}>{m.direcao || "—"} · {m.ano || "—"}</p>
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                  <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
+                  <button onClick={() => arquivarMusical(m.id, m.titulo, true)}
+                    style={{ background: "transparent", color: "#b8960a", border: "1px solid #b8960a", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    Desarquivar
+                  </button>
+                  <button onClick={() => deletarMusical(m.id, m.titulo)}
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    Deletar
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </>
       ) : aba === "emalta" ? (
         <>
           <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
@@ -1323,10 +1392,10 @@ async function fazerUploadCapaNovo(arquivo) {
             <button className="btn-comentar" onClick={atualizarIndiceManual}>🔄 Atualizar índice da Home</button>
           </div>
 
-          {musicais.length === 0 ? (
+          {musicais.filter(m => m.arquivado !== true).length === 0 ? (
             <p style={{ color: "#888" }}>Nenhum musical publicado.</p>
           ) : (
-            musicais.map(m => (
+            musicais.filter(m => m.arquivado !== true).map(m => (
               <div key={m.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
                 {m.capa ? (
                   <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
@@ -1336,11 +1405,18 @@ async function fazerUploadCapaNovo(arquivo) {
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>
+                    {m.titulo}
+                    {m.arquivado && <span style={{ fontSize: "11px", fontWeight: "600", color: "#cc7a00", background: "#fff3e0", borderRadius: "4px", padding: "2px 6px", marginLeft: "8px" }}>arquivado</span>}
+                  </p>
                   <p style={{ fontSize: "13px", color: "#888" }}>{m.direcao || "—"} · {m.ano || "—"}</p>
                 </div>
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                   <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
+                  <button onClick={() => arquivarMusical(m.id, m.titulo, m.arquivado === true)}
+                    style={{ background: "transparent", color: "#b8960a", border: "1px solid #b8960a", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    {m.arquivado ? "Desarquivar" : "Arquivar"}
+                  </button>
                   <button onClick={() => deletarMusical(m.id, m.titulo)}
                     style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
                     Deletar
