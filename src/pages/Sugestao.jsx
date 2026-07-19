@@ -161,21 +161,21 @@ function Sugestao() {
         Preencha as informações do musical que você quer ver na database. Campos com <span style={{ color: "#cc0000" }}>*</span> são obrigatórios. Não se preocupe se não souber tudo — preencha o que tiver.
       </p>
 
-      <div style={{ background: "#fff8e1", border: "1px solid #f0d98a", borderRadius: "8px", padding: "16px 18px", marginBottom: "16px" }}>
-        <p style={{ fontSize: "13px", fontWeight: "700", color: "#8a6d00", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
-          Antes de sugerir
+      <div style={{ background: "#fff8e1", border: "1px solid #f0d98a", borderLeft: "5px solid #f5c518", borderRadius: "8px", padding: "16px 18px", marginBottom: "16px" }}>
+        <p style={{ fontSize: "14px", fontWeight: "700", color: "#8a6d00", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+          🔍 Antes de sugerir
         </p>
         <p style={{ fontSize: "14px", color: "#5c4a00", lineHeight: "1.6", margin: 0 }}>
           Por favor, confira na <a href="/" style={{ color: "#8a6d00", fontWeight: "700", textDecoration: "underline" }}>busca da Home</a> se o musical já não está cadastrado antes de enviar. Muitas sugestões recentes são de produções que já existem na database.
         </p>
       </div>
 
-      <div style={{ background: "#fff8e1", border: "1px solid #f0d98a", borderRadius: "8px", padding: "16px 18px", marginBottom: "32px" }}>
-        <p style={{ fontSize: "13px", fontWeight: "700", color: "#8a6d00", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
-          Atenção
+      <div style={{ background: "#fdecea", border: "1px solid #e57373", borderLeft: "5px solid #d32f2f", borderRadius: "8px", padding: "18px 20px", marginBottom: "32px" }}>
+        <p style={{ fontSize: "17px", fontWeight: "800", color: "#c62828", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+          ⚠️ Atenção
         </p>
-        <p style={{ fontSize: "14px", color: "#5c4a00", lineHeight: "1.6", margin: 0 }}>
-          O MCDb só adiciona espetáculos produzidos com os direitos autorais devidamente adquiridos. Não incluímos musicais escolares, de curso livre ou acadêmicos.
+        <p style={{ fontSize: "15px", fontWeight: "500", color: "#7a1515", lineHeight: "1.6", margin: 0 }}>
+          O MCDb só adiciona espetáculos produzidos com os direitos autorais devidamente adquiridos. Não incluímos musicais amadores, escolares, de curso livre ou acadêmicos.
         </p>
       </div>
 
