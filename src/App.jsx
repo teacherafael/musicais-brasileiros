@@ -10,6 +10,7 @@ import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
 import Termos from "./pages/Termos"
+import FAQ from "./pages/FAQ"
 import Sobre from "./pages/Sobre"
 import Pessoa from "./pages/Pessoa"
 import Teatro from "./pages/Teatro"
@@ -83,6 +84,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/termos" element={<Termos />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/sobre" element={<Sobre />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/pessoa/:nome" element={<Pessoa />} />
