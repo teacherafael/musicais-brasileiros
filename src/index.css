@@ -219,7 +219,7 @@ main {
   }
 
   .musical-poster {
-    width: 200px !important;
+    width: 210px !important;
     height: 280px !important;
   }
 
@@ -240,7 +240,7 @@ main {
 
 .musical-poster {
   width: 225px;
-  height: 305px;
+  height: 300px;
   background: transparent;
   border-radius: 8px;
   flex-shrink: 0;
