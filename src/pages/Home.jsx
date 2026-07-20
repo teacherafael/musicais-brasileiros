@@ -293,7 +293,8 @@ function scrollDestaques(direcao) {
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
   const destaquesIds = new Set(destaques.map(m => m.id))
   const recentesIds = [...musicais].filter(m => !destaquesIds.has(m.id)).sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
-  const idsExcluidos = new Set([...destaquesIds])
+  const buscaAtiva = busca.trim() !== "" || filtroAno !== ""
+  const idsExcluidos = buscaAtiva ? new Set() : new Set([...destaquesIds])
 
   const musicaisFiltrados = musicais
     .filter(m => !idsExcluidos.has(m.id))
