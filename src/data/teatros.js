@@ -36,7 +36,7 @@ export const teatros = [
   {
     id: "teatro-niss",
     nomeOficial: "Teatro Nissi",
-    aliases: ["Teatro Brigadeiro", "Teatro Jardel Filho"],
+    aliases: ["Teatro Brigadeiro", "Teatro Antônio Fagundes", "Teatro Jardel Filho"],
     endereco: "Avenida Brigadeiro Luís Antônio, 884",
     bairro: "Bela Vista",
     cidade: "São Paulo – SP",
