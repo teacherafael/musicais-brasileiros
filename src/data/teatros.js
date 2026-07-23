@@ -657,6 +657,14 @@ export const teatros = [
     bairro: "Centro",
     cidade: "Fortaleza – CE",
   },
+       {
+    id: "teatro-claro-mais-fortaleza",
+    nomeOficial: "Teatro Claro Mais Fortaleza",
+    aliases: ["Theatro Via Sul", "Theatro Via Sul Fortaleza", "Teatro Via Sul"],
+    endereco: "Avenida Washington Soares, 4335",
+    bairro: "Centro",
+    cidade: "Sapiranga – CE",
+  },
   {
     id: "teatro-universitario",
     nomeOficial: "Teatro Universitário",
