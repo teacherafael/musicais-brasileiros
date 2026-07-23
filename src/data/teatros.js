@@ -18,6 +18,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
     {
+    id: "teatro-gamaro",
+    nomeOficial: "Teatro Gamaro",
+    aliases: ["Teatro Anhembi Morumbi"],
+    endereco: "R. Dr. Almeida Lima, 993",
+    bairro: "Mooca",
+    cidade: "São Paulo – SP",
+  },
+    {
     id: "teatro-procopio-ferreira",
     nomeOficial: "Teatro Procópio Ferreira",
     aliases: [],
