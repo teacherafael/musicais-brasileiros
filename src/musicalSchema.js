@@ -14,6 +14,12 @@
 // Pessoa dependem desses campos existirem soltos).
 export const ESSENCIAIS = ["Direção", "Direção Musical", "Versionista", "Texto Original", "Música Original", "Produtora"]
 
+// ── Tipo de obra ─────────────────────────────────────────────────────────────
+// "Musical": as canções fazem parte da narrativa.
+// "Peça Musicada": peça de teatro com música incorporada, sem estrutura de musical.
+// Documentos antigos não têm este campo — a leitura sempre usa `|| "Musical"`.
+export const TIPOS_OBRA = ["Musical", "Peça Musicada"]
+
 export const ESSENCIAL_CAMPO = {
   "Direção": "direcao",
   "Direção Musical": "direcaoMusical",
@@ -186,6 +192,7 @@ export function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
   return {
     titulo: form.titulo || "",
     tituloOriginal: form.tituloOriginal || "",
+    tipoObra: form.tipoObra || "Musical",
     sinopse: form.sinopse || "",
     direcao: planos.direcao,
     direcaoMusical: planos.direcaoMusical,

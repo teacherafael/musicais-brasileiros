@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
 import ModalContribuir, { registrarAvaliacao } from "../components/ModalContribuir";
-import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, montarEquipeDeStrings } from "../musicalSchema";
+import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -354,6 +354,7 @@ async function fazerUploadCapa(arquivo) {
       ano: musical.ano || "", teatro: musical.teatro || "",
       capa: musical.capa || "", programaDigital: musical.programaDigital || "",
       tituloOriginal: musical.tituloOriginal || "",
+      tipoObra: musical.tipoObra || "Musical",
       galeria: (musical.galeria || []).map(foto => {
         const url = urlDaFoto(foto)
         const credito = creditoDaFoto(foto)
@@ -807,6 +808,17 @@ async function fazerUploadCapa(arquivo) {
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", marginBottom: "24px" }}>Editar musical</h2>
           {campo("Título", "titulo")}
           {campo("Título original", "tituloOriginal")}
+
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+              Tipo de obra
+            </label>
+            <select value={formEdicao.tipoObra || "Musical"} onChange={e => setFormEdicao(prev => ({ ...prev, tipoObra: e.target.value }))}
+              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", background: "#fff" }}>
+              {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+
           {campo("Sinopse", "sinopse", true)}
 
           {/* Editor de equipe (essenciais + complementares + cargos livres) */}
@@ -974,6 +986,28 @@ async function fazerUploadCapa(arquivo) {
                   {musical.tituloOriginal}
                 </p>
               )}
+
+              {(() => {
+                const tipo = musical.tipoObra || "Musical"
+                const ehMusical = tipo === "Musical"
+                return (
+                  <div style={{ marginBottom: "14px" }}>
+                    <span
+                      title={ehMusical
+                        ? "As canções fazem parte da narrativa."
+                        : "Peça de teatro com música incorporada, sem estrutura de musical."}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: "6px",
+                        background: ehMusical ? "#F5C518" : "#0a2c59",
+                        color: ehMusical ? "#5c4a00" : "#F5C518",
+                        fontSize: "12px", fontWeight: "600", letterSpacing: "0.3px",
+                        padding: "4px 12px", borderRadius: "999px", cursor: "help"
+                      }}>
+                      {ehMusical ? "🎵" : "🎭"} {tipo}
+                    </span>
+                  </div>
+                )
+              })()}
 
               <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
                 <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}

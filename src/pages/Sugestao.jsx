@@ -3,7 +3,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
-import { equipeInicial, montarPayload } from "../musicalSchema"
+import { equipeInicial, montarPayload, TIPOS_OBRA } from "../musicalSchema"
 
 function Sugestao() {
   const navigate = useNavigate()
@@ -15,6 +15,7 @@ function Sugestao() {
   const [form, setForm] = useState({
     titulo: "",
     tituloOriginal: "",
+    tipoObra: "Musical",
     sinopse: "",
     elenco: "",
     elencoAdicional: "",
@@ -181,6 +182,18 @@ function Sugestao() {
 
       {campo("Título", "titulo", true)}
       {campo("Título original", "tituloOriginal", false, "Se for uma versão de um musical estrangeiro")}
+
+      <div style={{ marginBottom: "16px" }}>
+        <label style={labelStyle}>Tipo de obra</label>
+        <select value={form.tipoObra || "Musical"} onChange={e => atualizar("tipoObra", e.target.value)}
+          style={{ ...inputStyle, background: "#fff" }}>
+          {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <p style={{ fontSize: "13px", color: "#aaa", marginTop: "6px", marginBottom: 0, lineHeight: 1.5 }}>
+          <strong>Musical:</strong> as canções fazem parte da narrativa. <strong>Peça musicada:</strong> peça de teatro com música incorporada, sem estrutura de musical.
+        </p>
+      </div>
+
       {campoTexto("Sinopse", "sinopse", "Descreva o enredo do musical...")}
 
       {divisoria("Ficha técnica principal")}

@@ -15,6 +15,7 @@ import {
   teatrosDeDocumento,
   montarEquipeDeStrings,
   montarPayload,
+  TIPOS_OBRA,
 } from "../musicalSchema"
 
 const normalizarNome = (texto) =>
@@ -389,6 +390,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setFormNovo({
       titulo: r.titulo || "",
       tituloOriginal: r.tituloOriginal || "",
+      tipoObra: r.tipoObra || "Musical",
       sinopse: r.sinopse || "",
       elenco: r.elenco || "",
       elencoAdicional: r.elencoAdicional || "",
@@ -422,6 +424,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setFormSugestao({
       titulo: s.titulo || "",
       tituloOriginal: s.tituloOriginal || "",
+      tipoObra: s.tipoObra || "Musical",
       sinopse: s.sinopse || "",
       elenco: s.elenco || "",
       elencoAdicional: s.elencoAdicional || "",
@@ -469,6 +472,7 @@ async function fazerUploadCapaNovo(arquivo) {
       {
         titulo: sugestao.titulo,
         tituloOriginal: sugestao.tituloOriginal,
+        tipoObra: sugestao.tipoObra,
         sinopse: sugestao.sinopse,
         elenco: sugestao.elenco,
         elencoAdicional: sugestao.elencoAdicional,
@@ -936,6 +940,15 @@ async function fazerUploadCapaNovo(arquivo) {
                   <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "16px" }}>Editando sugestão</h2>
                   {campoSugestao("Título", "titulo")}
                   {campoSugestao("Título original", "tituloOriginal")}
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo de obra</label>
+                    <select value={formSugestao.tipoObra || "Musical"} onChange={e => setFormSugestao(prev => ({ ...prev, tipoObra: e.target.value }))}
+                      style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+                      {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
                   {campoSugestao("Sinopse", "sinopse", true)}
                   {renderEditorEquipe(equipeEdicao, setEquipeEdicao)}
                   {campoSugestao("Elenco de estreia", "elenco", true)}
@@ -1062,6 +1075,15 @@ async function fazerUploadCapaNovo(arquivo) {
 
           {campoNovo("Título", "titulo")}
           {campoNovo("Título original", "tituloOriginal")}
+
+          <div style={{ marginBottom: "12px" }}>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo de obra</label>
+            <select value={formNovo.tipoObra || "Musical"} onChange={e => setFormNovo(prev => ({ ...prev, tipoObra: e.target.value }))}
+              style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+              {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+
           {campoNovo("Sinopse", "sinopse", true)}
           {editorEquipe}
           {campoNovo("Elenco de estreia", "elenco", true)}
