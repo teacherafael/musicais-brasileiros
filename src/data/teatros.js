@@ -585,6 +585,14 @@ export const teatros = [
     bairro: "Batel",
     cidade: "Curitiba – PR",
   },
+      {
+    id: "teatro-regina-vogue",
+    nomeOficial: "Teatro Fernanda Montenegro (PR)",
+    aliases: ["Teatro Ebanx Regina Vogue"],
+    endereco: "Av. Sete de Setembro, 2775",
+    bairro: "Rebouças",
+    cidade: "Curitiba – PR",
+  },
    {
     id: "teatro-positivo",
     nomeOficial: "Teatro Positivo",
