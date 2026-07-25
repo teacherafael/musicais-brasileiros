@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { collection, getDocs, getDoc, doc, setDoc, deleteDoc, addDoc, serverTimestamp, updateDoc, increment } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -42,6 +42,7 @@ function Home() {
   const [ordenacao, setOrdenacao] = useState(searchParams.get("ordem") || "az")
   const [filtroAno, setFiltroAno] = useState(searchParams.get("ano") || "")
   const [ocultarVistos, setOcultarVistos] = useState(false)
+  const [soPessoas, setSoPessoas] = useState(false)
   const [usuario, setUsuario] = useState(null)
   const [queroVerSet, setQueroVerSet] = useState(new Set())
   const [jaViSet, setJaViSet] = useState(new Set())
@@ -290,6 +291,38 @@ function scrollDestaques(direcao) {
     setContatoEnviando(false)
   }
 
+  const mapaPessoas = useMemo(() => {
+    const mapa = new Map()
+    const add = (nome) => {
+      const limpo = (nome || "").trim()
+      if (!limpo) return
+      const norm = normalizar(limpo)
+      if (norm && !mapa.has(norm)) mapa.set(norm, limpo)
+    }
+    const camposCsv = ["elenco", "elencoAdicional", "direcao", "direcaoMusical", "producao", "versionista", "textoOriginal", "musicaOriginal"]
+    musicais.forEach(m => {
+      camposCsv.forEach(c => (m[c] || "").split(",").forEach(add))
+      ;(m.equipeCriativa || []).forEach(item => (item.nomes || []).forEach(add))
+      ;(m.musicos || []).forEach(item => (item.nomes || []).forEach(add))
+    })
+    return mapa
+  }, [musicais])
+
+  const termoPessoa = normalizar(busca)
+  const pessoasSugeridas = termoPessoa.length >= 2
+    ? [...mapaPessoas.entries()]
+        .filter(([norm]) => norm.includes(termoPessoa))
+        .map(([norm, nome]) => {
+          let rel = 3
+          if (norm === termoPessoa) rel = 0
+          else if (norm.startsWith(termoPessoa)) rel = 1
+          else if (norm.split(" ").some(p => p.startsWith(termoPessoa))) rel = 2
+          return { nome, rel }
+        })
+        .sort((a, b) => a.rel - b.rel || a.nome.localeCompare(b.nome, "pt"))
+        .slice(0, 6)
+    : []
+
   const anos = [...new Set(musicais.map(m => m.ano).filter(Boolean))].sort((a, b) => b - a)
   const destaquesIds = new Set(destaques.map(m => m.id))
   const recentesIds = [...musicais].filter(m => !destaquesIds.has(m.id)).sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
@@ -301,11 +334,11 @@ function scrollDestaques(direcao) {
     .filter(musical => {
       const termos = normalizar(busca).split(" ").filter(Boolean)
       const tituloNorm = normalizar(musical.titulo)
-      const campos = [musical.titulo, musical.elenco, musical.elencoAdicional, musical.direcao, musical.direcaoMusical, musical.producao, musical.versionista, musical.textoOriginal, musical.musicaOriginal]
+      const camposPessoas = [musical.elenco, musical.elencoAdicional, musical.direcao, musical.direcaoMusical, musical.producao, musical.versionista, musical.textoOriginal, musical.musicaOriginal]
       const nomesEquipe = (musical.equipeCriativa || []).flatMap(item => item.nomes || [])
       const nomesMusicos = (musical.musicos || []).flatMap(item => item.nomes || [])
-      const outrosNorm = normalizar([...campos, ...nomesEquipe, ...nomesMusicos].filter(Boolean).join(" "))
-      const combinado = tituloNorm + " " + outrosNorm
+      const pessoasNorm = normalizar([...camposPessoas, ...nomesEquipe, ...nomesMusicos].filter(Boolean).join(" "))
+      const combinado = soPessoas ? pessoasNorm : tituloNorm + " " + pessoasNorm
       return termos.every(t => combinado.includes(t)) && (filtroAno === "" || musical.ano === filtroAno)
     })
     .filter(musical => !ocultarVistos || !jaViSet.has(musical.id))
@@ -406,6 +439,12 @@ function scrollDestaques(direcao) {
             {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
           </select>
         </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Buscar</label>
+          <button onClick={() => { setSoPessoas(v => !v); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", background: soPessoas ? "#b8960a" : "#fff", color: soPessoas ? "#fff" : "#1a1a1a", fontWeight: soPessoas ? "600" : "400", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}>
+            {soPessoas ? "✓ Só pessoas" : "Só pessoas"}
+          </button>
+        </div>
         {usuario && (
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Vistos</label>
@@ -415,6 +454,22 @@ function scrollDestaques(direcao) {
           </div>
         )}
       </div>
+
+      {pessoasSugeridas.length > 0 && (
+        <div style={{ marginBottom: "24px" }}>
+          <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "12px" }}>Pessoas</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {pessoasSugeridas.map(p => (
+              <button key={p.nome} onClick={() => navigate(`/pessoa/${encodeURIComponent(p.nome)}`)}
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "999px", background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", cursor: "pointer", transition: "background 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
+                onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
+                {p.nome} <span style={{ color: "#b8960a" }}>→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid-musicais" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
         {carregando ? (
