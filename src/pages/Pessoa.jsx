@@ -157,7 +157,7 @@ function Pessoa() {
           marginBottom: "28px",
           display: "flex",
           gap: "28px",
-          alignItems: "center",
+          alignItems: "flex-start",
           flexWrap: "wrap"
         }}>
           {entidade.imagem && (
@@ -166,7 +166,7 @@ function Pessoa() {
                 <img src={entidade.imagem} alt={entidade.nome} style={{ maxWidth: "100%", maxHeight: "120px", objectFit: "contain", display: "block" }} />
               </div>
             ) : (
-              <div style={{ width: "128px", height: "128px", borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "#f0f0f0", border: "1px solid #eee" }}>
+              <div style={{ width: "240px", height: "300px", borderRadius: "10px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0", border: "1px solid #eee" }}>
                 <img src={entidade.imagem} alt={entidade.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
             )
