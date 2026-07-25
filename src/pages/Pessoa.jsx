@@ -230,20 +230,30 @@ function Pessoa() {
               </div>
             )}
 
-            {entidade.videoYoutube && (
-              <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
-                <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Vídeo</p>
-                <div style={{ position: "relative", paddingBottom: "28.125%", height: 0, borderRadius: "8px", overflow: "hidden", maxWidth: "50%" }}>
-                  <iframe
-                    src={"https://www.youtube.com/embed/" + entidade.videoYoutube}
-                    title="Vídeo"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                  />
+            {(() => {
+              const videos = Array.isArray(entidade.videosYoutube) && entidade.videosYoutube.length > 0
+                ? entidade.videosYoutube
+                : (entidade.videoYoutube ? [entidade.videoYoutube] : [])
+              if (videos.length === 0) return null
+              return (
+                <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
+                  <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>{videos.length === 1 ? "Vídeo" : "Vídeos"}</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    {videos.map((id, i) => (
+                      <div key={i} style={{ position: "relative", paddingBottom: "28.125%", height: 0, borderRadius: "8px", overflow: "hidden", maxWidth: "50%" }}>
+                        <iframe
+                          src={"https://www.youtube.com/embed/" + id}
+                          title={"Vídeo " + (i + 1)}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {ehAdmin && (
               <div style={{ marginTop: "16px" }}>

@@ -123,6 +123,7 @@ function Admin() {
   const [formEntidade, setFormEntidade] = useState({ tipo: "artista", tipoImagem: "foto" })
   const [extrasEntidade, setExtrasEntidade] = useState([])
   const [fotosTrabalho, setFotosTrabalho] = useState([])
+  const [videosTrabalho, setVideosTrabalho] = useState([])
   const [editandoEntidadeId, setEditandoEntidadeId] = useState(null)
   const [enviandoImagemEntidade, setEnviandoImagemEntidade] = useState(false)
 
@@ -629,6 +630,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setFormEntidade({ tipo: "artista", tipoImagem: "foto" })
     setExtrasEntidade([])
     setFotosTrabalho([])
+    setVideosTrabalho([])
     setEditandoEntidadeId(null)
   }
 
@@ -645,11 +647,15 @@ async function fazerUploadCapaNovo(arquivo) {
       formacao: e.formacao || "",
       contato: e.contato || "",
       destaques: Array.isArray(e.destaques) ? e.destaques.join(", ") : "",
-      videoYoutube: e.videoYoutube || "",
       publicado: e.publicado === true,
     })
     setExtrasEntidade(Array.isArray(e.links?.extras) ? e.links.extras.map(x => ({ ...x })) : [])
     setFotosTrabalho(Array.isArray(e.fotosTrabalho) ? [...e.fotosTrabalho] : [])
+    setVideosTrabalho(
+      Array.isArray(e.videosYoutube) && e.videosYoutube.length > 0
+        ? [...e.videosYoutube]
+        : (e.videoYoutube ? [e.videoYoutube] : [])
+    )
     setEditandoEntidadeId(e.id)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
@@ -690,7 +696,7 @@ async function fazerUploadCapaNovo(arquivo) {
       formacao: (formEntidade.formacao || "").trim(),
       contato: (formEntidade.contato || "").trim(),
       destaques: destaquesArray,
-      videoYoutube: extrairIdYoutube((formEntidade.videoYoutube || "").trim()),
+      videosYoutube: videosTrabalho.map(v => extrairIdYoutube((v || "").trim())).filter(Boolean),
       fotosTrabalho: fotosTrabalho.map(u => (u || "").trim()).filter(Boolean).slice(0, 10),
       publicado: formEntidade.publicado === true,
     }
@@ -1376,7 +1382,30 @@ async function fazerUploadCapaNovo(arquivo) {
             {campoEntidade("Formação (opcional)", "formacao")}
             {campoEntidade("Contato para contratação (opcional)", "contato")}
 
-            {campoEntidade("Vídeo do YouTube (opcional)", "videoYoutube", false, "cole o link completo do YouTube")}
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+                Vídeos do YouTube (opcional)
+              </label>
+              {videosTrabalho.map((link, i) => (
+                <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <button onClick={() => { if (i === 0) return; const novo = [...videosTrabalho]; [novo[i - 1], novo[i]] = [novo[i], novo[i - 1]]; setVideosTrabalho(novo) }} disabled={i === 0}
+                      style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para cima">▲</button>
+                    <button onClick={() => { if (i === videosTrabalho.length - 1) return; const novo = [...videosTrabalho]; [novo[i + 1], novo[i]] = [novo[i], novo[i + 1]]; setVideosTrabalho(novo) }} disabled={i === videosTrabalho.length - 1}
+                      style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === videosTrabalho.length - 1 ? "default" : "pointer", color: i === videosTrabalho.length - 1 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para baixo">▼</button>
+                  </div>
+                  <input type="text" placeholder="cole o link completo do YouTube" value={link}
+                    onChange={ev => { const novo = [...videosTrabalho]; novo[i] = ev.target.value; setVideosTrabalho(novo) }}
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  <button onClick={() => setVideosTrabalho(videosTrabalho.filter((_, idx) => idx !== i))}
+                    style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+                </div>
+              ))}
+              <button onClick={() => setVideosTrabalho([...videosTrabalho, ""])}
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+                + Adicionar vídeo
+              </button>
+            </div>
 
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
