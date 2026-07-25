@@ -21,7 +21,7 @@ const normalizar = (texto) =>
 // [[texto|Nome]] mostra "texto" mas linka pra /pessoa/Nome.
 const renderBio = (texto) => {
   if (!texto) return null
-  const partes = (texto || "").split(/(\*\*[^*]+\*\*|\[\[[^\]]+\]\])/g)
+  const partes = (texto || "").split(/(\*\*[^*]+\*\*|\[\[[^\]]+\]\]|\{\{[^}]+\}\})/g)
   return partes.map((parte, i) => {
     if (parte.startsWith("**") && parte.endsWith("**")) {
       return <strong key={i}>{parte.slice(2, -2)}</strong>
@@ -31,6 +31,16 @@ const renderBio = (texto) => {
       const [rotulo, alvo] = conteudo.includes("|") ? conteudo.split("|") : [conteudo, conteudo]
       return (
         <a key={i} href={"/pessoa/" + encodeURIComponent(alvo.trim())}
+          style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600 }}>
+          {rotulo.trim()}
+        </a>
+      )
+    }
+    if (parte.startsWith("{{") && parte.endsWith("}}")) {
+      const conteudo = parte.slice(2, -2)
+      const [rotulo, id] = conteudo.includes("|") ? conteudo.split("|") : [conteudo, conteudo]
+      return (
+        <a key={i} href={"/musical/" + id.trim()}
           style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600 }}>
           {rotulo.trim()}
         </a>
@@ -169,11 +179,6 @@ function Pessoa() {
           )}
 
           <div>
-            {entidade.tipo && (
-              <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 8px" }}>
-                {entidade.tipo === "produtora" ? "Produtora" : entidade.tipo === "assessoria" ? "Assessoria de imprensa" : "Artista"}
-              </p>
-            )}
             {entidade.bio && (
               <p style={{ fontSize: "15px", lineHeight: 1.65, color: "#333", margin: "0 0 12px", whiteSpace: "pre-wrap" }}>{renderBio(entidade.bio)}</p>
             )}
@@ -194,7 +199,9 @@ function Pessoa() {
             )}
             <div style={{ clear: "both" }} />
             {entidade.links && (entidade.links.instagram || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
+              <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
+                <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Links externos</p>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                 {entidade.links.instagram && (
                   <a href={"https://instagram.com/" + entidade.links.instagram.replace(/^@/, "")} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>Instagram</a>
                 )}
@@ -209,6 +216,7 @@ function Pessoa() {
                     <a key={i} href={ex.url} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>{ex.label}</a>
                   ) : null
                 ))}
+                </div>
               </div>
             )}
             {Array.isArray(entidade.fotosTrabalho) && entidade.fotosTrabalho.length > 0 && (
