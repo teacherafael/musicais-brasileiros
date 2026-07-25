@@ -58,6 +58,7 @@ function Pessoa() {
   const [entidade, setEntidade] = useState(null)
   const [ehAdmin, setEhAdmin] = useState(false)
   const [fotoAberta, setFotoAberta] = useState(null)
+  const [indiceFoto, setIndiceFoto] = useState(null)
 
   useEffect(() => {
     return onAuthStateChanged(auth, (user) => {
@@ -145,14 +146,31 @@ function Pessoa() {
 
   return (
     <main>
-      {fotoAberta && (
-        <div onClick={() => setFotoAberta(null)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "24px", cursor: "zoom-out" }}>
-          <img src={fotoAberta} alt="Foto ampliada" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: "8px" }} />
-          <button onClick={() => setFotoAberta(null)}
-            style={{ position: "absolute", top: "20px", right: "24px", background: "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: "50%", width: "40px", height: "40px", fontSize: "20px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title="Fechar">✕</button>
-        </div>
-      )}
+      {fotoAberta && (() => {
+        const fotos = (entidade?.fotosTrabalho || []).filter(u => u && u.trim())
+        const irPara = (novoIndice) => {
+          const total = fotos.length
+          const idx = (novoIndice + total) % total
+          setIndiceFoto(idx)
+          setFotoAberta(fotos[idx])
+        }
+        return (
+          <div onClick={() => setFotoAberta(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "24px", cursor: "zoom-out" }}>
+            {fotos.length > 1 && (
+              <button onClick={(e) => { e.stopPropagation(); irPara(indiceFoto - 1) }}
+                style={{ position: "absolute", left: "24px", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: "50%", width: "48px", height: "48px", fontSize: "24px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1001 }} title="Anterior">‹</button>
+            )}
+            <img src={fotoAberta} alt="Foto ampliada" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: "8px" }} />
+            {fotos.length > 1 && (
+              <button onClick={(e) => { e.stopPropagation(); irPara(indiceFoto + 1) }}
+                style={{ position: "absolute", right: "24px", top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: "50%", width: "48px", height: "48px", fontSize: "24px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1001 }} title="Próxima">›</button>
+            )}
+            <button onClick={() => setFotoAberta(null)}
+              style={{ position: "absolute", top: "20px", right: "24px", background: "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: "50%", width: "40px", height: "40px", fontSize: "20px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1001 }} title="Fechar">✕</button>
+          </div>
+        )
+      })()}
       <button className="voltar" onClick={() => navigate(-1)}>← Voltar</button>
       <p className="section-label">Musical Cast Database</p>
       <h1 className="page-title">{nomeDecodificado}</h1>
@@ -225,7 +243,7 @@ function Pessoa() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: "10px" }}>
                   {entidade.fotosTrabalho.map((url, i) => (
                     url && url.trim() ? (
-                      <button key={i} onClick={() => setFotoAberta(url)}
+                      <button key={i} onClick={() => { setFotoAberta(url); setIndiceFoto(entidade.fotosTrabalho.filter(u => u && u.trim()).indexOf(url)) }}
                         style={{ padding: 0, border: "none", background: "none", cursor: "pointer", borderRadius: "8px", overflow: "hidden", aspectRatio: "1", display: "block" }}>
                         <img src={url} alt={"Foto " + (i + 1)} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       </button>
