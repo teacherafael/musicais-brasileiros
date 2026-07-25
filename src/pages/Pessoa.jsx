@@ -154,25 +154,21 @@ function Pessoa() {
           borderRadius: "12px",
           padding: "24px",
           marginTop: "20px",
-          marginBottom: "28px",
-          display: "flex",
-          gap: "28px",
-          alignItems: "flex-start",
-          flexWrap: "wrap"
+          marginBottom: "28px"
         }}>
           {entidade.imagem && (
             entidade.tipoImagem === "logo" ? (
-              <div style={{ flex: "0 0 auto", maxWidth: "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ float: "left", maxWidth: "200px", marginRight: "24px", marginBottom: "16px" }}>
                 <img src={entidade.imagem} alt={entidade.nome} style={{ maxWidth: "100%", maxHeight: "120px", objectFit: "contain", display: "block" }} />
               </div>
             ) : (
-              <div style={{ width: "240px", height: "300px", borderRadius: "10px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0", border: "1px solid #eee" }}>
-                <img src={entidade.imagem} alt={entidade.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ float: "left", width: "min(48%, 300px)", aspectRatio: "3 / 4", borderRadius: "10px", overflow: "hidden", background: "#f0f0f0", border: "1px solid #eee", marginRight: "24px", marginBottom: "16px" }}>
+                <img src={entidade.imagem} alt={entidade.nome} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               </div>
             )
           )}
 
-          <div style={{ flex: 1, minWidth: "240px" }}>
+          <div>
             {entidade.tipo && (
               <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 8px" }}>
                 {entidade.tipo === "produtora" ? "Produtora" : entidade.tipo === "assessoria" ? "Assessoria de imprensa" : "Artista"}
@@ -196,6 +192,7 @@ function Pessoa() {
                 <strong style={{ color: "#333" }}>Destaques:</strong> {entidade.destaques.join(" · ")}
               </p>
             )}
+            <div style={{ clear: "both" }} />
             {entidade.links && (entidade.links.instagram || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
                 {entidade.links.instagram && (
