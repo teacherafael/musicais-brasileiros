@@ -122,6 +122,14 @@ export const teatros = [
     cidade: "São Paulo – SP",
   },
     {
+    id: "teatro-ruth-escobar",
+    nomeOficial: "Teatro Ruth Escobar",
+    aliases: [],
+    endereco: "Rua dos Ingleses, 209",
+    bairro: "Bela Vista",
+    cidade: "São Paulo – SP",
+  },
+    {
     id: "teatro-opera",
     nomeOficial: "Teatro Ópera",
     aliases: ["Teatro Stadium", "Teatro Zaccaro", "Teatro Aquarius"],
