@@ -437,7 +437,8 @@ function Header() {
                   alignItems: "center",
                 }}
               >
-                <span className="header-user header-user-nome" style={{ color: "#F5C518", fontWeight: 700 }}>MENU</span>
+                <span className="header-user header-user-nome" style={{ color: "#F5C518", fontWeight: 700, display: "inline-block" }}>MENU</span>
+                <span aria-hidden="true" style={{ color: "#F5C518", fontWeight: 700, fontSize: "11px", marginLeft: "5px", lineHeight: 1 }}>▾</span>
               </button>
 
               {menuAberto && (
