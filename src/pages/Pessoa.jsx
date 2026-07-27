@@ -216,27 +216,37 @@ function Pessoa() {
               </p>
             )}
             <div style={{ clear: "both" }} />
-            {entidade.links && (entidade.links.instagram || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (
-              <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
-                <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Links externos</p>
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                {entidade.links.instagram && (
-                  <a href={"https://instagram.com/" + entidade.links.instagram.replace(/^@/, "")} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>Instagram</a>
-                )}
-                {entidade.links.site && (
-                  <a href={entidade.links.site} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>Site</a>
-                )}
-                {entidade.links.email && (
-                  <a href={"mailto:" + entidade.links.email} style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>E-mail</a>
-                )}
-                {(entidade.links.extras || []).map((ex, i) => (
-                  ex && ex.url && ex.label ? (
-                    <a key={i} href={ex.url} target="_blank" rel="noreferrer" style={{ color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" }}>{ex.label}</a>
-                  ) : null
-                ))}
-                </div>
-              </div>
-            )}
+            {entidade.links && (entidade.links.instagram || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (() => {
+              const btnLink = { color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" };
+              const ehRedeSocial = (url) => { try { const host = new URL(url).hostname.replace(/^www\./, "").toLowerCase(); return ["instagram.com", "tiktok.com", "x.com", "twitter.com", "facebook.com", "fb.com", "youtube.com", "youtu.be", "threads.net", "linkedin.com"].some(d => host === d || host.endsWith("." + d)); } catch { return false; } };
+              const extras = (entidade.links.extras || []).filter(ex => ex && ex.url && ex.label);
+              const naMidia = extras.filter(ex => !ehRedeSocial(ex.url));
+              const redes = [];
+              if (entidade.links.instagram) redes.push({ label: "Instagram", url: "https://instagram.com/" + entidade.links.instagram.replace(/^@/, "") });
+              if (entidade.links.site) redes.push({ label: "Site", url: entidade.links.site });
+              if (entidade.links.email) redes.push({ label: "E-mail", url: "mailto:" + entidade.links.email });
+              extras.filter(ex => ehRedeSocial(ex.url)).forEach(ex => redes.push({ label: ex.label, url: ex.url }));
+              return (
+                <>
+                  {redes.length > 0 && (
+                    <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
+                      <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Redes sociais</p>
+                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        {redes.map((l, i) => (<a key={i} href={l.url} target="_blank" rel="noreferrer" style={btnLink}>{l.label}</a>))}
+                      </div>
+                    </div>
+                  )}
+                  {naMidia.length > 0 && (
+                    <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
+                      <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Na mídia</p>
+                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        {naMidia.map((l, i) => (<a key={i} href={l.url} target="_blank" rel="noreferrer" style={btnLink}>{l.label}</a>))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
             {Array.isArray(entidade.fotosTrabalho) && entidade.fotosTrabalho.length > 0 && (
               <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
                 <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Fotos</p>
