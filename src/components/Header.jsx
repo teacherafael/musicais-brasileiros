@@ -57,9 +57,11 @@ function Header() {
   const [fotoCustom, setFotoCustom] = useState("")
   const [notificacoes, setNotificacoes] = useState([])
   const [sinoAberto, setSinoAberto] = useState(false)
+  const [menuAberto, setMenuAberto] = useState(false)
   const [appBrowser, setAppBrowser] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const sinoRef = useRef(null)
+  const menuRef = useRef(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -114,15 +116,28 @@ function Header() {
     return () => unsub()
   }, [usuario])
 
-  // Fecha o painel ao clicar fora
+  // Fecha os painéis (sino e menu) ao clicar fora ou apertar Esc
   useEffect(() => {
     function handleClickFora(e) {
       if (sinoRef.current && !sinoRef.current.contains(e.target)) {
         setSinoAberto(false)
       }
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuAberto(false)
+      }
+    }
+    function handleEsc(e) {
+      if (e.key === "Escape") {
+        setSinoAberto(false)
+        setMenuAberto(false)
+      }
     }
     document.addEventListener("mousedown", handleClickFora)
-    return () => document.removeEventListener("mousedown", handleClickFora)
+    document.addEventListener("keydown", handleEsc)
+    return () => {
+      document.removeEventListener("mousedown", handleClickFora)
+      document.removeEventListener("keydown", handleEsc)
+    }
   }, [])
 
   const naoLidas = notificacoes.filter(n => !n.lida).length
@@ -197,6 +212,17 @@ function Header() {
 
   const sair = () => signOut(auth)
 
+  // Estilo compartilhado dos itens do menu da conta
+  const itemMenu = {
+    display: "block",
+    padding: "11px 16px",
+    fontSize: "14px",
+    color: "#1a1a1a",
+    textDecoration: "none",
+    fontFamily: "'DM Sans', sans-serif",
+    borderBottom: "1px solid #f5f5f0",
+  }
+
   return (
     <>
       {appBrowser && (
@@ -250,12 +276,14 @@ function Header() {
 </Link>
 
         <div className="header-right">
-          <Link
-            to="/ranking"
-            style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
-          >
-            Top 15
-          </Link>
+          {!usuario && (
+            <Link
+              to="/ranking"
+              style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
+            >
+              Top 15
+            </Link>
+          )}
 
           {usuario && (
             <div ref={sinoRef} style={{ position: "relative" }}>
@@ -372,9 +400,13 @@ function Header() {
           )}
 
           {usuario ? (
-            <>
+            <div ref={menuRef} style={{ position: "relative", display: "flex", alignItems: "center", gap: "8px" }}>
               {(fotoCustom || usuario.photoURL) && (
-                <Link to={`/perfil/${usuario.uid}`} style={{ flexShrink: 0, lineHeight: 0 }}>
+                <Link
+                  to={`/perfil/${usuario.uid}`}
+                  onClick={() => setMenuAberto(false)}
+                  style={{ flexShrink: 0, lineHeight: 0 }}
+                >
                   <img
                     src={fotoCustom || usuario.photoURL}
                     alt="perfil"
@@ -383,15 +415,68 @@ function Header() {
                   />
                 </Link>
               )}
-              <Link
-                to={`/perfil/${usuario.uid}`}
-                className="header-user header-user-nome"
-                style={{ textDecoration: "none", color: "#aaa" }}
+              <button
+                onClick={() => setMenuAberto(prev => !prev)}
+                title="Menu da conta"
+                aria-expanded={menuAberto}
+                aria-haspopup="true"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "2px 4px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
               >
-                Meu perfil
-              </Link>
-              <button className="btn-sair" onClick={sair}>Sair</button>
-            </>
+                <span className="header-user header-user-nome" style={{ color: "#F5C518", fontWeight: 700 }}>MENU</span>
+              </button>
+
+              {menuAberto && (
+                <div style={{
+                  position: "absolute",
+                  top: "calc(100% + 10px)",
+                  right: 0,
+                  width: "200px",
+                  background: "#fff",
+                  border: "1px solid #e8e8e4",
+                  borderRadius: "10px",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                  zIndex: 999,
+                  overflow: "hidden",
+                }}>
+                  <Link to="/" onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Início
+                  </Link>
+                  <Link to={`/perfil/${usuario.uid}`} onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Meu Perfil
+                  </Link>
+                  <Link to="/ranking" onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Top 15
+                  </Link>
+                  <Link to="/sobre" onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Sobre
+                  </Link>
+                  <button
+                    onClick={() => { setMenuAberto(false); sair() }}
+                    style={{
+                      ...itemMenu,
+                      width: "100%",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      borderBottom: "none",
+                      borderTop: "1px solid #e8e8e4",
+                      marginTop: "6px",
+                      cursor: "pointer",
+                      color: "#c0392b",
+                    }}
+                  >
+                    Sair
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <button className="btn-login btn-login-responsivo" onClick={entrar}>
               <span className="btn-login-texto-completo">Entrar com Google</span>
