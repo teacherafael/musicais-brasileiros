@@ -277,12 +277,20 @@ function Header() {
 
         <div className="header-right">
           {!usuario && (
-            <Link
-              to="/ranking"
-              style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
-            >
-              Top 15
-            </Link>
+            <>
+              <Link
+                to="/destaques"
+                style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
+              >
+                Destaques
+              </Link>
+              <Link
+                to="/ranking"
+                style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
+              >
+                Top 15
+              </Link>
+            </>
           )}
 
           {usuario && (
@@ -450,6 +458,9 @@ function Header() {
                   </Link>
                   <Link to={`/perfil/${usuario.uid}`} onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Meu Perfil
+                  </Link>
+                  <Link to="/destaques" onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Destaques
                   </Link>
                   <Link to="/ranking" onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Top 15

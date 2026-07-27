@@ -9,6 +9,7 @@ import Contribuir from "./pages/Contribuir";
 import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
+import Destaques from "./pages/Destaques"
 import Termos from "./pages/Termos"
 import FAQ from "./pages/FAQ"
 import Sobre from "./pages/Sobre"
@@ -83,6 +84,7 @@ function App() {
         <Route path="/contribuir" element={<Contribuir />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
+        <Route path="/destaques" element={<Destaques />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/sobre" element={<Sobre />} />
