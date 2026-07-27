@@ -940,7 +940,22 @@ async function toggleVerificado() {
 
       <div style={{ marginBottom: "32px" }}>
         {fotoPerfil && (
-          <img src={fotoPerfil} alt={nomePerfil} style={{ width: "96px", height: "96px", borderRadius: "50%", marginBottom: "16px", border: "3px solid #F5C518" }} />
+          <img src={fotoPerfil} alt={nomePerfil} referrerPolicy="no-referrer" style={{ width: "96px", height: "96px", borderRadius: "50%", marginBottom: "12px", border: "3px solid #F5C518", objectFit: "cover", display: "block" }} />
+        )}
+        {isProprioPerfil && (
+          <div style={{ marginBottom: "16px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            <input ref={inputFotoRef} type="file" accept="image/*" onChange={trocarFotoPerfil} style={{ display: "none" }} />
+            <button onClick={() => inputFotoRef.current?.click()} disabled={enviandoFoto}
+              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontSize: "12px", color: "#555", cursor: enviandoFoto ? "wait" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: enviandoFoto ? 0.6 : 1 }}>
+              {enviandoFoto ? "Enviando..." : "📷 Trocar foto"}
+            </button>
+            {fotoCustom && !enviandoFoto && (
+              <button onClick={removerFotoPerfil}
+                style={{ background: "none", border: "none", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                Remover foto
+              </button>
+            )}
+          </div>
         )}
         <h1 className="page-title" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
           {nomePerfil || "Usuario"}
