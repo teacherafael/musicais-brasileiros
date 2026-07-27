@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
 import { ehAdmin } from "../admins"
 import CardMusical from "../components/CardMusical"
+import CropperFoto from "../components/CropperFoto"
 import html2canvas from "html2canvas"
 import logoCard from "../assets/mcdb-logo-card.png"
 
@@ -34,6 +35,7 @@ function Perfil() {
   const [fotoUsuario, setFotoUsuario] = useState("")
   const [fotoCustom, setFotoCustom] = useState("")
   const [enviandoFoto, setEnviandoFoto] = useState(false)
+  const [imagemParaCortar, setImagemParaCortar] = useState(null)
   const inputFotoRef = useRef(null)
   const [carregando, setCarregando] = useState(true)
   const [top3, setTop3] = useState([])
@@ -502,13 +504,30 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
     if (arquivo.size > 8 * 1024 * 1024) {
       return mostrarToast("Imagem muito grande (máx. 8 MB).")
     }
+    // Em vez de subir direto, abre o recortador com a imagem escolhida.
+    try {
+      const dataUrl = await new Promise((res, rej) => {
+        const fr = new FileReader()
+        fr.onload = () => res(fr.result)
+        fr.onerror = rej
+        fr.readAsDataURL(arquivo)
+      })
+      setImagemParaCortar(dataUrl)
+    } catch (err) {
+      console.error("Erro ao ler imagem:", err)
+      mostrarToast("Não foi possível abrir a imagem. Tente outra.")
+    }
+  }
+
+  // Recebe o blob quadrado já recortado no navegador, otimiza no R2 e salva.
+  async function enviarFotoCortada(blob) {
     setEnviandoFoto(true)
     try {
       const base64 = await new Promise((res, rej) => {
         const fr = new FileReader()
         fr.onload = () => res(fr.result)
         fr.onerror = rej
-        fr.readAsDataURL(arquivo)
+        fr.readAsDataURL(blob)
       })
       const resp = await fetch("/api/upload-imagem", {
         method: "POST",
@@ -524,6 +543,7 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
       if (!resp.ok || !dados.url) throw new Error(dados.erro || "falha no upload")
       await setDoc(doc(db, "usuarios", userId), { fotoCustom: dados.url }, { merge: true })
       setFotoCustom(dados.url)
+      setImagemParaCortar(null)
       mostrarToast("Foto de perfil atualizada!")
     } catch (err) {
       console.error("Erro ao trocar foto:", err)
@@ -930,6 +950,14 @@ async function toggleVerificado() {
 
   return (
     <main>
+      {imagemParaCortar && (
+        <CropperFoto
+          imagemSrc={imagemParaCortar}
+          enviando={enviandoFoto}
+          onConfirmar={enviarFotoCortada}
+          onCancelar={() => setImagemParaCortar(null)}
+        />
+      )}
       {toast && (
         <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", color: "#F5C518", padding: "12px 24px", borderRadius: "8px", fontSize: "14px", fontWeight: "500", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
           {toast}
