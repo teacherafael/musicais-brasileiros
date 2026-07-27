@@ -54,6 +54,7 @@ async function salvarUsuario(user) {
 
 function Header() {
   const [usuario, setUsuario] = useState(null)
+  const [fotoCustom, setFotoCustom] = useState("")
   const [notificacoes, setNotificacoes] = useState([])
   const [sinoAberto, setSinoAberto] = useState(false)
   const [appBrowser, setAppBrowser] = useState(false)
@@ -69,6 +70,19 @@ function Header() {
     const unsub = onAuthStateChanged(auth, (user) => setUsuario(user))
     return () => unsub()
   }, [])
+
+  // Lê a foto personalizada do usuário (1 leitura por sessão) para o header
+  useEffect(() => {
+    if (!usuario) {
+      setFotoCustom("")
+      return
+    }
+    getDoc(doc(db, "usuarios", usuario.uid))
+      .then((snap) => {
+        if (snap.exists()) setFotoCustom(snap.data().fotoCustom || "")
+      })
+      .catch(() => {})
+  }, [usuario])
 
   // Quando o login acontece por redirecionamento (fallback), o usuário volta pra cá:
   // capturamos o resultado e salvamos os dados dele.
@@ -359,13 +373,13 @@ function Header() {
 
           {usuario ? (
             <>
-              {usuario.photoURL && (
+              {(fotoCustom || usuario.photoURL) && (
                 <Link to={`/perfil/${usuario.uid}`} style={{ flexShrink: 0, lineHeight: 0 }}>
                   <img
-                    src={usuario.photoURL}
+                    src={fotoCustom || usuario.photoURL}
                     alt="perfil"
                     referrerPolicy="no-referrer"
-                    style={{ width: "32px", height: "32px", borderRadius: "50%", display: "block" }}
+                    style={{ width: "32px", height: "32px", borderRadius: "50%", display: "block", objectFit: "cover" }}
                   />
                 </Link>
               )}
