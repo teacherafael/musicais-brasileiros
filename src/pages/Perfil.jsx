@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { collection, getDocs, query, doc, setDoc, deleteDoc, getDoc, addDoc, serverTimestamp, where, updateDoc, increment } from "firebase/firestore"
 import { db, auth, provider } from "../firebase"
 import { useParams, useNavigate } from "react-router-dom"
@@ -32,6 +32,9 @@ function Perfil() {
   const [musicais, setMusicais] = useState({})
   const [nomeUsuario, setNomeUsuario] = useState("")
   const [fotoUsuario, setFotoUsuario] = useState("")
+  const [fotoCustom, setFotoCustom] = useState("")
+  const [enviandoFoto, setEnviandoFoto] = useState(false)
+  const inputFotoRef = useRef(null)
   const [carregando, setCarregando] = useState(true)
   const [top3, setTop3] = useState([])
   const [avaliacoesPublicas, setAvaliacoesPublicas] = useState(true)
@@ -155,6 +158,7 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
           setBanido(data.banido ?? false)
           if (data.nome) setNomeUsuario(data.nome)
           if (data.foto) setFotoUsuario(data.foto)
+          if (data.fotoCustom) setFotoCustom(data.fotoCustom)
           setRedesSociais({
             instagram: data.instagram || "",
             tiktok: data.tiktok || "",
@@ -488,6 +492,62 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
     setEditandoRedes(false)
   }
 
+  async function trocarFotoPerfil(e) {
+    const arquivo = e.target.files?.[0]
+    e.target.value = "" // permite reescolher o mesmo arquivo depois
+    if (!arquivo) return
+    if (!arquivo.type.startsWith("image/")) {
+      return mostrarToast("Escolha um arquivo de imagem.")
+    }
+    if (arquivo.size > 8 * 1024 * 1024) {
+      return mostrarToast("Imagem muito grande (máx. 8 MB).")
+    }
+    setEnviandoFoto(true)
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const fr = new FileReader()
+        fr.onload = () => res(fr.result)
+        fr.onerror = rej
+        fr.readAsDataURL(arquivo)
+      })
+      const resp = await fetch("/api/upload-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imagemBase64: base64,
+          nomeArquivo: `avatar-${userId}`,
+          pasta: "avatares",
+          tipo: "avatar",
+        }),
+      })
+      const dados = await resp.json()
+      if (!resp.ok || !dados.url) throw new Error(dados.erro || "falha no upload")
+      await setDoc(doc(db, "usuarios", userId), { fotoCustom: dados.url }, { merge: true })
+      setFotoCustom(dados.url)
+      mostrarToast("Foto de perfil atualizada!")
+    } catch (err) {
+      console.error("Erro ao trocar foto:", err)
+      mostrarToast("Não foi possível trocar a foto agora. Tente novamente.")
+    } finally {
+      setEnviandoFoto(false)
+    }
+  }
+
+  async function removerFotoPerfil() {
+    if (!window.confirm("Remover sua foto personalizada e voltar para a foto do Google?")) return
+    setEnviandoFoto(true)
+    try {
+      await setDoc(doc(db, "usuarios", userId), { fotoCustom: "" }, { merge: true })
+      setFotoCustom("")
+      mostrarToast("Foto personalizada removida.")
+    } catch (err) {
+      console.error("Erro ao remover foto:", err)
+      mostrarToast("Não foi possível remover agora. Tente novamente.")
+    } finally {
+      setEnviandoFoto(false)
+    }
+  }
+
   async function salvarTop3() {
     const snap = await getDocs(collection(db, "usuarios", userId, "top3"))
     for (const d of snap.docs) await deleteDoc(d.ref)
@@ -814,7 +874,7 @@ async function toggleVerificado() {
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = ehAdmin(usuarioLogado)
   const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
-  const fotoPerfil = isProprioPerfil ? usuarioLogado.photoURL : fotoUsuario
+  const fotoPerfil = fotoCustom || (isProprioPerfil ? usuarioLogado.photoURL : fotoUsuario)
 
   const mediaVotos = votos.length > 0
     ? (votos.reduce((acc, v) => acc + v.estrelas, 0) / votos.length).toFixed(1)

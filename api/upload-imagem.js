@@ -70,6 +70,18 @@ module.exports = async (req, res) => {
     const nomeBase = gerarNomeBase(nomeArquivo);
     const prefixoPasta = pasta ? `${pasta.replace(/[^a-z0-9-]/gi, "")}/` : "";
 
+    // Modo avatar: recorta um quadrado 1:1 (400x400) centralizado e sobe UM arquivo só.
+    if (corpo.tipo === "avatar") {
+      const avatarBuffer = await sharp(bufferOriginal)
+        .rotate()
+        .resize({ width: 400, height: 400, fit: "cover", position: "centre" })
+        .webp({ quality: 85 })
+        .toBuffer();
+      const chaveAvatar = `${prefixoPasta}${nomeBase}.webp`;
+      const url = await subirParaR2(avatarBuffer, chaveAvatar);
+      return res.status(200).json({ url });
+    }
+
     // Versão grande (~800px) — pôster e cartão de compartilhamento
     const grandeBuffer = await sharp(bufferOriginal)
       .rotate() // corrige orientação a partir do EXIF
