@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
 import ModalContribuir, { registrarAvaliacao } from "../components/ModalContribuir";
-import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings } from "../musicalSchema";
+import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -185,6 +185,7 @@ function Musical() {
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
   const [marcoContribuir, setMarcoContribuir] = useState(null)
   const [fotoAberta, setFotoAberta] = useState(null)
+  const [videoAberto, setVideoAberto] = useState(null)
   const cartaoRef = useRef(null)
   const avaliacaoRef = useRef(null)
 
@@ -359,6 +360,10 @@ async function fazerUploadCapa(arquivo) {
         const url = urlDaFoto(foto)
         const credito = creditoDaFoto(foto)
         return credito ? `${url} | ${credito}` : url
+      }).join("\n"),
+      videos: (musical.videos || []).map(v => {
+        const link = `https://youtu.be/${v.id}`
+        return v.titulo ? `${link} | ${v.titulo}` : link
       }).join("\n")
     })
     setEquipeEdicao(equipeParaEditor(musical))
@@ -437,9 +442,20 @@ async function fazerUploadCapa(arquivo) {
         return { url: url.trim(), credito: resto.join("|").trim() }
       })
 
+    const videosLimpos = (formEdicao.videos || "")
+      .split("\n")
+      .map(linha => linha.trim())
+      .filter(Boolean)
+      .map(linha => {
+        const [link, ...resto] = linha.split("|")
+        return { id: extrairIdYoutube(link.trim()), titulo: resto.join("|").trim() }
+      })
+      .filter(v => v.id)
+
     const dadosFinais = {
       ...formEdicao,
       galeria: galeriaLimpa,
+      videos: videosLimpos,
       direcao: planos.direcao,
       direcaoMusical: planos.direcaoMusical,
       versionista: planos.versionista,
@@ -936,6 +952,7 @@ async function fazerUploadCapa(arquivo) {
             />
           </div>
           {campo("Galeria de fotos (uma URL do Cloudinary por linha)", "galeria", true)}
+          {campo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
 
           {/* Editor de fontes */}
@@ -1259,6 +1276,53 @@ async function fazerUploadCapa(arquivo) {
                     style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px", cursor: "pointer", border: "1px solid #e8e8e4" }}
                   />
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── VÍDEOS ── */}
+          {Array.isArray(musical.videos) && musical.videos.length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Vídeos</p>
+              <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
+                {musical.videos.map((v, i) => (
+                  <div key={i} onClick={() => setVideoAberto(i)} style={{ flex: "0 0 240px", cursor: "pointer" }}>
+                    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: "6px", overflow: "hidden", border: "1px solid #e8e8e4", background: "#000" }}>
+                      <img src={`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`} alt={v.titulo || `Vídeo ${i + 1}`} loading="lazy"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ width: "52px", height: "36px", borderRadius: "8px", background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ color: "#fff", fontSize: "15px", lineHeight: 1, marginLeft: "3px" }}>▶</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#444", marginTop: "6px", marginBottom: 0, lineHeight: 1.35 }}>{v.titulo || `Vídeo ${i + 1}`}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {videoAberto !== null && musical.videos && musical.videos[videoAberto] && (
+            <div onClick={() => setVideoAberto(null)}
+              style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.9)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", boxSizing: "border-box" }}>
+              <button onClick={() => setVideoAberto(null)}
+                style={{ position: "absolute", top: "20px", right: "24px", background: "none", border: "none", color: "#fff", fontSize: "28px", cursor: "pointer", lineHeight: 1, zIndex: 2 }}>✕</button>
+              <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: "880px" }}>
+                <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", background: "#000", borderRadius: "8px", overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+                  <iframe
+                    key={musical.videos[videoAberto].id}
+                    src={`https://www.youtube-nocookie.com/embed/${musical.videos[videoAberto].id}?autoplay=1&rel=0`}
+                    title={musical.videos[videoAberto].titulo || musical.titulo}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                  />
+                </div>
+                {musical.videos[videoAberto].titulo && (
+                  <p style={{ color: "#ccc", fontSize: "13px", marginTop: "10px", textAlign: "center" }}>{musical.videos[videoAberto].titulo}</p>
+                )}
               </div>
             </div>
           )}

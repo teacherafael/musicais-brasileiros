@@ -29,6 +29,26 @@ export const ESSENCIAL_CAMPO = {
   "Produtora": "producao",
 }
 
+// ── YouTube ──────────────────────────────────────────────────────────────────
+// Extrai o ID de um link do YouTube (youtube.com/watch?v=, youtu.be/, /embed/, /shorts/).
+// Se já for um ID puro (11 caracteres), devolve como está. Caso não reconheça, devolve "".
+export function extrairIdYoutube(entrada) {
+  const texto = (entrada || "").trim()
+  if (!texto) return ""
+  if (/^[a-zA-Z0-9_-]{11}$/.test(texto)) return texto
+  const padroes = [
+    /[?&]v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /\/embed\/([a-zA-Z0-9_-]{11})/,
+    /\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ]
+  for (const p of padroes) {
+    const m = texto.match(p)
+    if (m) return m[1]
+  }
+  return ""
+}
+
 // ── Cargos complementares ────────────────────────────────────────────────────
 // Gravam dentro do array `equipeCriativa`. Esta é a lista que aparece tanto no
 // admin quanto (a partir de agora) no formulário público de sugestão.

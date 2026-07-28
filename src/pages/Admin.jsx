@@ -17,29 +17,13 @@ import {
   montarEquipeDeStrings,
   montarPayload,
   TIPOS_OBRA,
+  extrairIdYoutube,
 } from "../musicalSchema"
 
 const normalizarNome = (texto) =>
   (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 
-// Extrai o ID de um link do YouTube (youtube.com/watch?v=, youtu.be/, /embed/, /shorts/).
-// Se já for um ID puro (11 caracteres), devolve como está. Caso não reconheça, devolve "".
-function extrairIdYoutube(entrada) {
-  const texto = (entrada || "").trim()
-  if (!texto) return ""
-  if (/^[a-zA-Z0-9_-]{11}$/.test(texto)) return texto
-  const padroes = [
-    /[?&]v=([a-zA-Z0-9_-]{11})/,
-    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
-    /\/embed\/([a-zA-Z0-9_-]{11})/,
-    /\/shorts\/([a-zA-Z0-9_-]{11})/,
-  ]
-  for (const p of padroes) {
-    const m = texto.match(p)
-    if (m) return m[1]
-  }
-  return ""
-}
+// extrairIdYoutube agora vem de ../musicalSchema (fonte única)
 
 function montarItemIndice(id, m) {
   return {
