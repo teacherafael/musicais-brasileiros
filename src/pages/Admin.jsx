@@ -4,6 +4,7 @@ import { db, auth } from "../firebase"
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
+import EnviarComunicado from "../components/EnviarComunicado"
 import {
   ESSENCIAIS,
   ESSENCIAL_CAMPO,
@@ -956,6 +957,9 @@ async function fazerUploadCapaNovo(arquivo) {
         <button onClick={() => trocarAba("entidades")} className={aba === "entidades" ? "btn-comentar" : "btn-sair"}>
           🎭 Entidades {carregadas.has("entidades") && entidades.length > 0 && `(${entidades.length})`}
         </button>
+        <button onClick={() => trocarAba("comunicado")} className={aba === "comunicado" ? "btn-comentar" : "btn-sair"}>
+          📢 Comunicado
+        </button>
       </div>
 
       {carregando ? (
@@ -1486,6 +1490,11 @@ async function fazerUploadCapaNovo(arquivo) {
             ))
           )}
         </>
+      ) : aba === "comunicado" ? (
+        <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Enviar comunicado</h2>
+          <EnviarComunicado />
+        </div>
       ) : (
         <>
           <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "12px", padding: "16px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>

@@ -385,7 +385,7 @@ function Header() {
                           }}
                         >
                           <span style={{ fontSize: "20px", flexShrink: 0, marginTop: "1px" }}>
-                            {n.tipo === "reacao" ? n.emoji || "👍" : "👤"}
+                            {n.tipo === "reacao" ? (n.emoji || "👍") : n.tipo === "comunicado" ? "📢" : "👤"}
                           </span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: "13px", color: "#1a1a1a", margin: 0, lineHeight: "1.4" }}>
