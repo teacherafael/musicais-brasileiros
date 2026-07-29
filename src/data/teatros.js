@@ -564,7 +564,7 @@ export const teatros = [
   {
     id: "teatro-sesc-ginastico",
     nomeOficial: "Teatro Sesc Ginástico",
-    aliases: ["Sesc Ginástico"],
+    aliases: ["Sesc Ginástico", "Teatro Ginástico"],
     endereco: "Av. Graça Aranha, 187",
     bairro: "Centro",
     cidade: "Rio de Janeiro – RJ",
