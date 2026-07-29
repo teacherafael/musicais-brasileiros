@@ -164,7 +164,9 @@ function scrollDestaques(direcao) {
           setCarregando(false)
           return
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Falha ao ler indices/home — caindo no scan completo da coleção:", e)
+      }
       const snapshot = await getDocs(collection(db, "musicais"))
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
