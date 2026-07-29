@@ -132,8 +132,13 @@ function Admin() {
         const snap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
         setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.tipo !== "denuncia_comentario"))
       } else if (qual === "musicais") {
-        const snap = await getDocs(query(collection(db, "musicais"), orderBy("dataCriacao", "desc")))
-        setMusicais(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+        const indiceSnap = await getDoc(doc(db, "indices", "home"))
+        const itens = (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) ? indiceSnap.data().itens : []
+        setMusicais(
+          itens
+            .slice()
+            .sort((a, b) => (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0))
+        )
       } else if (qual === "arquivados") {
         const snap = await getDocs(query(collection(db, "musicais"), where("arquivado", "==", true)))
         setArquivados(
