@@ -102,8 +102,8 @@ const [reacoesPublicas, setReacoesPublicas] = useState(true)
   useEffect(() => {
     async function buscarDados() {
       try {
-        const [musicaisSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
-          getDocs(collection(db, "musicais")),
+        const [indiceSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
+          getDoc(doc(db, "indices", "home")),
           getDocs(collection(db, "usuarios", userId, "queroVer")),
           getDocs(collection(db, "usuarios", userId, "jaVi")),
           getDocs(collection(db, "usuarios", userId, "top3")),
@@ -114,8 +114,9 @@ const [reacoesPublicas, setReacoesPublicas] = useState(true)
         ])
 
         const musicaisMap = {}
-        musicaisSnap.docs.forEach(d => {
-          musicaisMap[d.id] = { id: d.id, ...d.data() }
+        const itensIndice = (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) ? indiceSnap.data().itens : []
+        itensIndice.forEach(item => {
+          if (item && item.id) musicaisMap[item.id] = { ...item, id: item.id }
         })
         setMusicais(musicaisMap)
 
