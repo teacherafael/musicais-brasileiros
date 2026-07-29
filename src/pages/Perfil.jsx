@@ -120,34 +120,15 @@ const [reacoesPublicas, setReacoesPublicas] = useState(true)
         })
         setMusicais(musicaisMap)
 
-        const musicalIds = Object.keys(musicaisMap)
 
-        // Comentários continuam com leitura pública.
-        const todosComentarios = await Promise.all(
-          musicalIds.map(id => getDocs(query(collection(db, "musicais", id, "comentarios"))))
-        )
 
-        const comentariosEncontrados = []
-        let nomeEncontrado = ""
-        todosComentarios.forEach((snap, i) => {
-          const musicalId = musicalIds[i]
-          snap.docs.forEach(d => {
-            const dados = d.data()
-            if (dados.userId === userId) {
-              if (!nomeEncontrado && dados.nome) nomeEncontrado = dados.nome
-              comentariosEncontrados.push({ id: d.id, musicalId, ...dados })
-            }
-          })
-        })
-
-        if (nomeEncontrado) setNomeUsuario(nomeEncontrado)
 
         const top3Lista = top3Snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .sort((a, b) => a.ordem - b.ordem)
 
         setTop3(top3Lista)
-        setComentarios(comentariosEncontrados)
+        setComentarios([])
         setQueroVer(queroVerSnap.docs.map(d => ({ id: d.id, ...d.data() })))
         setJaVi(jaViSnap.docs.map(d => ({ id: d.id, ...d.data() })))
         setSeguindo(seguindoSnap.docs.map(d => ({ id: d.id, ...d.data() })))
