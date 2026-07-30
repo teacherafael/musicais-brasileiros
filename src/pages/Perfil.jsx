@@ -34,6 +34,7 @@ function Perfil() {
   const [nomeUsuario, setNomeUsuario] = useState("")
   const [fotoUsuario, setFotoUsuario] = useState("")
   const [fotoCustom, setFotoCustom] = useState("")
+  const [nomeCustom, setNomeCustom] = useState("")
   const [enviandoFoto, setEnviandoFoto] = useState(false)
   const [imagemParaCortar, setImagemParaCortar] = useState(null)
   const inputFotoRef = useRef(null)
@@ -69,6 +70,8 @@ const [reacoesPublicas, setReacoesPublicas] = useState(true)
   const [editandoRedes, setEditandoRedes] = useState(false)
   const [redesTemp, setRedesTemp] = useState({ instagram: "", tiktok: "", x: "", site: "" })
   const [bioTemp, setBioTemp] = useState("")
+  const [nomeTemp, setNomeTemp] = useState("")
+  const [nomeAlteradoEm, setNomeAlteradoEm] = useState(0)
 
   // Mensagem
   const [enviandoMensagem, setEnviandoMensagem] = useState(false)
@@ -143,6 +146,8 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
           if (data.nome) setNomeUsuario(data.nome)
           if (data.foto) setFotoUsuario(data.foto)
           if (data.fotoCustom) setFotoCustom(data.fotoCustom)
+          if (data.nomeCustom) { setNomeCustom(data.nomeCustom); setNomeTemp(data.nomeCustom) }
+          setNomeAlteradoEm(data.nomeAlteradoEm?.toMillis?.() || 0)
           setRedesSociais({
             instagram: data.instagram || "",
             tiktok: data.tiktok || "",
@@ -469,10 +474,23 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
   }
 
   async function salvarRedesSociais() {
+    const nomeLimpo = nomeTemp.trim().slice(0, 40)
+    const nomeMudou = nomeLimpo !== nomeCustom
+    if (nomeMudou && Date.now() - nomeAlteradoEm < 24 * 60 * 60 * 1000) {
+      return mostrarToast("Você só pode trocar o nome uma vez por dia.")
+    }
     const dados = { ...redesTemp, bio: bioTemp.slice(0, 200) }
+    if (nomeMudou) {
+      dados.nomeCustom = nomeLimpo
+      dados.nomeAlteradoEm = serverTimestamp()
+    }
     await setDoc(doc(db, "usuarios", userId), dados, { merge: true })
     setRedesSociais(redesTemp)
     setBio(bioTemp.slice(0, 200))
+    if (nomeMudou) {
+      setNomeCustom(nomeLimpo)
+      setNomeAlteradoEm(Date.now())
+    }
     setEditandoRedes(false)
   }
 
@@ -875,7 +893,7 @@ async function toggleVerificado() {
 
   const isProprioPerfil = usuarioLogado && usuarioLogado.uid === userId
   const isAdmin = ehAdmin(usuarioLogado)
-  const nomePerfil = isProprioPerfil ? usuarioLogado.displayName : nomeUsuario
+  const nomePerfil = nomeCustom || (isProprioPerfil ? usuarioLogado.displayName : nomeUsuario)
   const fotoPerfil = fotoCustom || (isProprioPerfil ? usuarioLogado.photoURL : fotoUsuario)
 
   const mediaVotos = votos.length > 0
@@ -1023,7 +1041,7 @@ async function toggleVerificado() {
               </a>
             )}
             {isProprioPerfil && !editandoRedes && (
-              <button onClick={() => { setRedesTemp({ ...redesSociais }); setBioTemp(bio); setEditandoRedes(true) }}
+              <button onClick={() => { setRedesTemp({ ...redesSociais }); setBioTemp(bio); setNomeTemp(nomeCustom); setEditandoRedes(true) }}
                 style={{ background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "4px 12px", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                 {(temRedesSociais || bio) ? "✏️ Editar perfil" : "+ Editar perfil"}
               </button>
@@ -1034,6 +1052,24 @@ async function toggleVerificado() {
         {/* Formulário de redes sociais e bio */}
         {editandoRedes && (
           <div style={{ marginTop: "14px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px", maxWidth: "360px" }}>
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Nome de exibição</label>
+              <input
+                type="text"
+                value={nomeTemp}
+                onChange={e => setNomeTemp(e.target.value.slice(0, 40))}
+                placeholder={usuarioLogado?.displayName || "Seu nome"}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+              />
+              <p style={{ fontSize: "11px", color: nomeTemp.length >= 40 ? "#c0392b" : "#aaa", textAlign: "right", marginTop: "2px" }}>
+                {nomeTemp.length}/40 · deixe em branco para usar o nome do Google
+              </p>
+              {Date.now() - nomeAlteradoEm < 24 * 60 * 60 * 1000 && (
+                <p style={{ fontSize: "11px", color: "#c0392b", marginTop: "2px" }}>
+                  Nome já alterado hoje. Poderá trocar novamente em {Math.ceil((24 * 60 * 60 * 1000 - (Date.now() - nomeAlteradoEm)) / (60 * 60 * 1000))}h.
+                </p>
+              )}
+            </div>
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Bio</label>
               <textarea
