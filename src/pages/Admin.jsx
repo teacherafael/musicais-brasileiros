@@ -632,6 +632,9 @@ async function fazerUploadCapaNovo(arquivo) {
       imagem: e.imagem || "",
       tipoImagem: e.tipoImagem || "foto",
       instagram: e.links?.instagram || "",
+      facebook: e.links?.facebook || "",
+      tiktok: e.links?.tiktok || "",
+      x: e.links?.x || "",
       site: e.links?.site || "",
       email: e.links?.email || "",
       formacao: e.formacao || "",
@@ -679,6 +682,9 @@ async function fazerUploadCapaNovo(arquivo) {
       tipoImagem: formEntidade.tipoImagem || "foto",
       links: {
         instagram: (formEntidade.instagram || "").trim(),
+        facebook: (formEntidade.facebook || "").trim(),
+        tiktok: (formEntidade.tiktok || "").trim(),
+        x: (formEntidade.x || "").trim(),
         site: (formEntidade.site || "").trim(),
         email: (formEntidade.email || "").trim(),
         extras: extrasLimpos,
@@ -1349,7 +1355,10 @@ async function fazerUploadCapaNovo(arquivo) {
             </div>
 
             {campoEntidade("Instagram (@ ou usuário)", "instagram", false, "ex: estamosaqui")}
-            {campoEntidade("Site", "site", false, "https://...")}
+            {campoEntidade("Facebook (usuário ou URL)", "facebook", false, "ex: estamosaqui")}
+            {campoEntidade("TikTok (@ ou usuário)", "tiktok", false, "ex: estamosaqui")}
+            {campoEntidade("X (@ ou usuário)", "x", false, "ex: estamosaqui")}
+            {campoEntidade("Site oficial", "site", false, "https://...")}
             {campoEntidade("E-mail", "email")}
 
             <div style={{ marginBottom: "16px" }}>

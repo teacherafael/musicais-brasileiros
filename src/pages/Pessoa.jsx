@@ -216,35 +216,72 @@ function Pessoa() {
               </p>
             )}
             <div style={{ clear: "both" }} />
-            {entidade.links && (entidade.links.instagram || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (() => {
-              const btnLink = { color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "13px", border: "1px solid #ecd9a0", borderRadius: "20px", padding: "6px 14px", background: "#fdf9ec" };
-              const ehRedeSocial = (url) => { try { const host = new URL(url).hostname.replace(/^www\./, "").toLowerCase(); return ["instagram.com", "tiktok.com", "x.com", "twitter.com", "facebook.com", "fb.com", "youtube.com", "youtu.be", "threads.net", "linkedin.com"].some(d => host === d || host.endsWith("." + d)); } catch { return false; } };
-              const extras = (entidade.links.extras || []).filter(ex => ex && ex.url && ex.label);
-              const naMidia = extras.filter(ex => !ehRedeSocial(ex.url));
+            {entidade.links && (entidade.links.instagram || entidade.links.facebook || entidade.links.tiktok || entidade.links.x || entidade.links.site || entidade.links.email || (entidade.links.extras || []).length > 0) && (() => {
+              const linhaRotulo = { color: "#444", fontSize: "15px", minWidth: "100px", flexShrink: 0 };
+              const linhaLink = { color: "#b8960a", textDecoration: "none", fontWeight: 600, fontSize: "16px", wordBreak: "break-all" };
+              const tituloBloco = { fontSize: "12px", fontWeight: 700, letterSpacing: "1.4px", textTransform: "uppercase", color: "#8a8a85", margin: "0 0 14px" };
+              const molduraBloco = { marginTop: "26px" };
+              const soHandle = (valor) => {
+                let v = (valor || "").trim();
+                if (!v) return "";
+                if (v.includes("/")) {
+                  try { v = new URL(v.startsWith("http") ? v : "https://" + v).pathname.split("/").filter(Boolean)[0] || ""; }
+                  catch { v = v.split("/").filter(Boolean).pop() || ""; }
+                }
+                return v.replace(/^@/, "").trim();
+              };
+              const naMidia = (entidade.links.extras || []).filter(ex => ex && ex.url && ex.label);
               const redes = [];
-              if (entidade.links.instagram) redes.push({ label: "Instagram", url: "https://instagram.com/" + entidade.links.instagram.replace(/^@/, "") });
-              if (entidade.links.site) redes.push({ label: "Site", url: entidade.links.site });
-              if (entidade.links.email) redes.push({ label: "E-mail", url: "mailto:" + entidade.links.email });
-              extras.filter(ex => ehRedeSocial(ex.url)).forEach(ex => redes.push({ label: ex.label, url: ex.url }));
+              const addRede = (nome, base, valor, prefixo) => {
+                const h = soHandle(valor);
+                if (h) redes.push({ nome, texto: prefixo + h, url: base + h });
+              };
+              addRede("Instagram", "https://instagram.com/", entidade.links.instagram, "@");
+              addRede("TikTok", "https://tiktok.com/@", entidade.links.tiktok, "@");
+              addRede("X", "https://x.com/", entidade.links.x, "@");
+              addRede("Facebook", "https://facebook.com/", entidade.links.facebook, "");
+              const site = (entidade.links.site || "").trim();
+              const siteUrl = site ? (site.startsWith("http") ? site : "https://" + site) : "";
+              const siteTexto = site.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+              const email = (entidade.links.email || "").trim();
               return (
-                <>
+                <div style={{ marginTop: "16px", borderTop: "1px solid #f0f0f0" }}>
                   {redes.length > 0 && (
-                    <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
-                      <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Redes sociais</p>
-                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                        {redes.map((l, i) => (<a key={i} href={l.url} target="_blank" rel="noreferrer" style={btnLink}>{l.label}</a>))}
+                    <div style={molduraBloco}>
+                      <p style={tituloBloco}>Redes sociais</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {redes.map((r, i) => (
+                          <div key={i} style={{ display: "flex", gap: "10px", alignItems: "baseline" }}>
+                            <span style={linhaRotulo}>{r.nome}</span>
+                            <a href={r.url} target="_blank" rel="noreferrer" style={linhaLink}>{r.texto}</a>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
                   {naMidia.length > 0 && (
-                    <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
-                      <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Na mídia</p>
-                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                        {naMidia.map((l, i) => (<a key={i} href={l.url} target="_blank" rel="noreferrer" style={btnLink}>{l.label}</a>))}
+                    <div style={molduraBloco}>
+                      <p style={tituloBloco}>Links externos</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {naMidia.map((l, i) => (
+                          <a key={i} href={l.url} target="_blank" rel="noreferrer" style={linhaLink}>{l.label}</a>
+                        ))}
                       </div>
                     </div>
                   )}
-                </>
+                  {siteUrl && (
+                    <div style={molduraBloco}>
+                      <p style={tituloBloco}>Site oficial</p>
+                      <a href={siteUrl} target="_blank" rel="noreferrer" style={linhaLink}>{siteTexto}</a>
+                    </div>
+                  )}
+                  {email && (
+                    <div style={molduraBloco}>
+                      <p style={tituloBloco}>Contato</p>
+                      <a href={"mailto:" + email} style={linhaLink}>{email}</a>
+                    </div>
+                  )}
+                </div>
               );
             })()}
             {Array.isArray(entidade.fotosTrabalho) && entidade.fotosTrabalho.length > 0 && (
