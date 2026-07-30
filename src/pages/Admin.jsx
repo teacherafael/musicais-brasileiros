@@ -687,7 +687,7 @@ async function fazerUploadCapaNovo(arquivo) {
       contato: (formEntidade.contato || "").trim(),
       destaques: destaquesArray,
       videosYoutube: videosTrabalho.map(v => extrairIdYoutube((v || "").trim())).filter(Boolean),
-      fotosTrabalho: fotosTrabalho.map(u => (u || "").trim()).filter(Boolean).slice(0, 10),
+      fotosTrabalho: fotosTrabalho.map(u => (u || "").trim()).filter(Boolean).slice(0, 20),
       publicado: formEntidade.publicado === true,
     }
 
@@ -1422,7 +1422,7 @@ async function fazerUploadCapaNovo(arquivo) {
                     style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
                 </div>
               ))}
-              {fotosTrabalho.length < 10 && (
+              {fotosTrabalho.length < 20 && (
                 <button onClick={() => setFotosTrabalho([...fotosTrabalho, ""])}
                   style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                   + Adicionar foto
