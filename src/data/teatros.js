@@ -401,6 +401,14 @@ export const teatros = [
     bairro: "Consolação",
     cidade: "São Paulo – SP",
   },
+    {
+    id: "teatro-tuca",
+    nomeOficial: "Tuca",
+    aliases: ["Teatro Tuca", "Teatro da Universidade Católica de São Paulo"],
+    endereco: "R. Monte Alegre, 1024",
+    bairro: "Perdizes",
+    cidade: "São Paulo – SP",
+  },
   {
     id: "teatro-das-artes",
     nomeOficial: "Teatro das Artes",
