@@ -571,14 +571,20 @@ setReacoesPublicas(data.reacoesPublicas ?? true)
   async function salvarTop3() {
     const snap = await getDocs(collection(db, "usuarios", userId, "top3"))
     for (const d of snap.docs) await deleteDoc(d.ref)
+    const idsSalvos = []
     for (let i = 0; i < top3Selecionado.length; i++) {
       const m = musicais[top3Selecionado[i]]
       if (m) {
         await setDoc(doc(db, "usuarios", userId, "top3", m.id), {
           musicalId: m.id, titulo: m.titulo, capa: m.capa || null, direcao: m.direcao || "", ordem: i
         })
+        idsSalvos.push(m.id)
       }
     }
+    await updateDoc(doc(db, "usuarios", userId), {
+      tamanhoTop5: idsSalvos.length,
+      top5Ids: idsSalvos
+    })
     const novoTop3 = top3Selecionado.map((id, i) => ({ id, musicalId: id, ordem: i, ...musicais[id] })).filter(Boolean)
     setTop3(novoTop3)
     setEditandoTop3(false)
