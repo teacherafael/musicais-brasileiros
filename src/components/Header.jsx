@@ -460,6 +460,9 @@ function Header() {
                   <Link to={`/perfil/${usuario.uid}`} onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Meu Perfil
                   </Link>
+                  <Link to="/comunidade" onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Comunidade
+                  </Link>
                   <Link to="/destaques" onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Destaques
                   </Link>

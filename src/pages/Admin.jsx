@@ -250,6 +250,7 @@ function Admin() {
     setIndiceStatus("Gerando índice...")
     try {
       const qtd = await gerarIndiceHome()
+      try { await gerarIndiceComunidade() } catch (e) {}
       setIndiceStatus(`Índice atualizado ✓ (${qtd} musicais)`)
     } catch (e) {
       setIndiceStatus("Erro ao gerar índice. Tente novamente.")

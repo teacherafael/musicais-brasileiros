@@ -10,6 +10,7 @@ import Admin from "./pages/Admin"
 import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
 import Destaques from "./pages/Destaques"
+import Comunidade from "./pages/Comunidade"
 import Termos from "./pages/Termos"
 import FAQ from "./pages/FAQ"
 import Sobre from "./pages/Sobre"
@@ -85,6 +86,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/destaques" element={<Destaques />} />
+        <Route path="/comunidade" element={<Comunidade />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/sobre" element={<Sobre />} />
