@@ -68,6 +68,34 @@ async function gerarIndiceHome() {
   return itens.length
 }
 
+async function gerarIndiceComunidade() {
+  const indiceSnap = await getDoc(doc(db, "indices", "home"))
+  const mapaCapas = {}
+  if (indiceSnap.exists()) {
+    (indiceSnap.data().itens || []).forEach(it => { mapaCapas[it.id] = it.capa || "" })
+  }
+  const snap = await getDocs(query(collection(db, "usuarios"), where("tamanhoTop5", "==", 5)))
+  const perfis = snap.docs
+    .filter(d => d.data().ocultarDaComunidade !== true)
+    .map(d => {
+      const u = d.data()
+      const ids = Array.isArray(u.top5Ids) ? u.top5Ids : []
+      return {
+        uid: d.id,
+        nome: u.nomeCustom || u.nome || "Usuário",
+        foto: u.foto || "",
+        bio: u.bio || "",
+        capas: ids.map(id => mapaCapas[id] || "").filter(Boolean)
+      }
+    })
+    .filter(p => p.capas.length === 5)
+  await setDoc(doc(db, "indices", "comunidade"), {
+    perfis,
+    total: perfis.length,
+    atualizadoEm: new Date()
+  })
+  return perfis.length
+}
 function Admin() {
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(null)
@@ -87,6 +115,7 @@ function Admin() {
   const [teatrosEdicao, setTeatrosEdicao] = useState([])
   const [fontesEdicao, setFontesEdicao] = useState([])
   const [indiceStatus, setIndiceStatus] = useState("")
+  const [comunidadeStatus, setComunidadeStatus] = useState("")
   const [emAltaVotos, setEmAltaVotos] = useState([])
   const [capasAtuais, setCapasAtuais] = useState({})
   const [janela, setJanela] = useState("7")
@@ -207,6 +236,16 @@ function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario])
 
+  async function atualizarIndiceComunidade() {
+    setComunidadeStatus("Gerando índice da comunidade...")
+    try {
+      const qtd = await gerarIndiceComunidade()
+      setComunidadeStatus(`Índice da comunidade atualizado ✓ (${qtd} perfis)`)
+    } catch (e) {
+      setComunidadeStatus("Erro ao gerar índice da comunidade. Tente novamente.")
+    }
+    setTimeout(() => setComunidadeStatus(""), 4000)
+  }
   async function atualizarIndiceManual() {
     setIndiceStatus("Gerando índice...")
     try {
@@ -1506,6 +1545,10 @@ async function fazerUploadCapaNovo(arquivo) {
               )}
             </div>
             <button className="btn-comentar" onClick={atualizarIndiceManual}>🔄 Atualizar índice da Home</button>
+            <button className="btn-comentar" onClick={atualizarIndiceComunidade} style={{ marginLeft: "8px" }}>👥 Atualizar índice da Comunidade</button>
+            {comunidadeStatus && (
+              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1a1a1a", margin: "8px 0 0" }}>{comunidadeStatus}</p>
+            )}
           </div>
 
           {musicais.filter(m => m.arquivado !== true).length === 0 ? (
