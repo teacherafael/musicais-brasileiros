@@ -476,7 +476,13 @@ function scrollDestaques(direcao) {
       <div className="grid-musicais" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
         {carregando ? (
           Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} style={{ borderRadius: "12px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite", aspectRatio: "2/3" }} />
+            <div key={i} style={{ maxWidth: "200px", margin: "0 auto", width: "100%", border: "1px solid #e8e8e4", borderRadius: "12px", overflow: "hidden", background: "#fff" }}>
+              <div style={{ width: "100%", aspectRatio: "2/3", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+              <div style={{ padding: "10px 12px 12px" }}>
+                <div style={{ height: "18px", marginBottom: "3px", borderRadius: "4px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+                <div style={{ height: "16px", width: "60%", borderRadius: "4px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+              </div>
+            </div>
           ))
         ) : musicaisVisiveis.length === 0 ? (
           <div style={{ gridColumn: "1 / -1", padding: "40px 0", textAlign: "center" }}>

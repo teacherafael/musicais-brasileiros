@@ -732,7 +732,23 @@ async function fazerUploadCapa(arquivo) {
     setGerando(false)
   }
 
-  if (!musical) return <main><p>Carregando...</p></main>
+if (!musical) return (
+    <main>
+      <div style={{ height: "40px", width: "100px", marginBottom: "24px", borderRadius: "6px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+      <div className="musical-header">
+        <div className="musical-poster">
+          <div style={{ width: "100%", aspectRatio: "3/4", borderRadius: "8px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ height: "38px", width: "70%", marginBottom: "16px", borderRadius: "6px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} style={{ height: "16px", width: i % 3 === 0 ? "55%" : "80%", marginBottom: "12px", borderRadius: "4px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+          ))}
+        </div>
+      </div>
+      <div style={{ height: "200px", marginTop: "40px", borderRadius: "8px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+    </main>
+  )
 
   if (musical.arquivado === true) {
     if (!authResolved) return <main><p>Carregando...</p></main>
