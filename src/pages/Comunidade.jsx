@@ -11,6 +11,18 @@ function miniatura(url) {
   return url.replace("-800.webp", "-400.webp")
 }
 
+// Mesmo selo usado na pagina de Perfil, em escala menor
+function SeloVerificado() {
+  return (
+    <span title="Usuário verificado" style={{ display: "inline-flex", flexShrink: 0 }}>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
+        <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  )
+}
+
 // Embaralha uma copia do array (Fisher-Yates)
 function embaralhar(lista) {
   const copia = [...lista]
@@ -75,7 +87,10 @@ function Comunidade() {
         maxWidth: "620px",
         lineHeight: "1.6"
       }}>
-        Aqui é um espaço de quem faz parte do MCDb e já escolheu seus cinco musicais favoritos no Top 5. É um retrato de gosto: dá para descobrir alguém que ama os mesmos espetáculos que você, ou encontrar títulos que ainda não conhecia.
+        Quem faz parte do MCDb, apresentado pelos cinco musicais que cada pessoa
+        escolheu como favoritos. É um retrato de gosto: dá para descobrir alguém
+        que ama os mesmos espetáculos que você — ou encontrar títulos que ainda
+        não conhecia.
       </p>
 
       <p style={{
@@ -147,7 +162,7 @@ function Comunidade() {
               }}
             >
               {/* Cabecalho: avatar + nome + bio */}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "12px" }}>
                 {p.foto ? (
                   <img
                     src={p.foto}
@@ -172,27 +187,31 @@ function Comunidade() {
                 )}
 
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: "#1a1a1a",
-                    margin: 0,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis"
-                  }}>
-                    {p.nome}
-                  </p>
-                  {p.bio && (
-                    <p style={{
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px", minWidth: 0 }}>
+                    <span style={{
                       fontFamily: "'DM Sans', sans-serif",
-                      fontSize: "11px",
-                      color: "#999",
-                      margin: "1px 0 0",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#1a1a1a",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis"
+                    }}>
+                      {p.nome}
+                    </span>
+                    {p.verificado && <SeloVerificado />}
+                  </div>
+                  {p.bio && (
+                    <p style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: "12.5px",
+                      color: "#5f5f5f",
+                      margin: "3px 0 0",
+                      lineHeight: "1.35",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden"
                     }}>
                       {p.bio}
                     </p>

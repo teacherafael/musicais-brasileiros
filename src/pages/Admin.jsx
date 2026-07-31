@@ -85,6 +85,7 @@ async function gerarIndiceComunidade() {
         nome: u.nomeCustom || u.nome || "Usuário",
         foto: u.foto || "",
         bio: u.bio || "",
+        verificado: u.verificado === true,
         capas: ids.map(id => mapaCapas[id] || "").filter(Boolean)
       }
     })
