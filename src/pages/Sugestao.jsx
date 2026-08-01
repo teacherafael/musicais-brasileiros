@@ -176,7 +176,7 @@ function Sugestao() {
           ⚠️ Atenção
         </p>
         <p style={{ fontSize: "15px", fontWeight: "500", color: "#7a1515", lineHeight: "1.6", margin: 0 }}>
-          O MCDb só adiciona espetáculos produzidos com os direitos autorais devidamente adquiridos. Não incluímos musicais amadores, escolares, de curso livre ou acadêmicos.
+          O MCDb só adiciona espetáculos produzidos com os direitos autorais devidamente adquiridos. Não incluímos musicais amadores, escolares, de curso livre ou acadêmicos, nem montagens que utilizem personagens protegidos por direitos autorais sem licenciamento de uso (por exemplo, personagens de Frozen, Moana e similares).
         </p>
       </div>
 
