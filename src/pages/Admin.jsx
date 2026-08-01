@@ -128,6 +128,7 @@ function Admin() {
   const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
   const [musicosNovo, setMusicosNovo] = useState([])
   const [fontesNovo, setFontesNovo] = useState([])
+  const [curiosidadesNovo, setCuriosidadesNovo] = useState([])
   const [rascunhoId, setRascunhoId] = useState(null)
   const [rascunhosAdmin, setRascunhosAdmin] = useState([])
   const [enviandoCapaNovo, setEnviandoCapaNovo] = useState(false)
@@ -381,7 +382,10 @@ async function fazerUploadCapaNovo(arquivo) {
       return
     }
 
-    const payload = montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo)
+    const payload = {
+      ...montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo),
+      curiosidades: curiosidadesNovo.map(t => t.trim()).filter(Boolean),
+    }
 
     if (status === "rascunho") {
       if (rascunhoId) {
@@ -431,6 +435,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setEquipeNovo(equipeInicial())
     setMusicosNovo([])
     setFontesNovo([])
+    setCuriosidadesNovo([])
     setRascunhoId(null)
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
     alert("Musical publicado!")
@@ -469,6 +474,7 @@ async function fazerUploadCapaNovo(arquivo) {
       setEquipeNovo(equipeInicial())
       setMusicosNovo([])
       setFontesNovo([])
+      setCuriosidadesNovo([])
     }
   }
 
@@ -908,6 +914,30 @@ async function fazerUploadCapaNovo(arquivo) {
     )
   }
 
+  // Editor de curiosidades genérico
+  function renderEditorCuriosidades(curiosidades, setCuriosidades) {
+    return (
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+          Curiosidades
+        </label>
+        {curiosidades.map((texto, i) => (
+          <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
+            <textarea placeholder="Curiosidade" value={texto} rows={2}
+              onChange={e => { const novo = [...curiosidades]; novo[i] = e.target.value; setCuriosidades(novo) }}
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+            <button onClick={() => setCuriosidades(curiosidades.filter((_, idx) => idx !== i))}
+              style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+          </div>
+        ))}
+        <button onClick={() => setCuriosidades([...curiosidades, ""])}
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          + Adicionar curiosidade
+        </button>
+      </div>
+    )
+  }
+
   // Editor de teatros genérico
   function renderEditorTeatros(teatros, setTeatros, moverTeatro) {
     return (
@@ -1190,6 +1220,7 @@ async function fazerUploadCapaNovo(arquivo) {
           </div>
 
           {renderEditorFontes(fontesNovo, setFontesNovo)}
+          {renderEditorCuriosidades(curiosidadesNovo, setCuriosidadesNovo)}
 
           {rascunhoId && (
             <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>
@@ -1200,7 +1231,7 @@ async function fazerUploadCapaNovo(arquivo) {
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={() => salvarNovo("publicado")}>✅ Publicar musical</button>
             <button className="btn-sair" onClick={() => salvarNovo("rascunho")}>💾 Salvar rascunho</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setFontesNovo([]); setRascunhoId(null) }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setFontesNovo([]); setCuriosidadesNovo([]); setRascunhoId(null) }}>Limpar</button>
           </div>
         </div>
         </>

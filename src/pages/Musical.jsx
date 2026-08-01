@@ -180,6 +180,7 @@ function Musical() {
   const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [musicosEdicao, setMusicosEdicao] = useState([])
   const [fontesEdicao, setFontesEdicao] = useState([])
+  const [curiosidadesEdicao, setCuriosidadesEdicao] = useState([])
   const [gerando, setGerando] = useState(false)
   const [enviandoCapa, setEnviandoCapa] = useState(false)
   const [toast, setToast] = useState(null)
@@ -381,6 +382,7 @@ async function fazerUploadCapa(arquivo) {
     setMusicosEdicao(musicosExistentes.map(item => ({ local: item.local || "", nomesTexto: (item.nomes || []).join(", ") })))
     const fontesExistentes = Array.isArray(musical.fontes) ? musical.fontes : []
     setFontesEdicao(fontesExistentes.map(f => ({ descricao: f.descricao || "", link: f.link || "" })))
+    setCuriosidadesEdicao(Array.isArray(musical.curiosidades) ? musical.curiosidades : [])
     setEditandoMusical(true)
   }
 
@@ -434,6 +436,10 @@ async function fazerUploadCapa(arquivo) {
       .map(item => ({ descricao: item.descricao.trim(), link: item.link.trim() }))
       .filter(item => item.descricao)
 
+    const curiosidadesLimpas = curiosidadesEdicao
+      .map(texto => texto.trim())
+      .filter(Boolean)
+
     const galeriaLimpa = (formEdicao.galeria || "")
       .split("\n")
       .map(linha => linha.trim())
@@ -469,6 +475,7 @@ async function fazerUploadCapa(arquivo) {
       teatrosAdicionais: [],
       musicos: musicosLimpos,
       fontes: fontesLimpas,
+      curiosidades: curiosidadesLimpas,
     }
     await updateDoc(doc(db, "musicais", id), dadosFinais)
     setMusical(prev => ({ ...prev, ...dadosFinais }))
@@ -995,6 +1002,26 @@ if (!musical) return (
             </button>
           </div>
 
+          {/* Editor de curiosidades */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+              Curiosidades
+            </label>
+            {curiosidadesEdicao.map((texto, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
+                <textarea placeholder="Curiosidade" value={texto} rows={2}
+                  onChange={e => { const novo = [...curiosidadesEdicao]; novo[i] = e.target.value; setCuriosidadesEdicao(novo) }}
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+                <button onClick={() => setCuriosidadesEdicao(curiosidadesEdicao.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+              </div>
+            ))}
+            <button onClick={() => setCuriosidadesEdicao([...curiosidadesEdicao, ""])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              + Adicionar curiosidade
+            </button>
+          </div>
+
           {formEdicao.capa && (
             <img src={otimizarImagem(formEdicao.capa, 160)} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4", marginBottom: "16px" }} />
           )}
@@ -1275,6 +1302,18 @@ if (!musical) return (
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {Array.isArray(musical.curiosidades) && musical.curiosidades.filter(Boolean).length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Curiosidades</p>
+              <ul style={{ listStyle: "disc", paddingLeft: "20px", margin: 0, display: "flex", flexDirection: "column", gap: "8px" }}>
+                {musical.curiosidades.filter(Boolean).map((c, i) => (
+                  <li key={i} style={{ fontSize: "14px", color: "#444", lineHeight: 1.5 }}>{c}</li>
+                ))}
+              </ul>
             </div>
           )}
 
