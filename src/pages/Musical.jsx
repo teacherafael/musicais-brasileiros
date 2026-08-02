@@ -32,7 +32,7 @@ function otimizarImagem(url, largura) {
   if (!url) return url;
   // Imagens do Cloudflare R2: já geramos duas versões (-800 e -400).
   // Escolhemos a menor quando a largura pedida for pequena; senão, a grande.
-  if (url.includes("r2.dev")) {
+  if (url.includes("-800.webp") || url.includes("-400.webp")) {
     const querPequena = largura <= 400;
     return url
       .replace("-800.webp", querPequena ? "-400.webp" : "-800.webp")

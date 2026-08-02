@@ -4,7 +4,7 @@ import { createPortal } from "react-dom"
 function otimizarCapa(url, largura) {
   if (!url) return url
   // R2: escolhe entre as versões já geradas (-400 pequena, -800 grande)
-  if (url.includes("r2.dev")) {
+if (url.includes("-800.webp") || url.includes("-400.webp")) {
     const querPequena = largura <= 400
     return url
       .replace("-800.webp", querPequena ? "-400.webp" : "-800.webp")

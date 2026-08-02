@@ -268,7 +268,7 @@ function Header() {
   style={{ cursor: "pointer", display: "flex", alignItems: "center", textDecoration: "none", gap: "12px" }}
 >
   <img
-    src="https://pub-c2de81da01f44e4aa685a9b28614c01d.r2.dev/logo/mcdb-logo.png"
+    src="https://img.musicalcast.com.br/logo/mcdb-logo.png"
     alt="MCDb — Musical Cast Database"
     style={{ height: "56px", width: "auto", display: "block" }}
   />
