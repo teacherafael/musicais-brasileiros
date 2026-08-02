@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 
 function otimizarImagem(url, largura) {
   if (!url) return url;
+  url = url.replace("https://pub-c2de81da01f44e4aa685a9b28614c01d.r2.dev", "https://img.musicalcast.com.br");
   // R2: escolhe entre as versões já geradas (-400 pequena, -800 grande)
   if (url.includes("-800.webp") || url.includes("-400.webp")) {
     const querPequena = largura <= 400;

@@ -30,6 +30,7 @@ function nomesClicaveis(texto) {
 }
 function otimizarImagem(url, largura) {
   if (!url) return url;
+  url = url.replace("https://pub-c2de81da01f44e4aa685a9b28614c01d.r2.dev", "https://img.musicalcast.com.br");
   // Imagens do Cloudflare R2: já geramos duas versões (-800 e -400).
   // Escolhemos a menor quando a largura pedida for pequena; senão, a grande.
   if (url.includes("-800.webp") || url.includes("-400.webp")) {
