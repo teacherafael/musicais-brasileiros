@@ -160,7 +160,7 @@ function scrollDestaques(direcao) {
         if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
           const lista = indiceSnap.data().itens.map(m => ({ ...m, id: m.id, dataCriacao: m.dataCriacao || null }))
           setMusicais(lista)
-          setDestaques(ordenarPorBayesiana(lista.filter(m => m.destaque === true)).slice(0, 10))
+          setDestaques(ordenarPorBayesiana(lista.filter(m => m.destaque === true)))
           setCarregando(false)
           return
         }
@@ -170,7 +170,7 @@ function scrollDestaques(direcao) {
       const snapshot = await getDocs(collection(db, "musicais"))
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       setMusicais(lista)
-      setDestaques(lista.filter(m => m.destaque === true).slice(0, 10))
+      setDestaques(lista.filter(m => m.destaque === true))
       setCarregando(false)
     }
     buscarMusicais()
