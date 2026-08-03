@@ -12,6 +12,7 @@ import Ranking from "./pages/Ranking"
 import Destaques from "./pages/Destaques"
 import Comunidade from "./pages/Comunidade"
 import Termos from "./pages/Termos"
+import Privacidade from "./pages/Privacidade"
 import FAQ from "./pages/FAQ"
 import Sobre from "./pages/Sobre"
 import Pessoa from "./pages/Pessoa"
@@ -88,6 +89,7 @@ function App() {
         <Route path="/destaques" element={<Destaques />} />
         <Route path="/comunidade" element={<Comunidade />} />
         <Route path="/termos" element={<Termos />} />
+        <Route path="/privacidade" element={<Privacidade />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/sobre" element={<Sobre />} />
         <Route path="*" element={<NotFound />} />
