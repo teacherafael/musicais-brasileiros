@@ -21,6 +21,7 @@ import Mensagens from "./pages/Mensagens"
 import Conversa from "./pages/Conversa"
 import { useState, useEffect } from "react"
 import NProgress from "nprogress"
+import AdminTitulos from "./pages/AdminTitulos"
 import "nprogress/nprogress.css"
 import { useLocation } from "react-router-dom"
 
@@ -85,6 +86,7 @@ function App() {
         <Route path="/sugestao" element={<Sugestao />} />
         <Route path="/contribuir" element={<Contribuir />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin-titulos" element={<AdminTitulos />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/destaques" element={<Destaques />} />
         <Route path="/comunidade" element={<Comunidade />} />

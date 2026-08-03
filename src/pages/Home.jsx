@@ -362,8 +362,8 @@ function scrollDestaques(direcao) {
       if (ordenacao === "pior") return a.media - b.media
       if (ordenacao === "mais-votados") return b.totalVotos - a.totalVotos
       if (ordenacao === "menos-votados") return a.totalVotos - b.totalVotos
-      if (ordenacao === "az") return a.titulo.localeCompare(b.titulo, "pt")
-      if (ordenacao === "za") return b.titulo.localeCompare(a.titulo, "pt")
+      if (ordenacao === "az") return normalizar(a.titulo).localeCompare(normalizar(b.titulo), "pt")
+      if (ordenacao === "za") return normalizar(b.titulo).localeCompare(normalizar(a.titulo), "pt")
       if (ordenacao === "recentes") return (b.dataCriacao?.seconds || 0) - (a.dataCriacao?.seconds || 0)
       if (ordenacao === "antigos") return (a.dataCriacao?.seconds || 0) - (b.dataCriacao?.seconds || 0)
       return 0
