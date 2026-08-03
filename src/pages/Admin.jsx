@@ -141,6 +141,8 @@ function Admin() {
   const [fotosTrabalho, setFotosTrabalho] = useState([])
   const [videosTrabalho, setVideosTrabalho] = useState([])
   const [editandoEntidadeId, setEditandoEntidadeId] = useState(null)
+  const [mostrarFormEntidade, setMostrarFormEntidade] = useState(false)
+  const [buscaEntidade, setBuscaEntidade] = useState("")
   const [enviandoImagemEntidade, setEnviandoImagemEntidade] = useState(false)
 
   useEffect(() => {
@@ -669,6 +671,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setFotosTrabalho([])
     setVideosTrabalho([])
     setEditandoEntidadeId(null)
+    setMostrarFormEntidade(false)
   }
 
   function editarEntidade(e) {
@@ -697,6 +700,7 @@ async function fazerUploadCapaNovo(arquivo) {
         : (e.videoYoutube ? [e.videoYoutube] : [])
     )
     setEditandoEntidadeId(e.id)
+    setMostrarFormEntidade(true)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -1374,10 +1378,18 @@ async function fazerUploadCapaNovo(arquivo) {
         </>
       ) : aba === "entidades" ? (
         <>
-          <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "24px" }}>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>
-              {editandoEntidadeId ? "Editar entidade" : "Nova entidade"}
-            </h2>
+          <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: mostrarFormEntidade ? "20px" : "12px 20px", marginBottom: "24px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: mostrarFormEntidade ? "20px" : "17px", margin: 0 }}>
+                {mostrarFormEntidade ? (editandoEntidadeId ? "Editar entidade" : "Nova entidade") : "Cadastro de entidades"}
+              </h2>
+              <button className={mostrarFormEntidade ? "btn-sair" : "btn-comentar"}
+                onClick={() => { if (mostrarFormEntidade) { limparFormEntidade() } else { setMostrarFormEntidade(true) } }}>
+                {mostrarFormEntidade ? "Fechar" : "➕ Nova entidade"}
+              </button>
+            </div>
+            {mostrarFormEntidade && (
+            <>
             <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px", lineHeight: "1.5" }}>
               Perfil que aparece no topo da página <strong>/pessoa/nome</strong>. O <strong>nome</strong> precisa bater com a grafia usada nos créditos dos musicais.
             </p>
@@ -1530,13 +1542,22 @@ async function fazerUploadCapaNovo(arquivo) {
                 {editandoEntidadeId ? "Cancelar edição" : "Limpar"}
               </button>
             </div>
+            </>
+            )}
           </div>
 
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "12px" }}>Entidades cadastradas</h2>
+          {entidades.length > 0 && (
+            <input type="text" value={buscaEntidade} onChange={ev => setBuscaEntidade(ev.target.value)}
+              placeholder="Buscar entidade pelo nome..."
+              style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "16px" }} />
+          )}
           {entidades.length === 0 ? (
             <p style={{ color: "#888" }}>Nenhuma entidade cadastrada ainda.</p>
+          ) : entidades.filter(e => (e.nome || "").toLowerCase().includes(buscaEntidade.trim().toLowerCase())).length === 0 ? (
+            <p style={{ color: "#888" }}>Nenhuma entidade encontrada para "{buscaEntidade}".</p>
           ) : (
-            entidades.map(e => (
+            entidades.filter(e => (e.nome || "").toLowerCase().includes(buscaEntidade.trim().toLowerCase())).map(e => (
               <div key={e.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
                 {e.imagem ? (
                   <img src={e.imagem} alt={e.nome} style={{ width: "56px", height: "56px", objectFit: e.tipoImagem === "logo" ? "contain" : "cover", borderRadius: "8px", flexShrink: 0, background: "#fafafa", border: "1px solid #f0f0f0" }} />
