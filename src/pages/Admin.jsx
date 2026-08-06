@@ -92,8 +92,13 @@ async function gerarIndiceComunidade() {
       }
     })
     .filter(p => p.capas.length === 5)
+  const musicais = {}
+  const usados = new Set()
+  perfis.forEach(p => p.ids.forEach(id => usados.add(id)))
+  if (indiceSnap.exists()) { (indiceSnap.data().itens || []).forEach(it => { if (usados.has(it.id)) musicais[it.id] = it.titulo || "" }) }
   await setDoc(doc(db, "indices", "comunidade"), {
     perfis,
+    musicais,
     total: perfis.length,
     atualizadoEm: new Date()
   })
