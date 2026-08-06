@@ -80,13 +80,15 @@ async function gerarIndiceComunidade() {
     .map(d => {
       const u = d.data()
       const ids = Array.isArray(u.top5Ids) ? u.top5Ids : []
+      const pares = ids.map(id => ({ id, capa: mapaCapas[id] || "" })).filter(par => par.capa)
       return {
         uid: d.id,
         nome: u.nomeCustom || u.nome || "Usuário",
         foto: u.foto || "",
         bio: u.bio || "",
         verificado: u.verificado === true,
-        capas: ids.map(id => mapaCapas[id] || "").filter(Boolean)
+        ids: pares.map(par => par.id),
+        capas: pares.map(par => par.capa)
       }
     })
     .filter(p => p.capas.length === 5)
