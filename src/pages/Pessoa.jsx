@@ -118,7 +118,16 @@ function Pessoa() {
             todosOsNomes.some(n => normalizar(c) === normalizar(n))
           )
         })
-        .sort((a, b) => Number(a.ano) - Number(b.ano))
+        .sort((a, b) => {
+          const anoA = parseInt(String(a.ano).match(/\d{4}/)?.[0], 10)
+          const anoB = parseInt(String(b.ano).match(/\d{4}/)?.[0], 10)
+          const validoA = Number.isFinite(anoA)
+          const validoB = Number.isFinite(anoB)
+          if (!validoA && !validoB) return 0
+          if (!validoA) return 1
+          if (!validoB) return -1
+          return anoA - anoB
+        })
       setMusicais(lista)
       setCarregando(false)
     }
