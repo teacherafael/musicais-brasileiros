@@ -1056,27 +1056,21 @@ if (!musical) return (
                 </p>
               )}
 
-              {(() => {
-                const tipo = musical.tipoObra || "Musical"
-                const ehMusical = tipo === "Musical"
-                return (
-                  <div style={{ marginBottom: "14px" }}>
-                    <span
-                      title={ehMusical
-                        ? "As canções fazem parte da narrativa."
-                        : "Peça de teatro com música incorporada, sem estrutura de musical."}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: "6px",
-                        background: ehMusical ? "#F5C518" : "#0a2c59",
-                        color: ehMusical ? "#5c4a00" : "#F5C518",
-                        fontSize: "12px", fontWeight: "600", letterSpacing: "0.3px",
-                        padding: "4px 12px", borderRadius: "999px", cursor: "help"
-                      }}>
-                      {ehMusical ? "🎵" : "🎭"} {tipo}
-                    </span>
-                  </div>
-                )
-              })()}
+              {(musical.tipoObra || "Musical") !== "Musical" && (
+                <div style={{ marginBottom: "14px" }}>
+                  <span
+                    title="Peça de teatro com música incorporada, sem estrutura de musical."
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "6px",
+                      background: "#0a2c59", color: "#F5C518",
+                      fontSize: "12px", fontWeight: "600", letterSpacing: "0.3px",
+                      padding: "4px 12px", borderRadius: "999px", cursor: "help"
+                    }}>
+                    🎭 {musical.tipoObra}
+                  </span>
+                </div>
+              )}
+
 
               {musical.recomendadoMC && (
                 <div style={{ marginBottom: "16px" }}>
@@ -1170,6 +1164,13 @@ if (!musical) return (
                   </div>
                 )
               })()}
+
+              {totalGostei > 0 && (
+                <p style={{ fontSize: "14px", color: "#666", marginTop: "16px", paddingTop: "12px", borderTop: "1px solid #e8e8e4", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "15px" }}>👍</span>
+                  <span><strong style={{ color: "#1a1a1a", fontWeight: "600" }}>{totalGostei} {totalGostei === 1 ? "pessoa" : "pessoas"}</strong> {totalGostei === 1 ? "recomenda" : "recomendam"}</span>
+                </p>
+              )}
 
               {ehAdmin(usuario) && (
                 <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap" }}>
@@ -1469,7 +1470,7 @@ if (!musical) return (
           <div style={{ marginTop: "24px", marginBottom: "8px" }}>
             <button onClick={() => toggleReacao("gostei")} disabled={!jaVi}
               style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: jaVi ? "pointer" : "not-allowed", opacity: jaVi ? 1 : 0.5, transition: "all 0.15s" }}>
-              {minhaReacao === "gostei" ? "✓ Recomendado" : "👍 Recomendar"} <span style={{ fontWeight: "600" }}>{totalGostei}</span>
+              {minhaReacao === "gostei" ? "✓ Recomendado" : "👍 Recomendar"}
             </button>
             {!usuario && (
               <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Faça login para recomendar.</p>
