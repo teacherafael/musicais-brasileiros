@@ -498,6 +498,13 @@ async function fazerUploadCapa(arquivo) {
     mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
   }
 
+  async function toggleRecomendadoMC() {
+    const novoValor = !musical.recomendadoMC
+    await updateDoc(doc(db, "musicais", id), { recomendadoMC: novoValor })
+    setMusical(prev => ({ ...prev, recomendadoMC: novoValor }))
+    mostrarToast(novoValor ? "Marcado como recomendado pelo Musical Cast!" : "Recomendação do Musical Cast removida.")
+  }
+
   async function votar(estrelas) {
     if (!usuario) return mostrarToast("Faça login para votar.")
     const entrandoNaContagem = !jaVi
@@ -1071,6 +1078,18 @@ if (!musical) return (
                 )
               })()}
 
+              {musical.recomendadoMC && (
+                <div style={{ marginBottom: "16px" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", background: "#2e2e2e", borderRadius: "999px", padding: "5px 20px 5px 5px" }}>
+                    <span style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#0a2c59", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "18px", marginRight: "12px", flexShrink: 0 }}>👍</span>
+                    <span>
+                      <span style={{ display: "block", fontSize: "13px", fontWeight: "700", color: "#ffffff", letterSpacing: "0.4px", lineHeight: 1.2 }}>RECOMENDADO</span>
+                      <span style={{ display: "block", fontSize: "10px", fontWeight: "700", color: "#F5C518", letterSpacing: "0.4px", lineHeight: 1.2 }}>POR MUSICAL CAST</span>
+                    </span>
+                  </span>
+                </div>
+              )}
+
               <p style={{ fontSize: "15px", color: "#444", marginBottom: "6px" }}>
                 <strong style={{ color: "#1a1a1a" }}>Direção:</strong>{" "}
                 {itemDirecao ? nomesClicaveis(itemDirecao.nomes.join(", ")) : (nomesClicaveis(musical.direcao) || "—")}
@@ -1157,6 +1176,9 @@ if (!musical) return (
                   <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>✏️ Editar</button>
                   <button onClick={toggleDestaque} style={{ background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: musical.destaque ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
                     {musical.destaque ? "★ Em destaque" : "☆ Destaque"}
+                  </button>
+                  <button onClick={toggleRecomendadoMC} style={{ background: musical.recomendadoMC ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: musical.recomendadoMC ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
+                    {musical.recomendadoMC ? "✓ Recomendado MC" : "Recomendar (MC)"}
                   </button>
                 </div>
               )}
@@ -1443,24 +1465,17 @@ if (!musical) return (
             </div>
           )}
 
-          {/* ── REAÇÕES 👍/👎 ── */}
+          {/* ── RECOMENDAÇÃO ── */}
           <div style={{ marginTop: "24px", marginBottom: "8px" }}>
-            <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>O que você achou?</p>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <button onClick={() => toggleReacao("gostei")}
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", transition: "all 0.15s" }}>
-                👍 <span style={{ fontWeight: "600" }}>{totalGostei}</span>
-              </button>
-              <button onClick={() => toggleReacao("nao_gostei")}
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "nao_gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "nao_gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "nao_gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", transition: "all 0.15s" }}>
-                👎 <span style={{ fontWeight: "600" }}>{totalNaoGostei}</span>
-              </button>
-            </div>
+            <button onClick={() => toggleReacao("gostei")} disabled={!jaVi}
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: jaVi ? "pointer" : "not-allowed", opacity: jaVi ? 1 : 0.5, transition: "all 0.15s" }}>
+              {minhaReacao === "gostei" ? "✓ Recomendado" : "👍 Recomendar"} <span style={{ fontWeight: "600" }}>{totalGostei}</span>
+            </button>
             {!usuario && (
-              <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Faça login para reagir.</p>
+              <p style={{ fontSize: "12px", color: "#bbb", marginTop: "8px" }}>Faça login para recomendar.</p>
             )}
-            {usuario && (
-              <p style={{ fontSize: "14px", color: "#a59200", marginTop: "8px" }}>No seu perfil você pode escolher se sua reação fica pública ou não.</p>
+            {usuario && !jaVi && (
+              <p style={{ fontSize: "13px", color: "#a59200", marginTop: "8px" }}>Marque "Já vi" para recomendar este musical.</p>
             )}
           </div>
 

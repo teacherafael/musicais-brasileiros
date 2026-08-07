@@ -1406,7 +1406,7 @@ async function toggleVerificado() {
       <div style={{ display: 'flex', borderBottom: '2px solid #e8e8e4', marginBottom: '24px', marginTop: '32px', gap: '0', overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
           { id: 'avaliacoes', label: `Avaliações (${votos.length})` },
-          ...(reacoesPublicas || isProprioPerfil ? [{ id: 'reacoes', label: `Gostei / Não gostei` }] : []),
+          ...(reacoesPublicas || isProprioPerfil ? [{ id: 'reacoes', label: `Recomendados (${reacoesUsuario.gostei.length})` }] : []),
           { id: 'ja-vi', label: `Já vi (${jaVi.length})` },
           { id: 'quero-ver', label: `Não vi (${queroVer.length})` },
           { id: 'listas', label: `Listas (${listas.length})` },
@@ -1470,17 +1470,17 @@ async function toggleVerificado() {
           {isProprioPerfil && (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", padding: "12px 16px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "8px" }}>
               <span style={{ fontSize: "13px", color: "#555", flex: 1 }}>
-                {reacoesPublicas ? "Suas reações são visíveis no seu perfil público." : "Suas reações estão ocultas para outros visitantes."}
+                {reacoesPublicas ? "Suas recomendações são visíveis no seu perfil público." : "Suas recomendações estão ocultas para outros visitantes."}
               </span>
               <button onClick={toggleReacoesPublicas} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", border: "1px solid #e8e8e4", background: reacoesPublicas ? "#F5C518" : "transparent", color: reacoesPublicas ? "#1a1a1a" : "#888", cursor: "pointer", fontWeight: "600", whiteSpace: "nowrap" }}>
                 {reacoesPublicas ? "🌐 Públicas" : "🔒 Ocultas"}
               </button>
             </div>
           )}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
+        <div>
           <div>
             <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
-              👍 Gostei ({reacoesUsuario.gostei.length})
+              👍 Recomendados ({reacoesUsuario.gostei.length})
             </h3>
             {reacoesUsuario.gostei.length === 0
               ? <p style={{ fontSize: "13px", color: "#888", fontStyle: "italic" }}>Nenhum ainda.</p>
@@ -1504,33 +1504,7 @@ async function toggleVerificado() {
                 </>
             }
           </div>
-          <div>
-            <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#b8960a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>
-              👎 Não gostei ({reacoesUsuario.naoGostei.length})
-            </h3>
-            {reacoesUsuario.naoGostei.length === 0
-              ? <p style={{ fontSize: "13px", color: "#888", fontStyle: "italic" }}>Nenhum ainda.</p>
-              : <>
-                  <ol style={{ margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {(verMaisNaoGostei ? reacoesUsuario.naoGostei : reacoesUsuario.naoGostei.slice(0, 10)).map(item => (
-                      <li key={item.musicalId}>
-                        <a href={"/musical/" + item.musicalId} style={{ fontSize: "14px", color: "#1a1a1a", textDecoration: "none", lineHeight: "1.4" }}
-                          onMouseOver={e => e.currentTarget.style.color = "#b8960a"}
-                          onMouseOut={e => e.currentTarget.style.color = "#1a1a1a"}>
-                          {item.titulo || item.musicalId}
-                        </a>
-                      </li>
-                    ))}
-                  </ol>
-                  {reacoesUsuario.naoGostei.length > 10 && (
-                    <button onClick={() => setVerMaisNaoGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
-                      {verMaisNaoGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.naoGostei.length - 10} musicais`}
-                    </button>
-                  )}
-                </>
-            }
           </div>
-        </div>
         </div>
       )}
 
