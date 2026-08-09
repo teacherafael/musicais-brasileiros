@@ -110,6 +110,7 @@ function Ranking() {
           // ── Mais bem avaliados (média bayesiana — só a ordem) ──
           // Âncora = média geral da plataforma, calculada em memória a partir do índice (custo zero)
           const PESO = 5 // quantos votos um musical precisa pra "soltar" da média geral
+          const TETO_VOTOS = 60 // a partir daqui, votos extras não aumentam mais o peso do musical na fórmula — evita que fandom grande domine só por volume
           let somaGlobal = 0
           let votosGlobal = 0
           itens.forEach(m => {
@@ -123,7 +124,8 @@ function Ranking() {
             .map(m => {
               const votos = Number(m.totalVotos) || 0
               const media = (Number(m.somaEstrelas) || 0) / votos
-              const score = (votos / (votos + PESO)) * media + (PESO / (votos + PESO)) * mediaGlobal
+              const votosEfetivos = Math.min(votos, TETO_VOTOS)
+              const score = (votosEfetivos / (votosEfetivos + PESO)) * media + (PESO / (votosEfetivos + PESO)) * mediaGlobal
               return { ...m, _score: score }
             })
             .sort((a, b) => b._score - a._score)
@@ -164,9 +166,7 @@ function Ranking() {
                   musical={musical}
                   index={index}
                   navigate={navigate}
-                  contador={musical.popularidade}
-                  labelSingular="pessoa"
-                  labelPlural="pessoas"
+                  mostrarContador={false}
                 />
               ))
             )}
