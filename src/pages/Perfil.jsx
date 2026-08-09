@@ -700,15 +700,17 @@ async function toggleVerificado() {
       }
 
       // 3. Apaga subcoleções do usuário.
-      for (const sub of ["jaVi", "queroVer"]) {
-        const snap = await getDocs(collection(db, "usuarios", userId, sub))
+      // "Já vi" decrementa a popularidade; "Quero ver" NÃO — ele nunca incrementa
+      // (ver toggleJaVi/toggleQueroVer no Musical.jsx), então só apaga o documento.
+      {
+        const snap = await getDocs(collection(db, "usuarios", userId, "jaVi"))
         for (const d of snap.docs) {
           const musicalId = d.data().musicalId || d.id
           try { await updateDoc(doc(db, "musicais", musicalId), { popularidade: increment(-1) }) } catch (e) {}
           await deleteDoc(d.ref)
         }
       }
-      for (const sub of ["top3", "sessoesAssistidas"]) {
+      for (const sub of ["queroVer", "top3", "sessoesAssistidas"]) {
         const snap = await getDocs(collection(db, "usuarios", userId, sub))
         for (const d of snap.docs) await deleteDoc(d.ref)
       }
