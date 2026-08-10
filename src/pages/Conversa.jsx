@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { collection, doc, getDoc, addDoc, onSnapshot, orderBy, query, updateDoc, setDoc, serverTimestamp } from "firebase/firestore"
+import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, writeBatch, onSnapshot, orderBy, query, limit, updateDoc, setDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { useParams, useNavigate } from "react-router-dom"
@@ -104,6 +104,47 @@ function Conversa() {
     setEnviando(false)
   }
 
+  async function apagarConversa() {
+    if (!window.confirm("Apagar esta conversa inteira? Todas as mensagens somem para os dois lados. Não dá para desfazer.")) return
+
+    // A subcoleção não é apagada em cascata — precisa varrer e apagar antes
+    const snap = await getDocs(collection(db, "conversas", conversaId, "mensagens"))
+    const lote = writeBatch(db)
+    snap.docs.forEach(d => lote.delete(d.ref))
+    await lote.commit()
+
+    await deleteDoc(doc(db, "conversas", conversaId))
+    navigate("/mensagens")
+  }
+
+  async function apagarMensagem(m) {
+    if (m.de !== usuario.uid) return
+    if (!window.confirm("Apagar esta mensagem? Ela some para os dois lados.")) return
+
+    await deleteDoc(doc(db, "conversas", conversaId, "mensagens", m.id))
+
+    // Reescreve o resumo da conversa (usado na lista em /mensagens)
+    const ultimaQ = query(
+      collection(db, "conversas", conversaId, "mensagens"),
+      orderBy("data", "desc"),
+      limit(1)
+    )
+    const snap = await getDocs(ultimaQ)
+
+    if (snap.empty) {
+      await updateDoc(doc(db, "conversas", conversaId), {
+        ultimaMensagem: "",
+        ultimaMensagemData: serverTimestamp(),
+      })
+    } else {
+      const ultima = snap.docs[0].data()
+      await updateDoc(doc(db, "conversas", conversaId), {
+        ultimaMensagem: ultima.texto,
+        ultimaMensagemData: ultima.data,
+      })
+    }
+  }
+
   function formatarHora(data) {
     if (!data) return ""
     const d = data?.toDate ? data.toDate() : new Date(data)
@@ -124,6 +165,17 @@ function Conversa() {
         <a href={`/perfil/${outroUsuario.uid}`} style={{ fontSize: "15px", fontWeight: "600", color: "#1a1a1a", textDecoration: "none" }}>
           {outroUsuario.nome || "Usuário"}
         </a>
+        <button
+          onClick={apagarConversa}
+          title="Apagar conversa"
+          style={{
+            marginLeft: "auto", background: "none", border: "1px solid #e8e8e4",
+            borderRadius: "8px", padding: "6px 12px", cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888"
+          }}
+        >
+          🗑 Apagar conversa
+        </button>
       </div>
 
       {/* Mensagens */}
@@ -145,9 +197,24 @@ function Conversa() {
                 padding: "10px 14px",
               }}>
                 <p style={{ fontSize: "14px", lineHeight: "1.5", margin: 0 }}>{m.texto}</p>
-                <p style={{ fontSize: "11px", color: minha ? "#888" : "#aaa", margin: "4px 0 0", textAlign: "right" }}>
-                  {formatarHora(m.data)}
-                </p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px", margin: "4px 0 0" }}>
+                  {minha && (
+                    <button
+                      onClick={() => apagarMensagem(m)}
+                      title="Apagar mensagem"
+                      style={{
+                        background: "none", border: "none", padding: 0,
+                        color: "#888", fontSize: "11px", cursor: "pointer",
+                        fontFamily: "'DM Sans', sans-serif"
+                      }}
+                    >
+                      Apagar
+                    </button>
+                  )}
+                  <p style={{ fontSize: "11px", color: minha ? "#888" : "#aaa", margin: 0 }}>
+                    {formatarHora(m.data)}
+                  </p>
+                </div>
               </div>
             </div>
           )

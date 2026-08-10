@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, query, where, onSnapshot, doc, getDoc, orderBy } from "firebase/firestore"
+import { collection, query, where, onSnapshot, doc, getDoc, getDocs, deleteDoc, writeBatch, orderBy } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { useNavigate } from "react-router-dom"
@@ -8,6 +8,8 @@ function Mensagens() {
   const [usuario, setUsuario] = useState(null)
   const [conversas, setConversas] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [hoverId, setHoverId] = useState(null)
+  const ehTouch = typeof window !== "undefined" && window.matchMedia("(hover: none)").matches
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -43,6 +45,18 @@ function Mensagens() {
     return () => unsub()
   }, [usuario])
 
+  async function apagarConversa(e, conversaId) {
+    e.stopPropagation()
+    if (!window.confirm("Apagar esta conversa inteira? Todas as mensagens somem para os dois lados. Não dá para desfazer.")) return
+
+    const snap = await getDocs(collection(db, "conversas", conversaId, "mensagens"))
+    const lote = writeBatch(db)
+    snap.docs.forEach(d => lote.delete(d.ref))
+    await lote.commit()
+
+    await deleteDoc(doc(db, "conversas", conversaId))
+  }
+
   if (!usuario) return (
     <main>
       <p style={{ color: "#888", fontSize: "14px" }}>Faça login para ver suas mensagens.</p>
@@ -66,6 +80,8 @@ function Mensagens() {
               <div
                 key={c.id}
                 onClick={() => navigate(`/mensagens/${c.id}`)}
+                onMouseEnter={() => setHoverId(c.id)}
+                onMouseLeave={() => setHoverId(null)}
                 style={{
                   display: "flex", alignItems: "center", gap: "14px",
                   padding: "14px 16px", border: "1px solid #e8e8e4",
@@ -91,6 +107,20 @@ function Mensagens() {
                     {naoLidas}
                   </div>
                 )}
+                <button
+                  onClick={(e) => apagarConversa(e, c.id)}
+                  title="Apagar conversa"
+                  style={{
+                    background: "none", border: "none",
+                    padding: "8px 10px", marginLeft: "6px",
+                    cursor: "pointer", fontSize: "16px", lineHeight: 1,
+                    flexShrink: 0,
+                    opacity: (ehTouch || hoverId === c.id) ? 0.55 : 0,
+                    transition: "opacity 0.15s"
+                  }}
+                >
+                  🗑
+                </button>
               </div>
             )
           })}
