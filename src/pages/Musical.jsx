@@ -1203,7 +1203,7 @@ if (!musical) return (
             {musical.programaDigital && (
               <a href={musical.programaDigital} target="_blank" rel="noopener noreferrer"
                 style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#F5C518", color: "#1a1a1a", border: "1px solid #F5C518", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
-                📄 Baixe o programa digital
+                📄 Programa digital
               </a>
             )}
           </div>
