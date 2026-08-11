@@ -964,7 +964,7 @@ id: "teatro-riomar-fortaleza",
   {
     id: "teatro-fiergs",
     nomeOficial: "Teatro FIERGS",
-    aliases: ["Teatro do Sesi"],
+    aliases: ["Teatro do Sesi Porto Alegre"],
     endereco: "Av. Assis Brasil, 8787",
     bairro: "Sarandi",
     cidade: "Porto Alegre - RS",
