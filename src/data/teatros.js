@@ -84,7 +84,7 @@ export const teatros = [
    {
     id: "teatro-claro-mais-rj",
     nomeOficial: "Teatro Claro Mais RJ",
-    aliases: ["Theatro Net RJ","Theatro Net Rio", "Teatro Tereza Rachel"],
+    aliases: ["Theatro Net RJ","Theatro Net Rio", "Teatro Tereza Raquel", "Teatro Tereza Rachel"],
     endereco: "Rua Siqueira Campos, 143",
     bairro: "Copacabana",
     cidade: "Rio de Janeiro – RJ",
