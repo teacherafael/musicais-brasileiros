@@ -14,6 +14,9 @@ function Conversa() {
   const [texto, setTexto] = useState("")
   const [enviando, setEnviando] = useState(false)
   const fimRef = useRef(null)
+  const listaRef = useRef(null)
+  const primeiraCargaRef = useRef(true)
+  const coladoNoFimRef = useRef(true)
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => setUsuario(user))
@@ -48,18 +51,40 @@ function Conversa() {
   useEffect(() => {
     if (!conversaId) return
 
+    primeiraCargaRef.current = true
+
     const q = query(
       collection(db, "conversas", conversaId, "mensagens"),
       orderBy("data", "asc")
     )
 
     const unsub = onSnapshot(q, (snap) => {
+      // Guarda se o usuário estava colado no fim ANTES da lista mudar
+      const el = listaRef.current
+      coladoNoFimRef.current = el
+        ? el.scrollHeight - el.scrollTop - el.clientHeight < 120
+        : true
       setMensagens(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setTimeout(() => fimRef.current?.scrollIntoView({ behavior: "smooth" }), 50)
     })
 
     return () => unsub()
   }, [conversaId])
+
+  // Rola para a última mensagem: instantâneo ao abrir, suave se já estava no fim
+  useEffect(() => {
+    const el = listaRef.current
+    if (!el || mensagens.length === 0) return
+
+    if (primeiraCargaRef.current) {
+      el.scrollTop = el.scrollHeight
+      primeiraCargaRef.current = false
+      return
+    }
+
+    if (coladoNoFimRef.current) {
+      fimRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+    }
+  }, [mensagens, conversa, outroUsuario])
 
   // Zera não lidas quando chega mensagem nova
   useEffect(() => {
@@ -72,6 +97,7 @@ function Conversa() {
   async function enviarMensagem() {
     if (!texto.trim() || !usuario || enviando) return
     setEnviando(true)
+    coladoNoFimRef.current = true
 
     const outroUid = conversa.participantes.find(p => p !== usuario.uid)
 
@@ -179,7 +205,7 @@ function Conversa() {
       </div>
 
       {/* Mensagens */}
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "16px" }}>
+      <div ref={listaRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "16px" }}>
         {mensagens.length === 0 && (
           <p style={{ fontSize: "13px", color: "#bbb", textAlign: "center", marginTop: "32px" }}>
             Nenhuma mensagem ainda. Diga olá!
