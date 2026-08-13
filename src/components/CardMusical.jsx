@@ -24,7 +24,7 @@ export default function CardMusical({
   usuario, jaViSet, queroVerSet, listas, musicaisNasListas,
   dropdownAberto, onToggleJaVi, onToggleQueroVer, onAbrirDropdown,
   onToggleNaLista, onCriarLista,
-  metaExtra, esconderDirecao
+  metaExtra, esconderDirecao, mostrarSeloMC
 }) {
   const [hovered, setHovered] = useState(false)
   const [criandoLista, setCriandoLista] = useState(false)
@@ -187,6 +187,23 @@ export default function CardMusical({
     document.body
   )
 
+  const seloMC = mostrarSeloMC && musical.recomendadoMC === true && (
+    <div style={{
+      position: "absolute", left: 0, right: 0, bottom: 0,
+      background: "#2e2e2e", padding: "4px 6px", borderTop: "1px solid #F5C518",
+      display: "flex", alignItems: "center", gap: "5px",
+      opacity: hovered || dropdownAberto ? 0 : 1,
+      transition: "opacity 0.2s ease", pointerEvents: "none"
+    }}>
+      <span style={{ width: "14px", height: "14px", borderRadius: "50%", background: "#0a2c59", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <svg viewBox="0 0 24 24" width="9" height="9" fill="#F5C518" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+      </span>
+      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "9px", fontWeight: "600", color: "#fff", letterSpacing: "0.4px", whiteSpace: "nowrap" }}>
+        RECOMENDADO <span style={{ color: "#F5C518" }}>MC</span>
+      </span>
+    </div>
+  )
+
   const barraBotoes = usuario && (
     <div style={{
       position: "absolute", bottom: 0, left: 0, right: 0,
@@ -229,6 +246,7 @@ export default function CardMusical({
             {musical.capa
               ? <img src={otimizarCapa(musical.capa, 280)} alt={musical.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>{musical.titulo}</div>}
+            {seloMC}
             {barraBotoes}
           </div>
           <div style={{ width: "100%" }}>

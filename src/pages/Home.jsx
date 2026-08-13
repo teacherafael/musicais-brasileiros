@@ -402,7 +402,7 @@ function scrollDestaques(direcao) {
       </div>
     </div>
     <div ref={carrosselDestaquesRef} onScroll={atualizarBotoesDestaques} style={{ display: "flex", gap: "16px", overflowX: "auto", overflowY: "visible", paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}>
-      {destaques.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
+      {destaques.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" mostrarSeloMC dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
     </div>
   </div>
 )}
