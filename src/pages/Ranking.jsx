@@ -21,6 +21,11 @@ function otimizarImagem(url, largura) {
   return url;
 }
 
+// Constantes do ranking bayesiano no escopo do módulo: o texto explicativo
+// no fim da página usa TETO_VOTOS, então os dois nunca saem de sincronia.
+const PESO = 5 // quantos votos um musical precisa pra "soltar" da média geral
+const TETO_VOTOS = 60 // a partir daqui, votos extras não aumentam mais o peso do musical na fórmula — evita que fandom grande domine só por volume
+
 function CardRanking({ musical, index, navigate, contador, labelSingular, labelPlural, mostrarContador = true }) {
   return (
     <div
@@ -101,7 +106,7 @@ function Ranking() {
         if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
           const itens = indiceSnap.data().itens
 
-          // ── Mais populares (por "já vi" + "quero ver") ──
+          // ── Mais assistidos (só "já vi"; "quero ver" nunca incrementa popularidade) ──
           const listaPopulares = itens
             .filter(m => (m.popularidade || 0) > 0)
             .sort((a, b) => (b.popularidade || 0) - (a.popularidade || 0))
@@ -109,8 +114,6 @@ function Ranking() {
 
           // ── Mais bem avaliados (média bayesiana — só a ordem) ──
           // Âncora = média geral da plataforma, calculada em memória a partir do índice (custo zero)
-          const PESO = 5 // quantos votos um musical precisa pra "soltar" da média geral
-          const TETO_VOTOS = 60 // a partir daqui, votos extras não aumentam mais o peso do musical na fórmula — evita que fandom grande domine só por volume
           let somaGlobal = 0
           let votosGlobal = 0
           itens.forEach(m => {
@@ -200,6 +203,7 @@ function Ranking() {
           <div style={{ marginTop: "12px", padding: "14px 16px", background: "#faf9f6", border: "1px solid #e8e8e4", borderRadius: "10px" }}>
             <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7", marginBottom: "12px" }}>O ranking não usa a média simples das estrelas. Se usasse, um musical com uma única avaliação de 5 estrelas apareceria à frente de um musical com dezenas de avaliações e média 4,7 — o que não reflete a realidade.</p>
             <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7", marginBottom: "12px" }}>Para evitar isso, o MCDb usa uma média ponderada bayesiana. Na prática, isso significa que um título só alcança sua posição "real" no ranking depois de receber um número razoável de avaliações. Enquanto tem poucos votos, sua nota fica puxada na direção da média geral da plataforma, e vai se firmando à medida que mais pessoas avaliam.</p>
+            <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7", marginBottom: "12px" }}>Há ainda um limite no peso do volume: a partir de {TETO_VOTOS} avaliações, votos adicionais não aumentam mais a influência do título no cálculo. A média em si continua considerando todos os votos recebidos — o teto existe para que a posição no ranking reflita o quanto o público gostou, e não o tamanho do público.</p>
             <p style={{ fontSize: "13.5px", color: "#555", lineHeight: "1.7" }}>O resultado é um ranking mais justo: títulos muito bem avaliados por muita gente sobem de forma consistente, enquanto notas extremas baseadas em pouquíssimos votos não distorcem o topo da lista.</p>
           </div>
         </details>
