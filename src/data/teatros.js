@@ -673,6 +673,14 @@ export const teatros = [
     bairro: "Gávea",
     cidade: "Rio de Janeiro – RJ",
   },
+    {
+    id: "eco-villa-ri-happy",
+    nomeOficial: "EcoVilla RiHappy",
+    aliases: ["EcoVilla Ri Happy", "Eco Villa RiHappy"],
+    endereco: "Rua Jardim Botânico, 1008" ,
+    bairro: "Jardim Botânico",
+    cidade: "Rio de Janeiro – RJ",
+  },
    {
     id: "vivo-rio",
     nomeOficial: "Vivo Rio",
