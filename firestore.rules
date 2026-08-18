@@ -1,0 +1,237 @@
+rules_version = '2';
+// ─────────────────────────────────────────────────────────
+// CÓPIA VERSIONADA — NÃO É PUBLICADA PELO GIT.
+//
+// A publicação continua sendo manual, pelo Console do
+// Firebase (Firestore Database → Regras). Este arquivo
+// existe só para ter histórico e rollback.
+//
+// Sempre que publicar uma regra nova no Console, colar
+// aqui e commitar na mesma sessão — arquivo desatualizado
+// é pior que arquivo nenhum, porque dá falsa segurança.
+//
+// Última sincronização com o Console: 17/08/2026
+// ─────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() {
+      return request.auth != null;
+    }
+    function ehAdmin() {
+      return request.auth != null
+        && request.auth.uid in ['LFDNXIXywqQrLsDLobaGzOOmok03', 'ddN3y50zE5X56aQPQzhL17hw8m83'];
+    }
+    function euMesmo(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function ehVerificado() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.get('verificado', false) == true;
+    }
+
+    // ===== Musicais =====
+    match /musicais/{musicalId} {
+      allow read: if true;
+      allow create, delete: if ehAdmin();
+      allow update: if ehAdmin()
+        || (logado()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['totalLikes', 'totalDislikes'])
+            && (request.resource.data.get('totalLikes', 0) - resource.data.get('totalLikes', 0)) >= -1
+            && (request.resource.data.get('totalLikes', 0) - resource.data.get('totalLikes', 0)) <= 1
+            && (request.resource.data.get('totalDislikes', 0) - resource.data.get('totalDislikes', 0)) >= -1
+            && (request.resource.data.get('totalDislikes', 0) - resource.data.get('totalDislikes', 0)) <= 1)
+        || (logado()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['popularidade'])
+            && (request.resource.data.get('popularidade', 0) - resource.data.get('popularidade', 0)) >= -1
+            && (request.resource.data.get('popularidade', 0) - resource.data.get('popularidade', 0)) <= 1)
+        || (logado()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['totalVotos', 'somaEstrelas', 'distribuicao'])
+            && (request.resource.data.get('totalVotos', 0) - resource.data.get('totalVotos', 0)) >= -1
+            && (request.resource.data.get('totalVotos', 0) - resource.data.get('totalVotos', 0)) <= 1
+            && (request.resource.data.get('somaEstrelas', 0) - resource.data.get('somaEstrelas', 0)) >= -5
+            && (request.resource.data.get('somaEstrelas', 0) - resource.data.get('somaEstrelas', 0)) <= 5);
+
+      match /votos/{votanteId} {
+        allow read: if euMesmo(votanteId);
+        allow create, update: if euMesmo(votanteId);
+        allow delete: if euMesmo(votanteId);
+      }
+
+      match /comentarios/{comentarioId} {
+        allow read: if true;
+        allow create: if logado()
+          && request.resource.data.userId == request.auth.uid
+          && (ehAdmin() || ehVerificado()
+              || request.resource.data.get('status', '') == 'pendente');
+        allow update, delete: if ehAdmin()
+          || (logado() && resource.data.userId == request.auth.uid);
+
+        match /reacoes/{reagenteId} {
+          allow read: if true;
+          allow write: if euMesmo(reagenteId);
+        }
+      }
+
+      // ===== Reações (👍/👎) por musical — leitura pública, escrita só do dono =====
+      match /reacoes/{uid} {
+        allow read: if true;
+        allow write: if euMesmo(uid);
+        allow delete: if euMesmo(uid);
+      }
+    }
+
+  // ===== Collection group: leitura de todos os votos (aba "Em alta" do admin) =====
+    match /{path=**}/votos/{votanteId} {
+      allow read: if ehAdmin();
+    }
+
+    // ===== Atividades =====
+    match /atividades/{id} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null
+        && (resource.data.userId == request.auth.uid || ehAdmin());
+    }
+
+    // ===== Comentários top-level =====
+    match /comentarios/{comentarioId} {
+      allow read: if true;
+      allow create: if logado()
+        && request.resource.data.userId == request.auth.uid
+        && (ehAdmin() || ehVerificado()
+            || request.resource.data.get('status', '') == 'pendente');
+      allow update, delete: if ehAdmin()
+        || (logado() && resource.data.userId == request.auth.uid);
+    }
+
+    // ===== Usuários =====
+    match /usuarios/{userId} {
+      allow read: if true;
+
+      function nomeValido() {
+        return !('nomeCustom' in request.resource.data)
+          || (request.resource.data.nomeCustom is string
+              && request.resource.data.nomeCustom.size() <= 40);
+      }
+      function trocaDeNomeValida() {
+        return request.resource.data.get('nomeCustom', '') == resource.data.get('nomeCustom', '')
+          || (request.resource.data.get('nomeAlteradoEm', timestamp.value(0)) == request.time
+              && request.time > resource.data.get('nomeAlteradoEm', timestamp.value(0))
+                 + duration.value(24, 'h'));
+      }
+
+      allow create: if euMesmo(userId)
+        && request.resource.data.get('verificado', false) == false
+        && nomeValido();
+      allow update: if euMesmo(userId)
+        && request.resource.data.get('verificado', false) == resource.data.get('verificado', false)
+        && nomeValido()
+        && trocaDeNomeValida();
+      allow delete: if euMesmo(userId);
+      allow write: if ehAdmin();
+
+      match /seguidores/{seguidorId} {
+        allow read: if true;
+        allow create: if euMesmo(seguidorId);
+        allow delete: if euMesmo(seguidorId) || euMesmo(userId);
+      }
+
+      // ===== Listas personalizadas =====
+      match /listas/{listaId} {
+        allow read: if true;
+        allow create, update: if euMesmo(userId);
+        allow delete: if euMesmo(userId);
+
+        match /itens/{musicalId} {
+          allow read: if true;
+          allow create, update: if euMesmo(userId);
+          allow delete: if euMesmo(userId);
+        }
+      }
+
+      // queroVer, jaVi, top3, seguindo, sessoesAssistidas e demais subcoleções
+      match /{sub=**} {
+        allow read: if true;
+        allow create, update: if euMesmo(userId);
+        allow delete: if euMesmo(userId);
+      }
+    }
+
+    // ===== Sugestões =====
+    match /sugestoes/{id} {
+      allow create: if request.resource.data.titulo is string
+                    && request.resource.data.titulo.size() > 0
+                    && request.resource.data.titulo.size() < 300;
+      allow read, update, delete: if ehAdmin();
+    }
+
+    // ===== Relatórios =====
+    match /relatorios/{id} {
+      allow create: if request.resource.data.texto is string
+                    && request.resource.data.texto.size() > 0
+                    && request.resource.data.texto.size() < 5000;
+      allow read, update, delete: if ehAdmin();
+    }
+
+    // ===== Solicitações de verificação =====
+    match /solicitacoesVerificacao/{id} {
+      allow create: if logado();
+      allow read, update, delete: if ehAdmin();
+    }
+
+    // ===== Mensagens (contato → painel admin) =====
+    match /mensagens/{id} {
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.mensagem is string
+                    && request.resource.data.mensagem.size() > 0
+                    && request.resource.data.mensagem.size() < 5000;
+      allow read, update, delete: if ehAdmin();
+    }
+
+    // ===== Índices =====
+    match /indices/{id} {
+      allow read: if true;
+      allow write: if ehAdmin();
+    }
+
+    // ===== Histórico de comunicados enviados =====
+    match /comunicadosEnviados/{id} {
+      allow read, write: if ehAdmin();
+    }
+
+    // ===== Notificações =====
+    match /notificacoes/{userId}/{document=**} {
+      allow read: if euMesmo(userId);
+      allow create: if logado();
+      allow update, delete: if euMesmo(userId);
+    }
+
+    // ===== Conversas =====
+    match /conversas/{conversaId} {
+      allow create: if logado()
+        && request.resource.data.participantes.hasAny([request.auth.uid]);
+      allow read, update: if logado()
+        && resource.data.participantes.hasAny([request.auth.uid]);
+      allow delete: if logado()
+        && resource.data.participantes.hasAny([request.auth.uid]);
+    }
+    match /conversas/{conversaId}/{document=**} {
+      allow read, write: if logado()
+        && get(/databases/$(database)/documents/conversas/$(conversaId)).data.participantes.hasAny([request.auth.uid]);
+    }
+    match /entidades/{entidadeId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid in [
+        "LFDNXIXywqQrLsDLobaGzOOmok03",
+        "ddN3y50zE5X56aQPQzhL17hw8m83"
+      ];
+    }
+  }
+}
