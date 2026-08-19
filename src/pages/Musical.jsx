@@ -983,7 +983,7 @@ if (!musical) return (
               style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
             />
           </div>
-          {campo("Galeria de fotos (uma URL do Cloudinary por linha)", "galeria", true)}
+          {campo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
           {campo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
 

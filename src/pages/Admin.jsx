@@ -392,9 +392,30 @@ async function fazerUploadCapaNovo(arquivo) {
       return
     }
 
+    const galeriaNova = (formNovo.galeria || "")
+      .split("\n")
+      .map(linha => linha.trim())
+      .filter(Boolean)
+      .map(linha => {
+        const [url, ...resto] = linha.split("|")
+        return { url: url.trim(), credito: resto.join("|").trim() }
+      })
+
+    const videosNovos = (formNovo.videos || "")
+      .split("\n")
+      .map(linha => linha.trim())
+      .filter(Boolean)
+      .map(linha => {
+        const [link, ...resto] = linha.split("|")
+        return { id: extrairIdYoutube(link.trim()), titulo: resto.join("|").trim() }
+      })
+      .filter(v => v.id)
+
     const payload = {
       ...montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo),
       curiosidades: curiosidadesNovo.map(t => t.trim()).filter(Boolean),
+      galeria: galeriaNova,
+      videos: videosNovos,
     }
 
     if (status === "rascunho") {
@@ -463,6 +484,12 @@ async function fazerUploadCapaNovo(arquivo) {
       elencoAdicional: r.elencoAdicional || "",
       ano: r.ano || "",
       programaDigital: r.programaDigital || "",
+      galeria: (r.galeria || [])
+        .map(f => (typeof f === "string" ? f : `${f.url}${f.credito ? ` | ${f.credito}` : ""}`))
+        .join("\n"),
+      videos: (r.videos || [])
+        .map(v => `https://www.youtube.com/watch?v=${v.id}${v.titulo ? ` | ${v.titulo}` : ""}`)
+        .join("\n"),
     })
     setEquipeNovo(equipeDeDocumento(r))
     setMusicosNovo(musicosDeDocumento(r))
@@ -1205,6 +1232,8 @@ async function fazerUploadCapaNovo(arquivo) {
           {campoNovo("Ano", "ano")}
           {renderEditorTeatros(teatrosNovo, setTeatrosNovo, moverTeatroNovo)}
 
+          {campoNovo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
+          {campoNovo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campoNovo("Link do programa digital (opcional)", "programaDigital")}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
