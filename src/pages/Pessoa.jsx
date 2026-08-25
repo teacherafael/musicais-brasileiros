@@ -153,6 +153,13 @@ function Pessoa() {
     buscarEntidade()
   }, [nomeBusca])
 
+  // Título da seção de musicais — varia conforme o tipo da entidade
+  const tipoEntidade = entidade?.tipo || "artista"
+  const tituloTrabalhos =
+    tipoEntidade === "produtora" ? "Produções"
+      : tipoEntidade === "assessoria" ? "Trabalhos"
+        : `Trabalhos de ${nomeDecodificado}`
+
   return (
     <main>
       {fotoAberta && (() => {
@@ -345,9 +352,17 @@ function Pessoa() {
           </div>
         </div>
       )}
-      <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px", marginTop: entidade ? "4px" : "-8px" }}>
-        {carregando ? "Carregando..." : `${musicais.length} ${musicais.length === 1 ? "musical encontrado" : "musicais encontrados"}`}
-      </p>
+      {(carregando || musicais.length > 0) && (
+        <div style={{ marginTop: entidade ? "8px" : "-4px", marginBottom: "28px" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "24px", fontWeight: 700, color: "#1a1a1a", margin: "0 0 10px", lineHeight: 1.2 }}>
+            {tituloTrabalhos}
+          </h2>
+          <div style={{ width: "44px", height: "3px", background: "#F5C518", borderRadius: "2px", marginBottom: "10px" }} />
+          <p style={{ fontSize: "14px", color: "#888", margin: 0 }}>
+            {carregando ? "Carregando..." : `${musicais.length} ${musicais.length === 1 ? "musical no catálogo" : "musicais no catálogo"}`}
+          </p>
+        </div>
+      )}
 
       {carregando ? (
         <div className="grid-pessoa" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
