@@ -132,7 +132,7 @@ export const teatros = [
     {
     id: "teatro-opera",
     nomeOficial: "Teatro Ópera",
-    aliases: ["Teatro Stadium", "Teatro Zaccaro", "Teatro Aquarius"],
+    aliases: ["Teatro Stadium", "Teatro Zaccaro", "Teatro Bela Vista", "Teatro Aquarius"],
     endereco: "R. Rui Barbosa, 266",
     bairro: "Bela Vista",
     cidade: "São Paulo – SP",
