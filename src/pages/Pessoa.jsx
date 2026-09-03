@@ -59,6 +59,8 @@ function Pessoa() {
   const [ehAdmin, setEhAdmin] = useState(false)
   const [fotoAberta, setFotoAberta] = useState(null)
   const [indiceFoto, setIndiceFoto] = useState(null)
+  const [videoAtivo, setVideoAtivo] = useState(null)
+  const [titulosVideos, setTitulosVideos] = useState({})
 
   useEffect(() => {
     return onAuthStateChanged(auth, (user) => {
@@ -152,6 +154,33 @@ function Pessoa() {
     }
     buscarEntidade()
   }, [nomeBusca])
+
+  // Títulos dos vídeos, lidos do oEmbed público do YouTube (sem chave de API)
+  useEffect(() => {
+    const ids = Array.isArray(entidade?.videosYoutube) && entidade.videosYoutube.length > 0
+      ? entidade.videosYoutube
+      : (entidade?.videoYoutube ? [entidade.videoYoutube] : [])
+    if (ids.length === 0) return
+    let cancelado = false
+    async function buscarTitulos() {
+      const pares = await Promise.all(ids.map(async (id) => {
+        try {
+          const r = await fetch("https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=" + id)
+          if (!r.ok) return [id, null]
+          const dados = await r.json()
+          return [id, dados.title || null]
+        } catch (e) {
+          return [id, null]
+        }
+      }))
+      if (cancelado) return
+      const mapa = {}
+      pares.forEach(([id, titulo]) => { if (titulo) mapa[id] = titulo })
+      setTitulosVideos(mapa)
+    }
+    buscarTitulos()
+    return () => { cancelado = true }
+  }, [entidade])
 
   // Título da seção de musicais — varia conforme o tipo da entidade
   const tipoEntidade = entidade?.tipo || "artista"
@@ -324,16 +353,32 @@ function Pessoa() {
               return (
                 <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
                   <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>{videos.length === 1 ? "Vídeo" : "Vídeos"}</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
                     {videos.map((id, i) => (
-                      <div key={i} style={{ position: "relative", paddingBottom: "28.125%", height: 0, borderRadius: "8px", overflow: "hidden", maxWidth: "50%" }}>
-                        <iframe
-                          src={"https://www.youtube.com/embed/" + id}
-                          title={"Vídeo " + (i + 1)}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                        />
+                      <div key={i} style={{ flex: "0 0 auto", width: "280px", maxWidth: "80%", scrollSnapAlign: "start" }}>
+                        <div style={{ position: "relative", aspectRatio: "16 / 9", borderRadius: "8px", overflow: "hidden", background: "#000" }}>
+                          {videoAtivo === i ? (
+                            <iframe
+                              src={"https://www.youtube.com/embed/" + id + "?autoplay=1"}
+                              title={"Vídeo " + (i + 1)}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                            />
+                          ) : (
+                            <button onClick={() => setVideoAtivo(i)} title="Reproduzir"
+                              style={{ position: "absolute", inset: 0, padding: 0, border: "none", background: "none", cursor: "pointer", display: "block" }}>
+                              <img src={"https://img.youtube.com/vi/" + id + "/hqdefault.jpg"} alt={"Vídeo " + (i + 1)} loading="lazy"
+                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "56px", height: "40px", borderRadius: "10px", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: "17px", display: "flex", alignItems: "center", justifyContent: "center" }}>▶</span>
+                            </button>
+                          )}
+                        </div>
+                        {titulosVideos[id] && (
+                          <p style={{ fontSize: "13px", lineHeight: 1.35, color: "#444", margin: "8px 0 0", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {titulosVideos[id]}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
