@@ -329,59 +329,73 @@ function Pessoa() {
                 </div>
               );
             })()}
-            {Array.isArray(entidade.fotosTrabalho) && entidade.fotosTrabalho.length > 0 && (
-              <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
-                <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>Fotos</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: "10px" }}>
-                  {entidade.fotosTrabalho.map((url, i) => (
-                    url && url.trim() ? (
-                      <button key={i} onClick={() => { setFotoAberta(url); setIndiceFoto(entidade.fotosTrabalho.filter(u => u && u.trim()).indexOf(url)) }}
-                        style={{ padding: 0, border: "none", background: "none", cursor: "pointer", borderRadius: "8px", overflow: "hidden", aspectRatio: "1", display: "block" }}>
-                        <img src={url} alt={"Foto " + (i + 1)} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                      </button>
-                    ) : null
-                  ))}
-                </div>
-              </div>
-            )}
 
+            {/* Bloco de mídia — fotos e vídeos numa caixa escura, no espírito do Top 5 do Perfil */}
             {(() => {
+              const fotos = Array.isArray(entidade.fotosTrabalho)
+                ? entidade.fotosTrabalho.filter(u => u && u.trim())
+                : []
               const videos = Array.isArray(entidade.videosYoutube) && entidade.videosYoutube.length > 0
                 ? entidade.videosYoutube
                 : (entidade.videoYoutube ? [entidade.videoYoutube] : [])
-              if (videos.length === 0) return null
+              if (fotos.length === 0 && videos.length === 0) return null
+
+              const rotulo = { fontFamily: "'Playfair Display', serif", fontSize: "19px", fontWeight: 700, color: "#F5C518", margin: "0 0 14px", lineHeight: 1.2 }
+
               return (
-                <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
-                  <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#b8960a", margin: "0 0 12px" }}>{videos.length === 1 ? "Vídeo" : "Vídeos"}</p>
-                  <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
-                    {videos.map((id, i) => (
-                      <div key={i} style={{ flex: "0 0 auto", width: "280px", maxWidth: "80%", scrollSnapAlign: "start" }}>
-                        <div style={{ position: "relative", aspectRatio: "16 / 9", borderRadius: "8px", overflow: "hidden", background: "#000" }}>
-                          {videoAtivo === i ? (
-                            <iframe
-                              src={"https://www.youtube.com/embed/" + id + "?autoplay=1"}
-                              title={"Vídeo " + (i + 1)}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                            />
-                          ) : (
-                            <button onClick={() => setVideoAtivo(i)} title="Reproduzir"
-                              style={{ position: "absolute", inset: 0, padding: 0, border: "none", background: "none", cursor: "pointer", display: "block" }}>
-                              <img src={"https://img.youtube.com/vi/" + id + "/hqdefault.jpg"} alt={"Vídeo " + (i + 1)} loading="lazy"
-                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                              <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "56px", height: "40px", borderRadius: "10px", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: "17px", display: "flex", alignItems: "center", justifyContent: "center" }}>▶</span>
-                            </button>
-                          )}
-                        </div>
-                        {titulosVideos[id] && (
-                          <p style={{ fontSize: "13px", lineHeight: 1.35, color: "#444", margin: "8px 0 0", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                            {titulosVideos[id]}
-                          </p>
-                        )}
+                <div style={{ marginTop: "24px", background: "#1a1a1a", borderRadius: "12px", padding: "20px" }}>
+                  {fotos.length > 0 && (
+                    <div>
+                      <p style={rotulo}>Fotos</p>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: "10px" }}>
+                        {fotos.map((url, i) => (
+                          <button key={i} onClick={() => { setFotoAberta(url); setIndiceFoto(i) }}
+                            style={{ padding: 0, border: "none", background: "none", cursor: "pointer", borderRadius: "8px", overflow: "hidden", aspectRatio: "1", display: "block" }}>
+                            <img src={url} alt={"Foto " + (i + 1)} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          </button>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
+
+                  {videos.length > 0 && (
+                    <div style={{
+                      marginTop: fotos.length > 0 ? "24px" : 0,
+                      paddingTop: fotos.length > 0 ? "20px" : 0,
+                      borderTop: fotos.length > 0 ? "1px solid #333" : "none"
+                    }}>
+                      <p style={rotulo}>{videos.length === 1 ? "Vídeo" : "Vídeos"}</p>
+                      <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+                        {videos.map((id, i) => (
+                          <div key={i} style={{ flex: "0 0 auto", width: "280px", maxWidth: "80%", scrollSnapAlign: "start" }}>
+                            <div style={{ position: "relative", aspectRatio: "16 / 9", borderRadius: "8px", overflow: "hidden", background: "#000" }}>
+                              {videoAtivo === i ? (
+                                <iframe
+                                  src={"https://www.youtube.com/embed/" + id + "?autoplay=1"}
+                                  title={"Vídeo " + (i + 1)}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                                />
+                              ) : (
+                                <button onClick={() => setVideoAtivo(i)} title="Reproduzir"
+                                  style={{ position: "absolute", inset: 0, padding: 0, border: "none", background: "none", cursor: "pointer", display: "block" }}>
+                                  <img src={"https://img.youtube.com/vi/" + id + "/hqdefault.jpg"} alt={"Vídeo " + (i + 1)} loading="lazy"
+                                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                  <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "56px", height: "40px", borderRadius: "10px", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: "17px", display: "flex", alignItems: "center", justifyContent: "center" }}>▶</span>
+                                </button>
+                              )}
+                            </div>
+                            {titulosVideos[id] && (
+                              <p style={{ fontSize: "13px", lineHeight: 1.35, color: "#ccc", margin: "8px 0 0", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                {titulosVideos[id]}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })()}
