@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
 import ModalContribuir, { registrarAvaliacao } from "../components/ModalContribuir";
-import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube } from "../musicalSchema";
+import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube, rotuloAlbum } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -357,6 +357,7 @@ async function fazerUploadCapa(arquivo) {
       elenco: musical.elenco || "", elencoAdicional: musical.elencoAdicional || "",
       ano: musical.ano || "", teatro: musical.teatro || "",
       capa: musical.capa || "", programaDigital: musical.programaDigital || "",
+      linkAlbum: musical.linkAlbum || "",
       tituloOriginal: musical.tituloOriginal || "",
       tipoObra: musical.tipoObra || "Musical",
       galeria: (musical.galeria || []).map(foto => {
@@ -986,6 +987,7 @@ if (!musical) return (
           {campo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
           {campo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
+          {campo("Link do álbum gravado (só gravação da montagem brasileira)", "linkAlbum")}
 
           {/* Editor de fontes */}
           <div style={{ marginBottom: "20px" }}>
@@ -1381,6 +1383,19 @@ if (!musical) return (
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* ── ÁLBUM ── */}
+          {musical.linkAlbum && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Álbum</p>
+              <a href={musical.linkAlbum} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#1a1a1a", color: "#F5C518", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>
+                🎧 {rotuloAlbum(musical.linkAlbum)}
+              </a>
+              <p style={{ fontSize: "12px", color: "#999", marginTop: "8px", marginBottom: 0 }}>Gravação desta montagem.</p>
             </div>
           )}
 
