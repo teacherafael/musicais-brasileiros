@@ -1100,7 +1100,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   {campoSugestao("Ano", "ano")}
                   {renderEditorTeatros(teatrosEdicao, setTeatrosEdicao, moverTeatroEdicao)}
                   {campoSugestao("Link do programa digital (opcional)", "programaDigital")}
-                  {campoSugestao("Link do álbum gravado (só gravação da montagem brasileira)", "linkAlbum")}
+                  {campoSugestao("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
                       Capa (opcional)
@@ -1239,7 +1239,7 @@ async function fazerUploadCapaNovo(arquivo) {
           {campoNovo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
           {campoNovo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campoNovo("Link do programa digital (opcional)", "programaDigital")}
-          {campoNovo("Link do álbum gravado (só gravação da montagem brasileira)", "linkAlbum")}
+          {campoNovo("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>

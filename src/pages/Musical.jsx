@@ -987,7 +987,7 @@ if (!musical) return (
           {campo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
           {campo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
-          {campo("Link do álbum gravado (só gravação da montagem brasileira)", "linkAlbum")}
+          {campo("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
 
           {/* Editor de fontes */}
           <div style={{ marginBottom: "20px" }}>
@@ -1387,17 +1387,25 @@ if (!musical) return (
           )}
 
           {/* ── ÁLBUM ── */}
-          {musical.linkAlbum && (
-            <div style={{ marginBottom: "24px" }}>
-              <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Álbum</p>
-              <a href={musical.linkAlbum} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#1a1a1a", color: "#F5C518", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>
-                🎧 {rotuloAlbum(musical.linkAlbum)}
-              </a>
-              <p style={{ fontSize: "12px", color: "#999", marginTop: "8px", marginBottom: 0 }}>Gravação desta montagem.</p>
-            </div>
-          )}
+          {musical.linkAlbum && (() => {
+            const links = musical.linkAlbum.split("\n").map(l => l.trim()).filter(Boolean)
+            if (links.length === 0) return null
+            return (
+              <div style={{ marginBottom: "24px" }}>
+                <hr className="divider" />
+                <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Álbum</p>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {links.map((link, i) => (
+                    <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#1a1a1a", color: "#F5C518", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>
+                      🎧 {rotuloAlbum(link)}
+                    </a>
+                  ))}
+                </div>
+                <p style={{ fontSize: "12px", color: "#999", marginTop: "8px", marginBottom: 0 }}>Gravação desta montagem.</p>
+              </div>
+            )
+          })()}
 
           {videoAberto !== null && musical.videos && musical.videos[videoAberto] && (
             <div onClick={() => setVideoAberto(null)}
