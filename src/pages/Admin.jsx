@@ -484,6 +484,7 @@ async function fazerUploadCapaNovo(arquivo) {
       elencoAdicional: r.elencoAdicional || "",
       ano: r.ano || "",
       programaDigital: r.programaDigital || "",
+      linkAlbum: r.linkAlbum || "",
       galeria: (r.galeria || [])
         .map(f => (typeof f === "string" ? f : `${f.url}${f.credito ? ` | ${f.credito}` : ""}`))
         .join("\n"),
@@ -525,6 +526,7 @@ async function fazerUploadCapaNovo(arquivo) {
       elencoAdicional: s.elencoAdicional || "",
       ano: s.ano || "",
       programaDigital: s.programaDigital || "",
+      linkAlbum: s.linkAlbum || "",
     })
     setEquipeEdicao(equipeDeDocumento(s))
     setMusicosEdicao(musicosDeDocumento(s))
@@ -573,6 +575,7 @@ async function fazerUploadCapaNovo(arquivo) {
         elencoAdicional: sugestao.elencoAdicional,
         ano: sugestao.ano,
         programaDigital: sugestao.programaDigital,
+        linkAlbum: sugestao.linkAlbum,
       },
       equipeDeDocumento(sugestao),
       musicosDeDocumento(sugestao),
@@ -1097,6 +1100,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   {campoSugestao("Ano", "ano")}
                   {renderEditorTeatros(teatrosEdicao, setTeatrosEdicao, moverTeatroEdicao)}
                   {campoSugestao("Link do programa digital (opcional)", "programaDigital")}
+                  {campoSugestao("Link do álbum gravado (só gravação da montagem brasileira)", "linkAlbum")}
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
                       Capa (opcional)
@@ -1235,6 +1239,7 @@ async function fazerUploadCapaNovo(arquivo) {
           {campoNovo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
           {campoNovo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campoNovo("Link do programa digital (opcional)", "programaDigital")}
+          {campoNovo("Link do álbum gravado (só gravação da montagem brasileira)", "linkAlbum")}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>

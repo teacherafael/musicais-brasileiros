@@ -49,6 +49,21 @@ export function extrairIdYoutube(entrada) {
   return ""
 }
 
+// ── Álbum gravado ────────────────────────────────────────────────────────────
+// Detecta a plataforma pelo domínio da URL só para escolher o rótulo do botão.
+// O estilo do botão na página do musical é sempre o mesmo.
+export function rotuloAlbum(url) {
+  const u = (url || "").toLowerCase()
+  if (!u) return ""
+  if (u.includes("spotify.com") || u.includes("spotify.link")) return "Ouvir no Spotify"
+  if (u.includes("music.apple.com") || u.includes("itunes.apple.com")) return "Ouvir no Apple Music"
+  if (u.includes("music.youtube.com")) return "Ouvir no YouTube Music"
+  if (u.includes("deezer.com") || u.includes("dzr.page.link")) return "Ouvir no Deezer"
+  if (u.includes("music.amazon")) return "Ouvir no Amazon Music"
+  if (u.includes("tidal.com")) return "Ouvir no TIDAL"
+  return "Ouvir o álbum"
+}
+
 // ── Cargos complementares ────────────────────────────────────────────────────
 // Gravam dentro do array `equipeCriativa`. Esta é a lista que aparece tanto no
 // admin quanto (a partir de agora) no formulário público de sugestão.
@@ -229,6 +244,7 @@ export function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
     musicos: musicosLimpos,
     capa: capa || "",
     programaDigital: form.programaDigital || "",
+    linkAlbum: form.linkAlbum || "",
     fontes: fontesLimpas,
   }
 }
