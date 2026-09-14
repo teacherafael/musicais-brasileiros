@@ -13,6 +13,7 @@ import {
   equipeDeDocumento,
   musicosDeDocumento,
   fontesDeDocumento,
+  premiosDeDocumento,
   teatrosDeDocumento,
   montarEquipeDeStrings,
   montarPayload,
@@ -123,6 +124,7 @@ function Admin() {
   const [musicosEdicao, setMusicosEdicao] = useState([])
   const [teatrosEdicao, setTeatrosEdicao] = useState([])
   const [fontesEdicao, setFontesEdicao] = useState([])
+  const [premiosEdicao, setPremiosEdicao] = useState([])
   const [indiceStatus, setIndiceStatus] = useState("")
   const [comunidadeStatus, setComunidadeStatus] = useState("")
   const [emAltaVotos, setEmAltaVotos] = useState([])
@@ -136,6 +138,7 @@ function Admin() {
   const [equipeNovo, setEquipeNovo] = useState(equipeInicial())
   const [musicosNovo, setMusicosNovo] = useState([])
   const [fontesNovo, setFontesNovo] = useState([])
+  const [premiosNovo, setPremiosNovo] = useState([])
   const [curiosidadesNovo, setCuriosidadesNovo] = useState([])
   const [rascunhoId, setRascunhoId] = useState(null)
   const [rascunhosAdmin, setRascunhosAdmin] = useState([])
@@ -412,7 +415,7 @@ async function fazerUploadCapaNovo(arquivo) {
       .filter(v => v.id)
 
     const payload = {
-      ...montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo),
+      ...montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo, premiosNovo),
       curiosidades: curiosidadesNovo.map(t => t.trim()).filter(Boolean),
       galeria: galeriaNova,
       videos: videosNovos,
@@ -466,6 +469,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setEquipeNovo(equipeInicial())
     setMusicosNovo([])
     setFontesNovo([])
+    setPremiosNovo([])
     setCuriosidadesNovo([])
     setRascunhoId(null)
     try { await gerarIndiceHome() } catch (e) { /* não bloqueia a publicação */ }
@@ -496,6 +500,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setMusicosNovo(musicosDeDocumento(r))
     setTeatrosNovo(teatrosDeDocumento(r))
     setFontesNovo(fontesDeDocumento(r))
+    setPremiosNovo(premiosDeDocumento(r))
     setCapaNovo(r.capa || "")
     setRascunhoId(r.id)
   }
@@ -512,6 +517,7 @@ async function fazerUploadCapaNovo(arquivo) {
       setEquipeNovo(equipeInicial())
       setMusicosNovo([])
       setFontesNovo([])
+      setPremiosNovo([])
       setCuriosidadesNovo([])
     }
   }
@@ -532,12 +538,13 @@ async function fazerUploadCapaNovo(arquivo) {
     setMusicosEdicao(musicosDeDocumento(s))
     setTeatrosEdicao(teatrosDeDocumento(s))
     setFontesEdicao(fontesDeDocumento(s))
+    setPremiosEdicao(premiosDeDocumento(s))
     setCapas(prev => ({ ...prev, [s.id]: s.capa || prev[s.id] || "" }))
     setEditandoSugestao(s.id)
   }
 
   async function salvarEdicaoSugestao(sugestaoId) {
-    const payload = montarPayload(formSugestao, equipeEdicao, musicosEdicao, teatrosEdicao, capas[sugestaoId] || "", fontesEdicao)
+    const payload = montarPayload(formSugestao, equipeEdicao, musicosEdicao, teatrosEdicao, capas[sugestaoId] || "", fontesEdicao, premiosEdicao)
     await updateDoc(doc(db, "sugestoes", sugestaoId), payload)
     setSugestoes(prev => prev.map(s => s.id === sugestaoId ? { ...s, ...payload } : s))
     setEditandoSugestao(null)
@@ -546,6 +553,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setMusicosEdicao([])
     setTeatrosEdicao([])
     setFontesEdicao([])
+    setPremiosEdicao([])
   }
 
   async function aprovar(sugestao) {
@@ -582,6 +590,7 @@ async function fazerUploadCapaNovo(arquivo) {
       teatrosDeDocumento(sugestao),
       capas[sugestao.id] || sugestao.capa || "",
       fontesDeDocumento(sugestao),
+      premiosDeDocumento(sugestao),
     )
 
     // Rede de segurança: se por acaso não veio nenhuma equipe, reconstrói a
@@ -956,6 +965,36 @@ async function fazerUploadCapaNovo(arquivo) {
     )
   }
 
+  // Editor de prêmios genérico (só vitórias)
+  function renderEditorPremios(premios, setPremios) {
+    return (
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+          Prêmios (só vitórias)
+        </label>
+        {premios.map((item, i) => (
+          <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+            <input type="text" placeholder="Nome do prêmio" value={item.nome}
+              onChange={e => { const novo = [...premios]; novo[i] = { ...novo[i], nome: e.target.value }; setPremios(novo) }}
+              style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+            <input type="text" placeholder="Ano" value={item.ano}
+              onChange={e => { const novo = [...premios]; novo[i] = { ...novo[i], ano: e.target.value }; setPremios(novo) }}
+              style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+            <input type="text" placeholder="Categoria" value={item.categoria}
+              onChange={e => { const novo = [...premios]; novo[i] = { ...novo[i], categoria: e.target.value }; setPremios(novo) }}
+              style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+            <button onClick={() => setPremios(premios.filter((_, idx) => idx !== i))}
+              style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+          </div>
+        ))}
+        <button onClick={() => setPremios([...premios, { nome: "", ano: "", categoria: "" }])}
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          + Adicionar prêmio
+        </button>
+      </div>
+    )
+  }
+
   // Editor de curiosidades genérico
   function renderEditorCuriosidades(curiosidades, setCuriosidades) {
     return (
@@ -1101,6 +1140,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   {renderEditorTeatros(teatrosEdicao, setTeatrosEdicao, moverTeatroEdicao)}
                   {campoSugestao("Link do programa digital (opcional)", "programaDigital")}
                   {campoSugestao("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
+                  {renderEditorPremios(premiosEdicao, setPremiosEdicao)}
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
                       Capa (opcional)
@@ -1124,7 +1164,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   {renderEditorFontes(fontesEdicao, setFontesEdicao)}
                   <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
                     <button className="btn-comentar" onClick={() => salvarEdicaoSugestao(s.id)}>Salvar edição</button>
-                    <button className="btn-sair" onClick={() => { setEditandoSugestao(null); setFormSugestao({}); setEquipeEdicao(equipeInicial()); setMusicosEdicao([]); setTeatrosEdicao([]); setFontesEdicao([]) }}>Cancelar</button>
+                    <button className="btn-sair" onClick={() => { setEditandoSugestao(null); setFormSugestao({}); setEquipeEdicao(equipeInicial()); setMusicosEdicao([]); setTeatrosEdicao([]); setFontesEdicao([]); setPremiosEdicao([]) }}>Cancelar</button>
                   </div>
                 </>
               ) : (
@@ -1240,6 +1280,7 @@ async function fazerUploadCapaNovo(arquivo) {
           {campoNovo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}
           {campoNovo("Link do programa digital (opcional)", "programaDigital")}
           {campoNovo("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
+          {renderEditorPremios(premiosNovo, setPremiosNovo)}
 
           <div style={{ marginTop: "8px", marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
@@ -1277,7 +1318,7 @@ async function fazerUploadCapaNovo(arquivo) {
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button className="btn-comentar" onClick={() => salvarNovo("publicado")}>✅ Publicar musical</button>
             <button className="btn-sair" onClick={() => salvarNovo("rascunho")}>💾 Salvar rascunho</button>
-            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setFontesNovo([]); setCuriosidadesNovo([]); setRascunhoId(null) }}>Limpar</button>
+            <button className="btn-sair" onClick={() => { setFormNovo({ programaDigital: "" }); setCapaNovo(""); setTeatrosNovo([]); setEquipeNovo(equipeInicial()); setMusicosNovo([]); setFontesNovo([]); setPremiosNovo([]); setCuriosidadesNovo([]); setRascunhoId(null) }}>Limpar</button>
           </div>
         </div>
         </>

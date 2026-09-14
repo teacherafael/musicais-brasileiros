@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
 import ModalContribuir, { registrarAvaliacao } from "../components/ModalContribuir";
-import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube, rotuloAlbum } from "../musicalSchema";
+import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube, rotuloAlbum, premiosDeDocumento } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -181,6 +181,7 @@ function Musical() {
   const [teatrosAdicionais, setTeatrosAdicionais] = useState([])
   const [musicosEdicao, setMusicosEdicao] = useState([])
   const [fontesEdicao, setFontesEdicao] = useState([])
+  const [premiosEdicao, setPremiosEdicao] = useState([])
   const [curiosidadesEdicao, setCuriosidadesEdicao] = useState([])
   const [gerando, setGerando] = useState(false)
   const [enviandoCapa, setEnviandoCapa] = useState(false)
@@ -384,6 +385,7 @@ async function fazerUploadCapa(arquivo) {
     setMusicosEdicao(musicosExistentes.map(item => ({ local: item.local || "", nomesTexto: (item.nomes || []).join(", ") })))
     const fontesExistentes = Array.isArray(musical.fontes) ? musical.fontes : []
     setFontesEdicao(fontesExistentes.map(f => ({ descricao: f.descricao || "", link: f.link || "" })))
+    setPremiosEdicao(premiosDeDocumento(musical))
     setCuriosidadesEdicao(Array.isArray(musical.curiosidades) ? musical.curiosidades : [])
     setEditandoMusical(true)
   }
@@ -438,6 +440,10 @@ async function fazerUploadCapa(arquivo) {
       .map(item => ({ descricao: item.descricao.trim(), link: item.link.trim() }))
       .filter(item => item.descricao)
 
+    const premiosLimpos = premiosEdicao
+      .map(item => ({ nome: (item.nome || "").trim(), ano: (item.ano || "").trim(), categoria: (item.categoria || "").trim() }))
+      .filter(item => item.nome)
+
     const curiosidadesLimpas = curiosidadesEdicao
       .map(texto => texto.trim())
       .filter(Boolean)
@@ -477,6 +483,7 @@ async function fazerUploadCapa(arquivo) {
       teatrosAdicionais: [],
       musicos: musicosLimpos,
       fontes: fontesLimpas,
+      premios: premiosLimpos,
       curiosidades: curiosidadesLimpas,
     }
     await updateDoc(doc(db, "musicais", id), dadosFinais)
@@ -989,6 +996,32 @@ if (!musical) return (
           {campo("Link do programa digital (Google Drive)", "programaDigital")}
           {campo("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
 
+          {/* Editor de prêmios (só vitórias) */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
+              Prêmios (só vitórias)
+            </label>
+            {premiosEdicao.map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                <input type="text" placeholder="Nome do prêmio" value={item.nome}
+                  onChange={e => { const novo = [...premiosEdicao]; novo[i] = { ...novo[i], nome: e.target.value }; setPremiosEdicao(novo) }}
+                  style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <input type="text" placeholder="Ano" value={item.ano}
+                  onChange={e => { const novo = [...premiosEdicao]; novo[i] = { ...novo[i], ano: e.target.value }; setPremiosEdicao(novo) }}
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                <input type="text" placeholder="Categoria" value={item.categoria}
+                  onChange={e => { const novo = [...premiosEdicao]; novo[i] = { ...novo[i], categoria: e.target.value }; setPremiosEdicao(novo) }}
+                  style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                <button onClick={() => setPremiosEdicao(premiosEdicao.filter((_, idx) => idx !== i))}
+                  style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
+              </div>
+            ))}
+            <button onClick={() => setPremiosEdicao([...premiosEdicao, { nome: "", ano: "", categoria: "" }])}
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              + Adicionar prêmio
+            </button>
+          </div>
+
           {/* Editor de fontes */}
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
@@ -1406,6 +1439,25 @@ if (!musical) return (
               </div>
             )
           })()}
+
+          {/* ── PRÊMIOS ── */}
+          {Array.isArray(musical.premios) && musical.premios.filter(p => p && p.nome).length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Prêmios</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {musical.premios.filter(p => p && p.nome).map((p, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                    <span style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#0a2c59", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>🏆</span>
+                    <div>
+                      <p style={{ margin: 0, fontSize: "14px", fontWeight: "500", color: "#1a1a1a" }}>{p.nome}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#666" }}>{[p.ano, p.categoria].filter(Boolean).join(" · ")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {videoAberto !== null && musical.videos && musical.videos[videoAberto] && (
             <div onClick={() => setVideoAberto(null)}

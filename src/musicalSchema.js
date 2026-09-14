@@ -163,6 +163,12 @@ export function fontesDeDocumento(doc) {
   return doc.fontes.map(f => ({ descricao: f.descricao || "", link: f.link || "" }))
 }
 
+// ── Leitura: documento → estado do editor de prêmios ─────────────────────────
+export function premiosDeDocumento(doc) {
+  if (!Array.isArray(doc.premios)) return []
+  return doc.premios.map(p => ({ nome: p.nome || "", ano: p.ano || "", categoria: p.categoria || "" }))
+}
+
 // ── Leitura: documento → estado do editor de teatros ─────────────────────────
 export function teatrosDeDocumento(doc) {
   // Formato NOVO: array de { ano, teatros }
@@ -193,7 +199,7 @@ export function montarEquipeDeStrings(direcao, direcaoMusical) {
 // Constrói o objeto que vai para o Firestore. Usado pelo formulário público
 // (Sugestao.jsx) e pelo admin (Adicionar / Editar). Como os dois usam ESTA
 // função, o formato de saída é garantidamente idêntico.
-export function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
+export function montarPayload(form, equipe, musicos, teatros, capa, fontes, premios = []) {
   const teatrosLimpos = teatros
     .map(item => ({
       ano: (item.ano || "").trim(),
@@ -224,6 +230,10 @@ export function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
     .map(item => ({ descricao: (item.descricao || "").trim(), link: (item.link || "").trim() }))
     .filter(item => item.descricao)
 
+  const premiosLimpos = (premios || [])
+    .map(item => ({ nome: (item.nome || "").trim(), ano: (item.ano || "").trim(), categoria: (item.categoria || "").trim() }))
+    .filter(item => item.nome)
+
   return {
     titulo: form.titulo || "",
     tituloOriginal: form.tituloOriginal || "",
@@ -246,5 +256,6 @@ export function montarPayload(form, equipe, musicos, teatros, capa, fontes) {
     programaDigital: form.programaDigital || "",
     linkAlbum: form.linkAlbum || "",
     fontes: fontesLimpas,
+    premios: premiosLimpos,
   }
 }
