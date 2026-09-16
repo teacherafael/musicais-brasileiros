@@ -39,7 +39,7 @@ function Footer() {
           fontSize: "13px",
           color: "#000",
             cursor: "pointer",
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--fonte-corpo)",
             fontWeight: "600"
           }}
         >
@@ -54,10 +54,10 @@ function Footer() {
       </div>
 
       <div style={{ display: "flex", gap: "20px" }}>
-        <button onClick={() => navigate("/sobre")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Sobre</button>
-        <button onClick={() => navigate("/termos")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Termos de Uso</button>
-        <button onClick={() => navigate("/privacidade")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Privacidade</button>
-        <button onClick={() => navigate("/faq")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>FAQ</button>
+        <button onClick={() => navigate("/sobre")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "var(--fonte-corpo)" }}>Sobre</button>
+        <button onClick={() => navigate("/termos")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "var(--fonte-corpo)" }}>Termos de Uso</button>
+        <button onClick={() => navigate("/privacidade")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "var(--fonte-corpo)" }}>Privacidade</button>
+        <button onClick={() => navigate("/faq")} style={{ background: "none", border: "none", fontSize: "13px", color: "#ccd6e4", cursor: "pointer", fontFamily: "var(--fonte-corpo)" }}>FAQ</button>
       </div>
       <p style={{ fontSize: "12px", color: "#9fb0c7" }}>© 2026 MCDb</p>
     </footer>

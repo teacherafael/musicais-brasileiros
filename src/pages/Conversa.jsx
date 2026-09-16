@@ -197,7 +197,7 @@ function Conversa() {
           style={{
             marginLeft: "auto", background: "none", border: "1px solid #e8e8e4",
             borderRadius: "8px", padding: "6px 12px", cursor: "pointer",
-            fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888"
+            fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888"
           }}
         >
           🗑 Apagar conversa
@@ -231,7 +231,7 @@ function Conversa() {
                       style={{
                         background: "none", border: "none", padding: 0,
                         color: "#888", fontSize: "11px", cursor: "pointer",
-                        fontFamily: "'DM Sans', sans-serif"
+                        fontFamily: "var(--fonte-corpo)"
                       }}
                     >
                       Apagar
@@ -258,7 +258,7 @@ function Conversa() {
           placeholder="Escreva uma mensagem..."
           style={{
             flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4",
-            borderRadius: "8px", fontFamily: "'DM Sans', sans-serif",
+            borderRadius: "8px", fontFamily: "var(--fonte-corpo)",
             fontSize: "14px", outline: "none"
           }}
         />
@@ -268,7 +268,7 @@ function Conversa() {
           style={{
             background: "#F5C518", color: "#1a1a1a", border: "none",
             borderRadius: "8px", padding: "10px 18px",
-            fontFamily: "'DM Sans', sans-serif", fontSize: "14px",
+            fontFamily: "var(--fonte-corpo)", fontSize: "14px",
             fontWeight: "600", cursor: texto.trim() ? "pointer" : "not-allowed",
             opacity: texto.trim() ? 1 : 0.5
           }}

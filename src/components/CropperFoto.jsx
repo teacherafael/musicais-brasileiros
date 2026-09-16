@@ -35,7 +35,7 @@ export default function CropperFoto({ imagemSrc, onConfirmar, onCancelar, envian
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 10000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px", gap: "18px" }}>
-      <p style={{ color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", margin: 0 }}>
+      <p style={{ color: "#fff", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600", margin: 0 }}>
         Ajuste sua foto
       </p>
 
@@ -63,11 +63,11 @@ export default function CropperFoto({ imagemSrc, onConfirmar, onCancelar, envian
 
       <div style={{ display: "flex", gap: "10px" }}>
         <button onClick={confirmar} disabled={enviando}
-          style={{ padding: "12px 24px", background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", cursor: enviando ? "wait" : "pointer", opacity: enviando ? 0.6 : 1 }}>
+          style={{ padding: "12px 24px", background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600", cursor: enviando ? "wait" : "pointer", opacity: enviando ? 0.6 : 1 }}>
           {enviando ? "Enviando..." : "Usar foto"}
         </button>
         <button onClick={onCancelar} disabled={enviando}
-          style={{ padding: "12px 24px", background: "transparent", color: "#aaa", border: "1px solid #555", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: enviando ? "not-allowed" : "pointer" }}>
+          style={{ padding: "12px 24px", background: "transparent", color: "#aaa", border: "1px solid #555", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", cursor: enviando ? "not-allowed" : "pointer" }}>
           Cancelar
         </button>
       </div>

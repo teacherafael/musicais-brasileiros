@@ -812,10 +812,10 @@ if (!musical) return (
       </label>
       {multiline ? (
         <textarea value={formEdicao[chave] || ""} onChange={e => setFormEdicao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "100px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical" }} />
+          style={{ width: "100%", height: "100px", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none", resize: "vertical" }} />
       ) : (
         <input type="text" value={formEdicao[chave] || ""} onChange={e => setFormEdicao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }} />
+          style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none" }} />
       )}
     </div>
   )
@@ -827,8 +827,8 @@ if (!musical) return (
   const itemDirecaoMusical = equipeBase.find(e => e.funcao === "Direção Musical")
   const itemCoreografia = equipeBase.find(e => e.funcao === "Coreografia" && e.nomes && e.nomes.length > 0)
 
-  const inputEquipeStyle = { flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }
-  const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }
+  const inputEquipeStyle = { flex: 1, padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none" }
+  const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }
 
   return (
     <main>
@@ -861,7 +861,7 @@ if (!musical) return (
 
       {editandoMusical ? (
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "24px", marginBottom: "32px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", marginBottom: "24px" }}>Editar musical</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "22px", marginBottom: "24px" }}>Editar musical</h2>
           {campo("Título", "titulo")}
           {campo("Título original", "tituloOriginal")}
 
@@ -870,7 +870,7 @@ if (!musical) return (
               Tipo de obra
             </label>
             <select value={formEdicao.tipoObra || "Musical"} onChange={e => setFormEdicao(prev => ({ ...prev, tipoObra: e.target.value }))}
-              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", background: "#fff" }}>
+              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none", background: "#fff" }}>
               {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -903,7 +903,7 @@ if (!musical) return (
                 </div>
               )
             })}
-            <button onClick={adicionarCargoLivre} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }}>
+            <button onClick={adicionarCargoLivre} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }}>
               + Adicionar cargo
             </button>
           </div>
@@ -920,16 +920,16 @@ if (!musical) return (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
                 <input type="text" placeholder="Local (ex: São Paulo)" value={item.local}
                   onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], local: e.target.value }; setMusicosEdicao(novo) }}
-                  style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                  style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
                 <textarea placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} rows={3}
                   onChange={e => { const novo = [...musicosEdicao]; novo[i] = { ...novo[i], nomesTexto: e.target.value }; setMusicosEdicao(novo) }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
                 <button onClick={() => setMusicosEdicao(musicosEdicao.filter((_, idx) => idx !== i))}
                   style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
             <button onClick={() => setMusicosEdicao([...musicosEdicao, { local: "", nomesTexto: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar local
             </button>
           </div>
@@ -952,16 +952,16 @@ if (!musical) return (
                 </div>
                 <input type="text" placeholder="Ano" value={item.ano}
                   onChange={e => { const novo = [...teatrosAdicionais]; novo[i] = { ...novo[i], ano: e.target.value }; setTeatrosAdicionais(novo) }}
-                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                 <input type="text" placeholder="Teatros (separados por vírgula)" value={item.teatrosTexto}
                   onChange={e => { const novo = [...teatrosAdicionais]; novo[i] = { ...novo[i], teatrosTexto: e.target.value }; setTeatrosAdicionais(novo) }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                 <button onClick={() => setTeatrosAdicionais(teatrosAdicionais.filter((_, idx) => idx !== i))}
                   style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
             <button onClick={() => setTeatrosAdicionais([...teatrosAdicionais, { ano: "", teatrosTexto: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar teatro
             </button>
           </div>
@@ -971,7 +971,7 @@ if (!musical) return (
               Capa
             </label>
             <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-              <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapa ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoCapa ? "wait" : "pointer" }}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapa ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "600", cursor: enviandoCapa ? "wait" : "pointer" }}>
                 {enviandoCapa ? "Enviando..." : "📤 Enviar imagem"}
                 <input
                   type="file"
@@ -988,7 +988,7 @@ if (!musical) return (
               value={formEdicao.capa || ""}
               onChange={e => setFormEdicao(prev => ({ ...prev, capa: e.target.value }))}
               placeholder="https://..."
-              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }}
+              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none" }}
             />
           </div>
           {campo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
@@ -1005,19 +1005,19 @@ if (!musical) return (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
                 <input type="text" placeholder="Nome do prêmio" value={item.nome}
                   onChange={e => { const novo = [...premiosEdicao]; novo[i] = { ...novo[i], nome: e.target.value }; setPremiosEdicao(novo) }}
-                  style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                 <input type="text" placeholder="Ano" value={item.ano}
                   onChange={e => { const novo = [...premiosEdicao]; novo[i] = { ...novo[i], ano: e.target.value }; setPremiosEdicao(novo) }}
-                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                  style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
                 <input type="text" placeholder="Categoria" value={item.categoria}
                   onChange={e => { const novo = [...premiosEdicao]; novo[i] = { ...novo[i], categoria: e.target.value }; setPremiosEdicao(novo) }}
-                  style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                 <button onClick={() => setPremiosEdicao(premiosEdicao.filter((_, idx) => idx !== i))}
                   style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
             <button onClick={() => setPremiosEdicao([...premiosEdicao, { nome: "", ano: "", categoria: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar prêmio
             </button>
           </div>
@@ -1031,16 +1031,16 @@ if (!musical) return (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
                 <input type="text" placeholder="Descrição (ex: Folha de S.Paulo, 12/03/1998)" value={item.descricao}
                   onChange={e => { const novo = [...fontesEdicao]; novo[i] = { ...novo[i], descricao: e.target.value }; setFontesEdicao(novo) }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                 <input type="text" placeholder="Link (opcional)" value={item.link}
                   onChange={e => { const novo = [...fontesEdicao]; novo[i] = { ...novo[i], link: e.target.value }; setFontesEdicao(novo) }}
-                  style={{ width: "200px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                  style={{ width: "200px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
                 <button onClick={() => setFontesEdicao(fontesEdicao.filter((_, idx) => idx !== i))}
                   style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
             <button onClick={() => setFontesEdicao([...fontesEdicao, { descricao: "", link: "" }])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar fonte
             </button>
           </div>
@@ -1054,13 +1054,13 @@ if (!musical) return (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
                 <textarea placeholder="Curiosidade" value={texto} rows={2}
                   onChange={e => { const novo = [...curiosidadesEdicao]; novo[i] = e.target.value; setCuriosidadesEdicao(novo) }}
-                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+                  style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
                 <button onClick={() => setCuriosidadesEdicao(curiosidadesEdicao.filter((_, idx) => idx !== i))}
                   style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
               </div>
             ))}
             <button onClick={() => setCuriosidadesEdicao([...curiosidadesEdicao, ""])}
-              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+              style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar curiosidade
             </button>
           </div>
@@ -1209,11 +1209,11 @@ if (!musical) return (
 
               {ehAdmin(usuario) && (
                 <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap" }}>
-                  <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>✏️ Editar</button>
-                  <button onClick={toggleDestaque} style={{ background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: musical.destaque ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
+                  <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>✏️ Editar</button>
+                  <button onClick={toggleDestaque} style={{ background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: musical.destaque ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
                     {musical.destaque ? "★ Em destaque" : "☆ Destaque"}
                   </button>
-                  <button onClick={toggleRecomendadoMC} style={{ background: musical.recomendadoMC ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: musical.recomendadoMC ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
+                  <button onClick={toggleRecomendadoMC} style={{ background: musical.recomendadoMC ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: musical.recomendadoMC ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
                     {musical.recomendadoMC ? "✓ Recomendado MC" : "Recomendar (MC)"}
                   </button>
                 </div>
@@ -1224,20 +1224,20 @@ if (!musical) return (
           {/* ── BOTÕES DE AÇÃO ── */}
           <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
             <button onClick={toggleJaVi}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: jaVi ? "#1a1a1a" : "transparent", color: jaVi ? "#F5C518" : "#888", border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: jaVi ? "#1a1a1a" : "transparent", color: jaVi ? "#F5C518" : "#888", border: "1px solid", borderColor: jaVi ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: "pointer" }}>
               {jaVi ? "✓ Já vi" : "Já vi"}
             </button>
             <button onClick={toggleQueroVer}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: queroVer ? "#F5C518" : "transparent", color: queroVer ? "#1a1a1a" : "#888", border: "1px solid", borderColor: queroVer ? "#F5C518" : "#ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: "pointer" }}>
               {queroVer ? "✓ Não vi" : "+ Não vi"}
             </button>
             <button onClick={() => { navigator.clipboard.writeText(window.location.href); mostrarToast("Link copiado!") }}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: "pointer" }}>
               🔗 Copiar link
             </button>
             {musical.programaDigital && (
               <a href={musical.programaDigital} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#F5C518", color: "#1a1a1a", border: "1px solid #F5C518", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#F5C518", color: "#1a1a1a", border: "1px solid #F5C518", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
                 📄 Programa digital
               </a>
             )}
@@ -1246,7 +1246,7 @@ if (!musical) return (
           {/* ── SESSÕES ── */}
           {usuario && jaVi && (
             <div style={{ marginBottom: "24px", background: "#f5f5f0", border: "1px solid #e8e8e4", borderRadius: "10px", padding: "16px 20px" }}>
-              <p style={{ fontSize: "11px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>📅 Suas sessões</p>
+              <p style={{ fontSize: "11px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>📅 Suas sessões</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: mostrarFormSessao ? "16px" : "0" }}>
                 {sessoes.map(s => (
                   <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#fff", border: "1px solid #e8e8e4", borderRadius: "99px", padding: "6px 14px" }}>
@@ -1257,7 +1257,7 @@ if (!musical) return (
                 ))}
                 {!mostrarFormSessao && (
                   <button onClick={() => setMostrarFormSessao(true)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "6px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                     + Nova sessão
                   </button>
                 )}
@@ -1268,22 +1268,22 @@ if (!musical) return (
                     <div style={{ flex: "1 1 130px" }}>
                       <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Data</label>
                       <input type="date" value={novaData} onChange={e => setNovaData(e.target.value)}
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                     </div>
                     <div style={{ flex: "1 1 100px" }}>
                       <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Horário (opcional)</label>
                       <input type="time" value={novoHorario} onChange={e => setNovoHorario(e.target.value)}
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                     </div>
                     <div style={{ flex: "2 1 180px" }}>
                       <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Teatro (opcional)</label>
                       <input type="text" value={novoTeatro} onChange={e => setNovoTeatro(e.target.value)} placeholder="ex: Teatro Santander"
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                     </div>
                     <div style={{ flex: "2 1 180px" }}>
                       <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "4px" }}>Assento (opcional)</label>
                       <input type="text" value={novoAssento} onChange={e => setNovoAssento(e.target.value)} placeholder="ex: Plateia A, fileira 10, cadeira 5"
-                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
@@ -1305,7 +1305,7 @@ if (!musical) return (
           {/* ── SINOPSE ── */}
           {musical.sinopse && (
             <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Sinopse</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Sinopse</p>
               <p className="sinopse" style={{ marginBottom: 0 }}>{musical.sinopse}</p>
             </div>
           )}
@@ -1315,7 +1315,7 @@ if (!musical) return (
           {/* ── ELENCO (chips) ── */}
           {musical.elenco && (
             <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco de estreia</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco de estreia</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elenco.split(",").map(nome => {
                   const n = nome.trim()
@@ -1327,7 +1327,7 @@ if (!musical) return (
 
           {musical.elencoAdicional && (
             <div style={{ marginBottom: "24px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Elenco adicional</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {musical.elencoAdicional.split(",").map(nome => {
                   const n = nome.trim()
@@ -1341,7 +1341,7 @@ if (!musical) return (
           {temBlocoEquipe && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Equipe</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Equipe</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 {equipeSecundaria.map((item, i) => (
                   <p key={i} style={{ fontSize: "14px", color: "#444", marginBottom: 0 }}>
@@ -1367,7 +1367,7 @@ if (!musical) return (
           {Array.isArray(musical.curiosidades) && musical.curiosidades.filter(Boolean).length > 0 && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Curiosidades</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Curiosidades</p>
               <ul style={{ listStyle: "disc", paddingLeft: "20px", margin: 0, display: "flex", flexDirection: "column", gap: "8px" }}>
                 {musical.curiosidades.filter(Boolean).map((c, i) => (
                   <li key={i} style={{ fontSize: "14px", color: "#444", lineHeight: 1.5 }}>{c}</li>
@@ -1379,7 +1379,7 @@ if (!musical) return (
           {musical.galeria && musical.galeria.length > 0 && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Galeria</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Galeria</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "8px" }}>
                 {musical.galeria.map((foto, i) => (
                   <img
@@ -1399,7 +1399,7 @@ if (!musical) return (
           {Array.isArray(musical.videos) && musical.videos.length > 0 && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Vídeos</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Vídeos</p>
               <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
                 {musical.videos.map((v, i) => (
                   <div key={i} onClick={() => setVideoAberto(i)} style={{ flex: "0 0 240px", cursor: "pointer" }}>
@@ -1426,11 +1426,11 @@ if (!musical) return (
             return (
               <div style={{ marginBottom: "24px" }}>
                 <hr className="divider" />
-                <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Álbum</p>
+                <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Álbum</p>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   {links.map((link, i) => (
                     <a key={i} href={link} target="_blank" rel="noopener noreferrer"
-                      style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#1a1a1a", color: "#F5C518", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>
+                      style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#1a1a1a", color: "#F5C518", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "10px 20px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>
                       🎧 {rotuloAlbum(link)}
                     </a>
                   ))}
@@ -1444,7 +1444,7 @@ if (!musical) return (
           {Array.isArray(musical.premios) && musical.premios.filter(p => p && p.nome).length > 0 && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Prêmios</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Prêmios</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {musical.premios.filter(p => p && p.nome).map((p, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
@@ -1544,7 +1544,7 @@ if (!musical) return (
           {/* ── RECOMENDAÇÃO ── */}
           <div style={{ marginTop: "24px", marginBottom: "8px" }}>
             <button onClick={() => toggleReacao("gostei")} disabled={!jaVi}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: jaVi ? "pointer" : "not-allowed", opacity: jaVi ? 1 : 0.5, transition: "all 0.15s" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: minhaReacao === "gostei" ? "#1a1a1a" : "transparent", color: minhaReacao === "gostei" ? "#F5C518" : "#888", border: "1px solid", borderColor: minhaReacao === "gostei" ? "#1a1a1a" : "#ccc", borderRadius: "6px", padding: "8px 18px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", cursor: jaVi ? "pointer" : "not-allowed", opacity: jaVi ? 1 : 0.5, transition: "all 0.15s" }}>
               {minhaReacao === "gostei" ? "✓ Recomendado" : "👍 Recomendar"}
             </button>
             {!usuario && (
@@ -1566,7 +1566,7 @@ if (!musical) return (
                     <span style={{ color: "#F5C518", fontSize: "13px", textAlign: "center", padding: "12px" }}>{musical.titulo}</span>
                   </div>
                 )}
-                <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "17px", fontWeight: "700", color: "#ffffff", textAlign: "center", marginBottom: "4px", lineHeight: 1.2 }}>{musical.titulo}</p>
+                <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "17px", fontWeight: "700", color: "#ffffff", textAlign: "center", marginBottom: "4px", lineHeight: 1.2 }}>{musical.titulo}</p>
                 <p style={{ fontSize: "11px", color: "#999999", textAlign: "center", marginBottom: "10px", letterSpacing: "0.3px" }}>Dir. {musical.direcao || "—"}</p>
                 {votoAtual ? (
                   <div style={{ display: "flex", gap: "4px", marginBottom: "14px" }}>{estrelasSVG(votoAtual)}</div>
@@ -1578,7 +1578,7 @@ if (!musical) return (
                 <p style={{ fontSize: "10px", color: "#999999", textAlign: "center", letterSpacing: "0.2px" }}>mcdb.musicalcast.com.br</p>
               </div>
               <div style={{ marginTop: "12px" }}>
-                <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
+                <button onClick={gerarImagem} disabled={gerando} style={{ background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "6px", padding: "10px 20px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "500", cursor: gerando ? "wait" : "pointer" }}>
                   {gerando ? "Gerando..." : "📤 Compartilhar imagem"}
                 </button>
               </div>
@@ -1589,7 +1589,7 @@ if (!musical) return (
           {Array.isArray(musical.fontes) && musical.fontes.some(f => f && f.descricao) && (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
-              <p style={{ fontSize: "13px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Fontes</p>
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Fontes</p>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
                 {musical.fontes.filter(f => f && f.descricao).map((f, i) => (
                   <li key={i} style={{ fontSize: "13px", color: "#666", lineHeight: 1.4 }}>

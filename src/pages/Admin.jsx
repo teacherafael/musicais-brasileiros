@@ -833,10 +833,10 @@ async function fazerUploadCapaNovo(arquivo) {
       </label>
       {multiline ? (
         <textarea value={formSugestao[chave] || ""} onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
+          style={{ width: "100%", height: "80px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical" }} />
       ) : (
         <input type="text" value={formSugestao[chave] || ""} onChange={e => setFormSugestao(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
       )}
     </div>
   )
@@ -848,10 +848,10 @@ async function fazerUploadCapaNovo(arquivo) {
       </label>
       {multiline ? (
         <textarea value={formEntidade[chave] || ""} onChange={ev => setFormEntidade(prev => ({ ...prev, [chave]: ev.target.value }))} placeholder={placeholder}
-          style={{ width: "100%", height: "90px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
+          style={{ width: "100%", height: "90px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical" }} />
       ) : (
         <input type="text" value={formEntidade[chave] || ""} onChange={ev => setFormEntidade(prev => ({ ...prev, [chave]: ev.target.value }))} placeholder={placeholder}
-          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
       )}
     </div>
   )
@@ -863,16 +863,16 @@ async function fazerUploadCapaNovo(arquivo) {
       </label>
       {multiline ? (
         <textarea value={formNovo[chave] || ""} onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", height: "100px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical" }} />
+          style={{ width: "100%", height: "100px", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical" }} />
       ) : (
         <input type="text" value={formNovo[chave] || ""} onChange={e => setFormNovo(prev => ({ ...prev, [chave]: e.target.value }))}
-          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
       )}
     </div>
   )
 
-  const inputEquipeStyle = { flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }
-  const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }
+  const inputEquipeStyle = { flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }
+  const cargoLivreStyle = { width: "150px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }
 
   // Editor de equipe genérico — recebe os estados como parâmetro
   function renderEditorEquipe(equipe, setEquipe) {
@@ -904,7 +904,7 @@ async function fazerUploadCapaNovo(arquivo) {
             </div>
           )
         })}
-        <button onClick={() => adicionarCargoLivreEm(equipe, setEquipe)} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }}>
+        <button onClick={() => adicionarCargoLivreEm(equipe, setEquipe)} style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }}>
           + Adicionar cargo
         </button>
       </div>
@@ -922,16 +922,16 @@ async function fazerUploadCapaNovo(arquivo) {
           <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
             <input type="text" placeholder="Local (ex: São Paulo)" value={item.local}
               onChange={e => { const novo = [...musicos]; novo[i] = { ...novo[i], local: e.target.value }; setMusicos(novo) }}
-              style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+              style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
             <textarea placeholder="Nomes (separados por vírgula)" value={item.nomesTexto} rows={3}
               onChange={e => { const novo = [...musicos]; novo[i] = { ...novo[i], nomesTexto: e.target.value }; setMusicos(novo) }}
-              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
             <button onClick={() => setMusicos(musicos.filter((_, idx) => idx !== i))}
               style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
           </div>
         ))}
         <button onClick={() => setMusicos([...musicos, { local: "", nomesTexto: "" }])}
-          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
           + Adicionar local
         </button>
       </div>
@@ -949,16 +949,16 @@ async function fazerUploadCapaNovo(arquivo) {
           <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
             <input type="text" placeholder="Descrição (ex: Folha de S.Paulo, 12/03/1998)" value={item.descricao}
               onChange={e => { const novo = [...fontes]; novo[i] = { ...novo[i], descricao: e.target.value }; setFontes(novo) }}
-              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
             <input type="text" placeholder="Link (opcional)" value={item.link}
               onChange={e => { const novo = [...fontes]; novo[i] = { ...novo[i], link: e.target.value }; setFontes(novo) }}
-              style={{ width: "200px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+              style={{ width: "200px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
             <button onClick={() => setFontes(fontes.filter((_, idx) => idx !== i))}
               style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
           </div>
         ))}
         <button onClick={() => setFontes([...fontes, { descricao: "", link: "" }])}
-          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
           + Adicionar fonte
         </button>
       </div>
@@ -976,19 +976,19 @@ async function fazerUploadCapaNovo(arquivo) {
           <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
             <input type="text" placeholder="Nome do prêmio" value={item.nome}
               onChange={e => { const novo = [...premios]; novo[i] = { ...novo[i], nome: e.target.value }; setPremios(novo) }}
-              style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+              style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
             <input type="text" placeholder="Ano" value={item.ano}
               onChange={e => { const novo = [...premios]; novo[i] = { ...novo[i], ano: e.target.value }; setPremios(novo) }}
-              style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+              style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
             <input type="text" placeholder="Categoria" value={item.categoria}
               onChange={e => { const novo = [...premios]; novo[i] = { ...novo[i], categoria: e.target.value }; setPremios(novo) }}
-              style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+              style={{ flex: 2, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
             <button onClick={() => setPremios(premios.filter((_, idx) => idx !== i))}
               style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
           </div>
         ))}
         <button onClick={() => setPremios([...premios, { nome: "", ano: "", categoria: "" }])}
-          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
           + Adicionar prêmio
         </button>
       </div>
@@ -1006,13 +1006,13 @@ async function fazerUploadCapaNovo(arquivo) {
           <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
             <textarea placeholder="Curiosidade" value={texto} rows={2}
               onChange={e => { const novo = [...curiosidades]; novo[i] = e.target.value; setCuriosidades(novo) }}
-              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
             <button onClick={() => setCuriosidades(curiosidades.filter((_, idx) => idx !== i))}
               style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
           </div>
         ))}
         <button onClick={() => setCuriosidades([...curiosidades, ""])}
-          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
           + Adicionar curiosidade
         </button>
       </div>
@@ -1036,16 +1036,16 @@ async function fazerUploadCapaNovo(arquivo) {
             </div>
             <input type="text" placeholder="Ano" value={item.ano}
               onChange={e => { const novo = [...teatros]; novo[i] = { ...novo[i], ano: e.target.value }; setTeatros(novo) }}
-              style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+              style={{ width: "90px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
             <input type="text" placeholder="Teatros (separados por vírgula)" value={item.teatrosTexto}
               onChange={e => { const novo = [...teatros]; novo[i] = { ...novo[i], teatrosTexto: e.target.value }; setTeatros(novo) }}
-              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+              style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
             <button onClick={() => setTeatros(teatros.filter((_, idx) => idx !== i))}
               style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
           </div>
         ))}
         <button onClick={() => setTeatros([...teatros, { ano: "", teatrosTexto: "" }])}
-          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+          style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
           + Adicionar teatro
         </button>
       </div>
@@ -1119,14 +1119,14 @@ async function fazerUploadCapaNovo(arquivo) {
             <div key={s.id} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
               {editandoSugestao === s.id ? (
                 <>
-                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "16px" }}>Editando sugestão</h2>
+                  <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", marginBottom: "16px" }}>Editando sugestão</h2>
                   {campoSugestao("Título", "titulo")}
                   {campoSugestao("Título original", "tituloOriginal")}
 
                   <div style={{ marginBottom: "12px" }}>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo de obra</label>
                     <select value={formSugestao.tipoObra || "Musical"} onChange={e => setFormSugestao(prev => ({ ...prev, tipoObra: e.target.value }))}
-                      style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+                      style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", background: "#fff" }}>
                       {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
@@ -1146,7 +1146,7 @@ async function fazerUploadCapaNovo(arquivo) {
                       Capa (opcional)
                     </label>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-                      <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaSugestao === s.id ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: enviandoCapaSugestao === s.id ? "wait" : "pointer" }}>
+                      <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaSugestao === s.id ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600", cursor: enviandoCapaSugestao === s.id ? "wait" : "pointer" }}>
                         {enviandoCapaSugestao === s.id ? "Enviando..." : "📤 Enviar imagem"}
                         <input type="file" accept="image/*" disabled={enviandoCapaSugestao === s.id}
                           onChange={e => { fazerUploadCapaSugestao(e.target.files[0], s.id); e.target.value = "" }}
@@ -1156,7 +1156,7 @@ async function fazerUploadCapaNovo(arquivo) {
                     </div>
                     <input type="text" placeholder="https://..." value={capas[s.id] || ""}
                       onChange={e => setCapas(prev => ({ ...prev, [s.id]: e.target.value }))}
-                      style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
+                      style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
                     {capas[s.id] && (
                       <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
                     )}
@@ -1169,7 +1169,7 @@ async function fazerUploadCapaNovo(arquivo) {
                 </>
               ) : (
                 <>
-                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
+                  <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "20px", marginBottom: "12px" }}>{s.titulo}</h2>
                   {s.tituloOriginal && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Título original:</strong> {s.tituloOriginal}</p>}
                   {s.sinopse && <p style={{ fontSize: "14px", color: "#444", marginBottom: "8px" }}><strong>Sinopse:</strong> {s.sinopse}</p>}
                   {s.direcao && <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}><strong>Direção:</strong> {s.direcao}</p>}
@@ -1196,7 +1196,7 @@ async function fazerUploadCapaNovo(arquivo) {
                     <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>Sugerido por: {s.nome}</p>
                     {s.userId && s.userId !== usuario.uid && (
                       <button onClick={() => mandarMensagemParaSugestor(s.userId)}
-                        style={{ background: "transparent", color: "#555", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
+                        style={{ background: "transparent", color: "#555", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
                         💬 Mandar mensagem
                       </button>
                     )}
@@ -1206,7 +1206,7 @@ async function fazerUploadCapaNovo(arquivo) {
                       Capa (opcional)
                     </label>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-                      <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaSugestao === s.id ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoCapaSugestao === s.id ? "wait" : "pointer" }}>
+                      <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaSugestao === s.id ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "600", cursor: enviandoCapaSugestao === s.id ? "wait" : "pointer" }}>
                         {enviandoCapaSugestao === s.id ? "Enviando..." : "📤 Enviar imagem"}
                         <input type="file" accept="image/*" disabled={enviandoCapaSugestao === s.id}
                           onChange={e => { fazerUploadCapaSugestao(e.target.files[0], s.id); e.target.value = "" }}
@@ -1216,7 +1216,7 @@ async function fazerUploadCapaNovo(arquivo) {
                     </div>
                     <input type="text" placeholder="https://..." value={capas[s.id] || ""}
                       onChange={e => setCapas(prev => ({ ...prev, [s.id]: e.target.value }))}
-                      style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", marginBottom: "8px" }} />
+                      style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none", marginBottom: "8px" }} />
                     {capas[s.id] && (
                       <img src={capas[s.id]} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
                     )}
@@ -1224,7 +1224,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                     <button className="btn-comentar" onClick={() => aprovar(s)}>Aprovar e publicar</button>
                     <button onClick={() => abrirEdicaoSugestao(s)}
-                      style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+                      style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "10px 20px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: "pointer" }}>
                       ✏️ Editar
                     </button>
                     <button className="btn-sair" onClick={() => rejeitar(s.id)}>Rejeitar</button>
@@ -1238,13 +1238,13 @@ async function fazerUploadCapaNovo(arquivo) {
         <>
           {rascunhosAdmin.length > 0 && (
             <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", marginBottom: "12px" }}>Rascunhos salvos</h2>
+              <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", marginBottom: "12px" }}>Rascunhos salvos</h2>
               {rascunhosAdmin.map(r => (
                 <div key={r.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 0", borderTop: "1px solid #f0e6b8" }}>
                   <p style={{ flex: 1, fontSize: "14px", fontWeight: "600", margin: 0 }}>{r.titulo || "(sem título)"}</p>
                   <button className="btn-comentar" onClick={() => continuarRascunho(r)}>✏️ Continuar editando</button>
                   <button onClick={() => deletarRascunho(r.id, r.titulo)}
-                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>
                     Deletar
                   </button>
                 </div>
@@ -1252,7 +1252,7 @@ async function fazerUploadCapaNovo(arquivo) {
             </div>
           )}
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "8px" }}>Adicionar musical</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "20px", marginBottom: "8px" }}>Adicionar musical</h2>
           <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px", lineHeight: "1.5" }}>
             Preencha os campos abaixo e clique em <strong>Publicar musical</strong> para adicionar direto na database, sem passar pelo formulário de sugestão.
           </p>
@@ -1263,7 +1263,7 @@ async function fazerUploadCapaNovo(arquivo) {
           <div style={{ marginBottom: "12px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo de obra</label>
             <select value={formNovo.tipoObra || "Musical"} onChange={e => setFormNovo(prev => ({ ...prev, tipoObra: e.target.value }))}
-              style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+              style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", background: "#fff" }}>
               {TIPOS_OBRA.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -1287,7 +1287,7 @@ async function fazerUploadCapaNovo(arquivo) {
               Capa (opcional)
             </label>
             <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-              <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaNovo ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoCapaNovo ? "wait" : "pointer" }}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoCapaNovo ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "600", cursor: enviandoCapaNovo ? "wait" : "pointer" }}>
                 {enviandoCapaNovo ? "Enviando..." : "📤 Enviar imagem"}
                 <input
                   type="file"
@@ -1300,7 +1300,7 @@ async function fazerUploadCapaNovo(arquivo) {
               <span style={{ fontSize: "13px", color: "#aaa" }}>ou cole uma URL abaixo</span>
             </div>
             <input type="text" placeholder="https://..." value={capaNovo} onChange={e => setCapaNovo(e.target.value)}
-              style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
+              style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
             {capaNovo && (
               <img src={capaNovo} alt="Preview" style={{ width: "80px", height: "110px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e8e8e4" }} />
             )}
@@ -1339,7 +1339,7 @@ async function fazerUploadCapaNovo(arquivo) {
                 <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>Reportado por: {r.nome}</p>
                 {r.userId && r.userId !== usuario.uid && (
                   <button onClick={() => mandarMensagemParaSugestor(r.userId)}
-                    style={{ background: "transparent", color: "#555", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
+                    style={{ background: "transparent", color: "#555", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
                     💬 Mandar mensagem
                   </button>
                 )}
@@ -1375,12 +1375,12 @@ async function fazerUploadCapaNovo(arquivo) {
                   <button className="btn-comentar" onClick={() => marcarMensagemLida(m.id)}>✓ Marcar como lida</button>
                 )}
                 {m.email && (
-                  <a href={`mailto:${m.email}`} style={{ display: "inline-block", padding: "10px 20px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", color: "#1a1a1a", textDecoration: "none", background: "#fff" }}>
+                  <a href={`mailto:${m.email}`} style={{ display: "inline-block", padding: "10px 20px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", color: "#1a1a1a", textDecoration: "none", background: "#fff" }}>
                     Responder por e-mail
                   </a>
                 )}
                 <button onClick={() => deletarMensagem(m.id)}
-                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer" }}>
+                  style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: "pointer" }}>
                   Deletar
                 </button>
               </div>
@@ -1405,7 +1405,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>
+                  <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>
                     {m.titulo}
                     <span style={{ fontSize: "11px", fontWeight: "600", color: "#cc7a00", background: "#fff3e0", borderRadius: "4px", padding: "2px 6px", marginLeft: "8px" }}>arquivado</span>
                   </p>
@@ -1414,11 +1414,11 @@ async function fazerUploadCapaNovo(arquivo) {
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                   <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
                   <button onClick={() => arquivarMusical(m.id, m.titulo, true)}
-                    style={{ background: "transparent", color: "#b8960a", border: "1px solid #b8960a", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    style={{ background: "transparent", color: "#b8960a", border: "1px solid #b8960a", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>
                     Desarquivar
                   </button>
                   <button onClick={() => deletarMusical(m.id, m.titulo)}
-                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>
                     Deletar
                   </button>
                 </div>
@@ -1440,7 +1440,7 @@ async function fazerUploadCapaNovo(arquivo) {
           ) : (
             rankingEmAlta.map((m, i) => (
               <div key={m.musicalId} style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px" }}>
-                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: "700", color: "#b8960a", width: "28px", textAlign: "center", flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ fontFamily: "var(--fonte-titulo)", fontSize: "22px", fontWeight: "700", color: "#b8960a", width: "28px", textAlign: "center", flexShrink: 0 }}>{i + 1}</span>
                 {m.capa ? (
                   <img src={m.capa} alt={m.titulo} style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
                 ) : (
@@ -1449,7 +1449,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
+                  <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{m.titulo}</p>
                   <p style={{ fontSize: "13px", color: "#888" }}>
                     {m.count} {m.count === 1 ? "avaliação" : "avaliações"} · média {(m.soma / m.count).toFixed(1)} ★
                   </p>
@@ -1463,7 +1463,7 @@ async function fazerUploadCapaNovo(arquivo) {
         <>
           <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: mostrarFormEntidade ? "20px" : "12px 20px", marginBottom: "24px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: mostrarFormEntidade ? "20px" : "17px", margin: 0 }}>
+              <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: mostrarFormEntidade ? "20px" : "17px", margin: 0 }}>
                 {mostrarFormEntidade ? (editandoEntidadeId ? "Editar entidade" : "Nova entidade") : "Cadastro de entidades"}
               </h2>
               <button className={mostrarFormEntidade ? "btn-sair" : "btn-comentar"}
@@ -1480,7 +1480,7 @@ async function fazerUploadCapaNovo(arquivo) {
             <div style={{ marginBottom: "12px" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo</label>
               <select value={formEntidade.tipo || "artista"} onChange={ev => setFormEntidade(prev => ({ ...prev, tipo: ev.target.value }))}
-                style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+                style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", background: "#fff" }}>
                 <option value="artista">Artista</option>
                 <option value="produtora">Produtora</option>
                 <option value="assessoria">Assessoria de imprensa</option>
@@ -1493,7 +1493,7 @@ async function fazerUploadCapaNovo(arquivo) {
             <div style={{ marginBottom: "12px" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Tipo de imagem</label>
               <select value={formEntidade.tipoImagem || "foto"} onChange={ev => setFormEntidade(prev => ({ ...prev, tipoImagem: ev.target.value }))}
-                style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", background: "#fff" }}>
+                style={{ padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", background: "#fff" }}>
                 <option value="foto">Foto (recorta em quadrado)</option>
                 <option value="logo">Logo (exibe inteira)</option>
               </select>
@@ -1502,7 +1502,7 @@ async function fazerUploadCapaNovo(arquivo) {
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Imagem</label>
               <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoImagemEntidade ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "600", cursor: enviandoImagemEntidade ? "wait" : "pointer" }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: enviandoImagemEntidade ? "#ccc" : "#1a1a1a", color: "#F5C518", borderRadius: "8px", padding: "10px 18px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "600", cursor: enviandoImagemEntidade ? "wait" : "pointer" }}>
                   {enviandoImagemEntidade ? "Enviando..." : "📤 Enviar imagem"}
                   <input type="file" accept="image/*" disabled={enviandoImagemEntidade}
                     onChange={ev => { fazerUploadImagemEntidade(ev.target.files[0]); ev.target.value = "" }}
@@ -1511,7 +1511,7 @@ async function fazerUploadCapaNovo(arquivo) {
                 <span style={{ fontSize: "13px", color: "#aaa" }}>ou cole uma URL abaixo</span>
               </div>
               <input type="text" placeholder="https://..." value={formEntidade.imagem || ""} onChange={ev => setFormEntidade(prev => ({ ...prev, imagem: ev.target.value }))}
-                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
               {formEntidade.imagem && (
                 formEntidade.tipoImagem === "logo" ? (
                   <img src={formEntidade.imagem} alt="Preview" style={{ maxWidth: "160px", maxHeight: "90px", objectFit: "contain", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "4px", background: "#fafafa" }} />
@@ -1534,16 +1534,16 @@ async function fazerUploadCapaNovo(arquivo) {
                 <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
                   <input type="text" placeholder="Rótulo (ex: TikTok)" value={ex.label || ""}
                     onChange={ev => { const novo = [...extrasEntidade]; novo[i] = { ...novo[i], label: ev.target.value }; setExtrasEntidade(novo) }}
-                    style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", flexShrink: 0 }} />
+                    style={{ width: "160px", padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", flexShrink: 0 }} />
                   <input type="text" placeholder="https://..." value={ex.url || ""}
                     onChange={ev => { const novo = [...extrasEntidade]; novo[i] = { ...novo[i], url: ev.target.value }; setExtrasEntidade(novo) }}
-                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                   <button onClick={() => setExtrasEntidade(extrasEntidade.filter((_, idx) => idx !== i))}
                     style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
                 </div>
               ))}
               <button onClick={() => setExtrasEntidade([...extrasEntidade, { label: "", url: "" }])}
-                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                 + Adicionar link
               </button>
             </div>
@@ -1565,13 +1565,13 @@ async function fazerUploadCapaNovo(arquivo) {
                   </div>
                   <input type="text" placeholder="cole o link completo do YouTube" value={link}
                     onChange={ev => { const novo = [...videosTrabalho]; novo[i] = ev.target.value; setVideosTrabalho(novo) }}
-                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                   <button onClick={() => setVideosTrabalho(videosTrabalho.filter((_, idx) => idx !== i))}
                     style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
                 </div>
               ))}
               <button onClick={() => setVideosTrabalho([...videosTrabalho, ""])}
-                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                 + Adicionar vídeo
               </button>
             </div>
@@ -1593,14 +1593,14 @@ async function fazerUploadCapaNovo(arquivo) {
                   )}
                   <input type="text" placeholder="https://pub-...r2.dev/..." value={url}
                     onChange={ev => { const novo = [...fotosTrabalho]; novo[i] = ev.target.value; setFotosTrabalho(novo) }}
-                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none" }} />
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none" }} />
                   <button onClick={() => setFotosTrabalho(fotosTrabalho.filter((_, idx) => idx !== i))}
                     style={{ background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px" }} title="Remover">✕</button>
                 </div>
               ))}
               {fotosTrabalho.length < 20 && (
                 <button onClick={() => setFotosTrabalho([...fotosTrabalho, ""])}
-                  style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer" }}>
+                  style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
                   + Adicionar foto
                 </button>
               )}
@@ -1629,11 +1629,11 @@ async function fazerUploadCapaNovo(arquivo) {
             )}
           </div>
 
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", marginBottom: "12px" }}>Entidades cadastradas</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", marginBottom: "12px" }}>Entidades cadastradas</h2>
           {entidades.length > 0 && (
             <input type="text" value={buscaEntidade} onChange={ev => setBuscaEntidade(ev.target.value)}
               placeholder="Buscar entidade pelo nome..."
-              style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "16px" }} />
+              style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", marginBottom: "16px" }} />
           )}
           {entidades.length === 0 ? (
             <p style={{ color: "#888" }}>Nenhuma entidade cadastrada ainda.</p>
@@ -1648,7 +1648,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   <div style={{ width: "56px", height: "56px", background: "#f0f0f0", borderRadius: "8px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#bbb", fontSize: "20px" }}>🎭</div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "2px" }}>
+                  <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", fontWeight: "700", marginBottom: "2px" }}>
                     {e.nome} {!e.publicado && <span style={{ fontSize: "11px", fontWeight: "600", color: "#cc7a00", background: "#fff3e0", borderRadius: "4px", padding: "2px 6px", marginLeft: "6px" }}>rascunho</span>}
                   </p>
                   <p style={{ fontSize: "13px", color: "#888", textTransform: "capitalize" }}>{e.tipo}</p>
@@ -1656,9 +1656,9 @@ async function fazerUploadCapaNovo(arquivo) {
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0, flexWrap: "wrap" }}>
                   <button className="btn-comentar" onClick={() => navigate(`/pessoa/${encodeURIComponent(e.nome)}`)}>Ver</button>
                   <button onClick={() => editarEntidade(e)}
-                    style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>✏️ Editar</button>
+                    style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>✏️ Editar</button>
                   <button onClick={() => deletarEntidade(e.id, e.nome)}
-                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>Deletar</button>
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>Deletar</button>
                 </div>
               </div>
             ))
@@ -1666,7 +1666,7 @@ async function fazerUploadCapaNovo(arquivo) {
         </>
       ) : aba === "comunicado" ? (
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", marginBottom: "16px" }}>Enviar comunicado</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "20px", marginBottom: "16px" }}>Enviar comunicado</h2>
           <EnviarComunicado />
         </div>
       ) : (
@@ -1701,7 +1701,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>
+                  <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>
                     {m.titulo}
                     {m.arquivado && <span style={{ fontSize: "11px", fontWeight: "600", color: "#cc7a00", background: "#fff3e0", borderRadius: "4px", padding: "2px 6px", marginLeft: "8px" }}>arquivado</span>}
                   </p>
@@ -1710,11 +1710,11 @@ async function fazerUploadCapaNovo(arquivo) {
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                   <button className="btn-comentar" onClick={() => navigate(`/musical/${m.id}`)}>Ver</button>
                   <button onClick={() => arquivarMusical(m.id, m.titulo, m.arquivado === true)}
-                    style={{ background: "transparent", color: "#b8960a", border: "1px solid #b8960a", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    style={{ background: "transparent", color: "#b8960a", border: "1px solid #b8960a", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>
                     {m.arquivado ? "Desarquivar" : "Arquivar"}
                   </button>
                   <button onClick={() => deletarMusical(m.id, m.titulo)}
-                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                    style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>
                     Deletar
                   </button>
                 </div>

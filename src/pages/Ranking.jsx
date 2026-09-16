@@ -70,7 +70,7 @@ function CardRanking({ musical, index, navigate, contador, labelSingular, labelP
       )}
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "15px", fontWeight: "700", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{musical.titulo}</p>
+        <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "15px", fontWeight: "700", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{musical.titulo}</p>
         <p style={{ fontSize: "12px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Dir. {musical.direcao || "—"}</p>
       </div>
 

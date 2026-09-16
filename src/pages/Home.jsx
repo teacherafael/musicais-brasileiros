@@ -391,8 +391,8 @@ function scrollDestaques(direcao) {
       )}
       <p className="section-label">Musical Cast Database</p>
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
-        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>{musicais.length}</span>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>musicais brasileiros<br />catalogados</h1>
+        <span style={{ fontFamily: "var(--fonte-titulo)", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>{musicais.length}</span>
+        <h1 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>musicais brasileiros<br />catalogados</h1>
       </div>
       <p style={{ fontSize: "15px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo digital do teatro musical brasileiro.</p>
       <div style={{ marginBottom: "32px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -438,31 +438,31 @@ function scrollDestaques(direcao) {
 
       <div style={{ display: "flex", gap: "12px", margin: "24px 0", flexWrap: "wrap" }}>
         <input type="text" placeholder="Buscar musical ou pessoa..." value={buscaInput} onChange={e => setBuscaInput(e.target.value)}
-          style={{ flex: 1, minWidth: "200px", padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none" }} />
+          style={{ flex: 1, minWidth: "200px", padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none" }} />
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Organizar por</label>
-          <select value={ordenacao} onChange={e => { setOrdenacao(e.target.value); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}>
+          <select value={ordenacao} onChange={e => { setOrdenacao(e.target.value); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}>
             <option value="az">A → Z</option><option value="za">Z → A</option>
             <option value="recentes">Adicionados recentemente</option><option value="antigos">Adicionados anteriormente</option>
           </select>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Ano</label>
-          <select value={filtroAno} onChange={e => { setFiltroAno(e.target.value); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}>
+          <select value={filtroAno} onChange={e => { setFiltroAno(e.target.value); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", background: "#fff", cursor: "pointer", outline: "none" }}>
             <option value="">Todos os anos</option>
             {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
           </select>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Buscar</label>
-          <button onClick={() => { setSoPessoas(v => !v); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", background: soPessoas ? "#b8960a" : "#fff", color: soPessoas ? "#fff" : "#1a1a1a", fontWeight: soPessoas ? "600" : "400", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}>
+          <button onClick={() => { setSoPessoas(v => !v); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", cursor: "pointer", background: soPessoas ? "#b8960a" : "#fff", color: soPessoas ? "#fff" : "#1a1a1a", fontWeight: soPessoas ? "600" : "400", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}>
             {soPessoas ? "✓ Só pessoas" : "Só pessoas"}
           </button>
         </div>
         {usuario && (
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <label style={{ fontSize: "11px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px" }}>Vistos</label>
-            <button onClick={() => { setOcultarVistos(v => !v); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", background: ocultarVistos ? "#b8960a" : "#fff", color: ocultarVistos ? "#fff" : "#1a1a1a", fontWeight: ocultarVistos ? "600" : "400", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}>
+            <button onClick={() => { setOcultarVistos(v => !v); setVisiveis(24) }} style={{ padding: "12px 16px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", cursor: "pointer", background: ocultarVistos ? "#b8960a" : "#fff", color: ocultarVistos ? "#fff" : "#1a1a1a", fontWeight: ocultarVistos ? "600" : "400", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}>
               {ocultarVistos ? "✓ Não vi ainda" : "Não vi ainda"}
             </button>
           </div>
@@ -475,7 +475,7 @@ function scrollDestaques(direcao) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {pessoasSugeridas.map(p => (
               <button key={p.nome} onClick={() => navigate(`/pessoa/${encodeURIComponent(p.nome)}`)}
-                style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "999px", background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", cursor: "pointer", transition: "background 0.15s" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 14px", border: "1px solid #e8e8e4", borderRadius: "999px", background: "#fff", fontFamily: "var(--fonte-corpo)", fontSize: "14px", fontWeight: "500", color: "#1a1a1a", cursor: "pointer", transition: "background 0.15s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
                 onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
                 {p.nome} <span style={{ color: "#b8960a" }}>→</span>
@@ -513,7 +513,7 @@ function scrollDestaques(direcao) {
 
       {temMais && (
         <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
-          <button onClick={() => setVisiveis(v => v + 24)} style={{ padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer", color: "#1a1a1a", fontWeight: "500" }}>
+          <button onClick={() => setVisiveis(v => v + 24)} style={{ padding: "12px 32px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fff", fontFamily: "var(--fonte-corpo)", fontSize: "15px", cursor: "pointer", color: "#1a1a1a", fontWeight: "500" }}>
             Carregar mais ({musicaisFiltrados.length - visiveis} restantes)
           </button>
         </div>
@@ -521,31 +521,31 @@ function scrollDestaques(direcao) {
 
       <div style={{ marginTop: "64px", padding: "48px 0", borderTop: "1px solid #e8e8e4" }}>
         <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "8px" }}>Fale com a gente</p>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", fontWeight: "700", margin: "0 0 8px" }}>Tem algo a dizer?</h2>
+        <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "28px", fontWeight: "700", margin: "0 0 8px" }}>Tem algo a dizer?</h2>
         <p style={{ fontSize: "15px", color: "#888", marginBottom: "32px" }}>Sugestões, correções, parcerias ou só um oi — a gente lê tudo.</p>
         {!usuario ? (
           <div style={{ background: "#f9f9f9", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "32px", textAlign: "center", maxWidth: "560px" }}>
             <p style={{ fontSize: "32px", marginBottom: "12px" }}>🔒</p>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Faça login para enviar uma mensagem</p>
+            <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Faça login para enviar uma mensagem</p>
             <p style={{ fontSize: "14px", color: "#888" }}>Isso ajuda a evitar spam e mensagens anônimas.</p>
           </div>
         ) : contatoEnviado ? (
           <div style={{ background: "#f9f9f9", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "32px", textAlign: "center", maxWidth: "560px" }}>
             <p style={{ fontSize: "32px", marginBottom: "12px" }}>✉️</p>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Mensagem enviada!</p>
+            <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Mensagem enviada!</p>
             <p style={{ fontSize: "14px", color: "#888", marginBottom: "20px" }}>Obrigado por entrar em contato. Retornaremos em breve.</p>
-            <button onClick={() => setContatoEnviado(false)} style={{ padding: "10px 24px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: "pointer", color: "#1a1a1a" }}>Enviar outra mensagem</button>
+            <button onClick={() => setContatoEnviado(false)} style={{ padding: "10px 24px", border: "1px solid #e8e8e4", borderRadius: "8px", background: "#fff", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: "pointer", color: "#1a1a1a" }}>Enviar outra mensagem</button>
           </div>
         ) : (
           <div style={{ maxWidth: "560px", display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "12px", fontWeight: "600", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>Mensagem <span style={{ color: "#cc0000" }}>*</span></label>
               <textarea placeholder="Escreva sua mensagem..." value={contatoMensagem} onChange={e => setContatoMensagem(e.target.value)} rows={5}
-                style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", resize: "vertical", lineHeight: "1.5" }} />
+                style={{ padding: "12px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none", resize: "vertical", lineHeight: "1.5" }} />
             </div>
             <div>
               <button onClick={enviarContato} disabled={contatoEnviando || !contatoMensagem.trim()}
-                style={{ padding: "12px 28px", background: contatoEnviando || !contatoMensagem.trim() ? "#ccc" : "#1a1a1a", color: "#fff", border: "none", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", cursor: contatoEnviando || !contatoMensagem.trim() ? "not-allowed" : "pointer", transition: "background 0.15s" }}>
+                style={{ padding: "12px 28px", background: contatoEnviando || !contatoMensagem.trim() ? "#ccc" : "#1a1a1a", color: "#fff", border: "none", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600", cursor: contatoEnviando || !contatoMensagem.trim() ? "not-allowed" : "pointer", transition: "background 0.15s" }}>
                 {contatoEnviando ? "Enviando..." : "Enviar mensagem"}
               </button>
             </div>

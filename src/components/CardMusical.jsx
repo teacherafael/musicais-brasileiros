@@ -101,7 +101,7 @@ export default function CardMusical({
             <span style={{ width: "16px", height: "16px", border: "2px solid", borderColor: marcado ? "#b8960a" : "#ccc", borderRadius: "4px", background: marcado ? "#b8960a" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "10px", color: "#fff" }}>
               {marcado ? "✓" : ""}
             </span>
-            <span style={{ fontSize: "13px", color: "#1a1a1a", fontFamily: "'DM Sans', sans-serif" }}>{lista.nome}</span>
+            <span style={{ fontSize: "13px", color: "#1a1a1a", fontFamily: "var(--fonte-corpo)" }}>{lista.nome}</span>
           </div>
         )
       })}
@@ -118,11 +118,11 @@ export default function CardMusical({
                 if (e.key === "Enter") { onCriarLista(e, musical, novaListaNome, () => { setCriandoLista(false); setNovaListaNome("") }) }
                 if (e.key === "Escape") setCriandoLista(false)
               }}
-              style={{ flex: 1, padding: "5px 8px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", outline: "none" }}
+              style={{ flex: 1, padding: "5px 8px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", outline: "none" }}
             />
             <button
               onClick={e => onCriarLista(e, musical, novaListaNome, () => { setCriandoLista(false); setNovaListaNome("") })}
-              style={{ background: "#b8960a", border: "none", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", fontWeight: "600", cursor: "pointer", color: "#fff" }}>
+              style={{ background: "#b8960a", border: "none", borderRadius: "6px", padding: "5px 10px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", fontWeight: "600", cursor: "pointer", color: "#fff" }}>
               OK
             </button>
           </div>
@@ -130,7 +130,7 @@ export default function CardMusical({
           <div
             role="button" tabIndex={0}
             onClick={e => { e.preventDefault(); e.stopPropagation(); setCriandoLista(true) }}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "9px 14px", cursor: "pointer", color: "#b8960a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", WebkitTapHighlightColor: "transparent" }}
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "9px 14px", cursor: "pointer", color: "#b8960a", fontSize: "13px", fontFamily: "var(--fonte-corpo)", fontWeight: "600", WebkitTapHighlightColor: "transparent" }}
             onMouseEnter={e => e.currentTarget.style.background = "#fffbe6"}
             onMouseLeave={e => e.currentTarget.style.background = "transparent"}
           >
@@ -198,7 +198,7 @@ export default function CardMusical({
       <span style={{ width: "14px", height: "14px", borderRadius: "50%", background: "#0a2c59", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <svg viewBox="0 0 24 24" width="9" height="9" fill="#F5C518" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
       </span>
-      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "9px", fontWeight: "600", color: "#fff", letterSpacing: "0.4px", whiteSpace: "nowrap" }}>
+      <span style={{ fontFamily: "var(--fonte-corpo)", fontSize: "9px", fontWeight: "600", color: "#fff", letterSpacing: "0.4px", whiteSpace: "nowrap" }}>
         RECOMENDADO <span style={{ color: "#F5C518" }}>MC</span>
       </span>
     </div>
@@ -215,19 +215,19 @@ export default function CardMusical({
     }}>
       <button
         onClick={e => onToggleJaVi(e, musical)}
-        style={{ background: jaViSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)", border: jaViSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: jaViSet.has(musical.id) ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
+        style={{ background: jaViSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)", border: jaViSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "var(--fonte-corpo)", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: jaViSet.has(musical.id) ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
         {jaViSet.has(musical.id) ? "✓ Já vi" : "Já vi"}
       </button>
       <button
         onClick={e => onToggleQueroVer(e, musical)}
-        style={{ background: queroVerSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)", border: queroVerSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: queroVerSet.has(musical.id) ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
+        style={{ background: queroVerSet.has(musical.id) ? "#F5C518" : "rgba(255,255,255,0.15)", border: queroVerSet.has(musical.id) ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "var(--fonte-corpo)", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: queroVerSet.has(musical.id) ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
         {queroVerSet.has(musical.id) ? "★ Não vi" : "☆ Não vi"}
       </button>
       <button
         ref={btnListasRef}
         data-btn-listas={musical.id}
         onClick={handleAbrirListas}
-        style={{ background: emAlgumaLista ? "#F5C518" : "rgba(255,255,255,0.15)", border: emAlgumaLista ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: emAlgumaLista ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
+        style={{ background: emAlgumaLista ? "#F5C518" : "rgba(255,255,255,0.15)", border: emAlgumaLista ? "none" : "1px solid rgba(255,255,255,0.4)", borderRadius: "20px", padding: pequeno ? "3px 8px" : "4px 10px", fontFamily: "var(--fonte-corpo)", fontSize: pequeno ? "10px" : "11px", fontWeight: "600", color: emAlgumaLista ? "#1a1a1a" : "#fff", cursor: "pointer", backdropFilter: "blur(4px)" }}>
         {emAlgumaLista ? "✓ Listas" : "+ Listas"}
       </button>
     </div>
@@ -250,7 +250,7 @@ export default function CardMusical({
             {barraBotoes}
           </div>
           <div style={{ width: "100%" }}>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: "600", fontSize: "13px", margin: "0 0 4px", lineHeight: "1.3" }}>{musical.titulo}</p>
+            <p style={{ fontFamily: "var(--fonte-corpo)", fontWeight: "600", fontSize: "13px", margin: "0 0 4px", lineHeight: "1.3" }}>{musical.titulo}</p>
             {metaExtra}
           </div>
         </a>
@@ -282,7 +282,7 @@ export default function CardMusical({
           {barraBotoes}
         </div>
         <div style={{ padding: "10px 12px 12px" }}>
-          <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: "700", fontSize: "14px", margin: "0 0 3px", lineHeight: "1.3", color: "#1a1a1a" }}>{musical.titulo}</p>
+          <p style={{ fontFamily: "var(--fonte-titulo)", fontWeight: "700", fontSize: "14px", margin: "0 0 3px", lineHeight: "1.3", color: "#1a1a1a" }}>{musical.titulo}</p>
           {metaExtra
             ? metaExtra
             : (!esconderDirecao && <p style={{ fontSize: "12px", color: "#888", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{musical.direcao || "—"}</p>)}

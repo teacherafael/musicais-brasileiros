@@ -60,7 +60,7 @@ function FAQ() {
         }
       ].map((item, i) => (
         <div key={i} style={{ marginBottom: "28px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>{item.pergunta}</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>{item.pergunta}</h2>
           <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75" }}>{item.resposta}</p>
         </div>
       ))}

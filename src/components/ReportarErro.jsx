@@ -45,7 +45,7 @@ function ReportarErro({ musicalId, musicalTitulo, usuario }) {
                 value={texto}
                 onChange={e => setTexto(e.target.value)}
                 placeholder="Descreva o erro ou a mudança que você gostaria..."
-                style={{ width: "100%", height: "80px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginBottom: "8px" }}
+                style={{ width: "100%", height: "80px", padding: "8px", borderRadius: "6px", border: "1px solid #e8e8e4", fontFamily: "var(--fonte-corpo)", fontSize: "14px", marginBottom: "8px" }}
               />
               <div style={{ display: "flex", gap: "8px" }}>
                 <button className="btn-comentar" onClick={enviar}>Enviar</button>

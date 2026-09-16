@@ -54,7 +54,7 @@ function Sobre() {
         }
       ].map((item, i) => (
         <div key={i} style={{ marginBottom: "28px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>{item.titulo}</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>{item.titulo}</h2>
           {item.paragrafos.map((p, j) => (
             <p key={j} style={{ fontSize: "15px", color: "#444", lineHeight: "1.75", marginBottom: "14px" }}>{p}</p>
           ))}
@@ -63,7 +63,7 @@ function Sobre() {
 
       {/* Seção Apoie */}
       <div style={{ borderTop: "1px solid #e8e8e4", paddingTop: "28px", marginBottom: "28px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: "700" }}>Apoie o MCDb</h2>
+        <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", fontWeight: "700" }}>Apoie o MCDb</h2>
         <p style={{ fontSize: "15px", color: "#444", lineHeight: "1.75", maxWidth: "520px" }}>
           O MCDb é um projeto independente. Se ele foi útil pra você, considere contribuir — qualquer valor ajuda a manter o catálogo no ar e crescendo.
         </p>
@@ -79,7 +79,7 @@ function Sobre() {
             fontSize: "14px",
             color: "#000",
             cursor: "pointer",
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--fonte-corpo)",
             fontWeight: "600"
           }}
         >

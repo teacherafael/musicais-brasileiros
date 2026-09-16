@@ -340,7 +340,7 @@ function Pessoa() {
                 : (entidade.videoYoutube ? [entidade.videoYoutube] : [])
               if (fotos.length === 0 && videos.length === 0) return null
 
-              const rotulo = { fontFamily: "'Playfair Display', serif", fontSize: "19px", fontWeight: 700, color: "#F5C518", margin: "0 0 14px", lineHeight: 1.2 }
+              const rotulo = { fontFamily: "var(--fonte-titulo)", fontSize: "19px", fontWeight: 700, color: "#F5C518", margin: "0 0 14px", lineHeight: 1.2 }
 
               return (
                 <div style={{ marginTop: "24px", background: "#1a1a1a", borderRadius: "12px", padding: "20px" }}>
@@ -403,7 +403,7 @@ function Pessoa() {
             {ehAdmin && (
               <div style={{ marginTop: "16px" }}>
                 <button onClick={() => navigate("/admin?editar=" + encodeURIComponent(entidade.nome))}
-                  style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "7px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer" }}>
+                  style={{ background: "transparent", color: "#888", border: "1px solid #ccc", borderRadius: "6px", padding: "7px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer" }}>
                   ✏️ Editar perfil
                 </button>
               </div>
@@ -413,7 +413,7 @@ function Pessoa() {
       )}
       {(carregando || musicais.length > 0) && (
         <div style={{ marginTop: entidade ? "8px" : "-4px", marginBottom: "28px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "24px", fontWeight: 700, color: "#1a1a1a", margin: "0 0 10px", lineHeight: 1.2 }}>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "24px", fontWeight: 700, color: "#1a1a1a", margin: "0 0 10px", lineHeight: 1.2 }}>
             {tituloTrabalhos}
           </h2>
           <div style={{ width: "44px", height: "3px", background: "#F5C518", borderRadius: "2px", marginBottom: "10px" }} />

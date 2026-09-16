@@ -219,7 +219,7 @@ function Header() {
     fontSize: "14px",
     color: "#1a1a1a",
     textDecoration: "none",
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "var(--fonte-corpo)",
     borderBottom: "1px solid #f5f5f0",
   }
 
@@ -231,7 +231,7 @@ function Header() {
           color: "#1a1a1a",
           padding: "10px 16px",
           fontSize: "13px",
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "var(--fonte-corpo)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -252,7 +252,7 @@ function Header() {
               fontSize: "12px",
               fontWeight: 700,
               cursor: "pointer",
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--fonte-corpo)",
               flexShrink: 0,
             }}
           >
@@ -357,7 +357,7 @@ function Header() {
                     {notificacoes.length > 0 && (
                       <button
                         onClick={marcarTodasLidas}
-                        style={{ background: "none", border: "none", fontSize: "12px", color: "#b8960a", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif" }}
+                        style={{ background: "none", border: "none", fontSize: "12px", color: "#b8960a", cursor: "pointer", padding: 0, fontFamily: "var(--fonte-corpo)" }}
                       >
                         Marcar todas como lidas
                       </button>

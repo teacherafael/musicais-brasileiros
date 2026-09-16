@@ -93,12 +93,12 @@ function EnviarComunicado() {
     border: "1px solid #e8e8e4",
     borderRadius: "8px",
     fontSize: "14px",
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "var(--fonte-corpo)",
     boxSizing: "border-box",
   }
 
   return (
-    <div style={{ maxWidth: "600px", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ maxWidth: "600px", fontFamily: "var(--fonte-corpo)" }}>
       <p style={{ fontSize: "13px", color: "#666", lineHeight: 1.5, marginTop: 0 }}>
         Envia uma notificação no sininho para <strong>todos</strong> os usuários cadastrados.
         Não dá para desfazer — sempre teste antes.
@@ -170,7 +170,7 @@ function EnviarComunicado() {
             fontWeight: 700,
             cursor: enviando || !texto.trim() ? "not-allowed" : "pointer",
             opacity: enviando || !texto.trim() ? 0.5 : 1,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--fonte-corpo)",
           }}
         >
           Enviar teste só para mim
@@ -190,7 +190,7 @@ function EnviarComunicado() {
               fontWeight: 700,
               cursor: enviando || !texto.trim() ? "not-allowed" : "pointer",
               opacity: enviando || !texto.trim() ? 0.5 : 1,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--fonte-corpo)",
             }}
           >
             Enviar para todos
@@ -209,7 +209,7 @@ function EnviarComunicado() {
                 fontSize: "14px",
                 fontWeight: 700,
                 cursor: enviando ? "not-allowed" : "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "var(--fonte-corpo)",
               }}
             >
               Confirmar envio para TODOS
@@ -225,7 +225,7 @@ function EnviarComunicado() {
                 borderRadius: "8px",
                 fontSize: "14px",
                 cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "var(--fonte-corpo)",
               }}
             >
               Cancelar

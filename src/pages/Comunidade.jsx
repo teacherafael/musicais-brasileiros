@@ -92,7 +92,7 @@ function CardPerfil({ p, meuConjunto, titulos }) {
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "5px", minWidth: 0 }}>
             <span style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--fonte-corpo)",
               fontSize: "14px",
               fontWeight: "600",
               color: "#1a1a1a",
@@ -106,7 +106,7 @@ function CardPerfil({ p, meuConjunto, titulos }) {
           </div>
           {p.bio && (
             <p style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--fonte-corpo)",
               fontSize: "12.5px",
               color: "#5f5f5f",
               margin: "3px 0 0",
@@ -126,7 +126,7 @@ function CardPerfil({ p, meuConjunto, titulos }) {
           <span
             title={`${emComum} ${emComum === 1 ? "musical" : "musicais"} do seu Top 5 também está aqui`}
             style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--fonte-corpo)",
               fontSize: "11px",
               fontWeight: "600",
               color: "#5a4a00",
@@ -277,7 +277,7 @@ function Comunidade() {
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 20px 60px" }}>
 
       <h1 style={{
-        fontFamily: "'Playfair Display', serif",
+        fontFamily: "var(--fonte-titulo)",
         fontSize: "30px",
         color: "#1a1a1a",
         margin: "0 0 10px"
@@ -286,7 +286,7 @@ function Comunidade() {
       </h1>
 
       <p style={{
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "var(--fonte-corpo)",
         fontSize: "15px",
         color: "#555",
         margin: "0 0 8px",
@@ -300,7 +300,7 @@ function Comunidade() {
       </p>
 
       <p style={{
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "var(--fonte-corpo)",
         fontSize: "13px",
         color: "#999",
         margin: "0 0 20px",
@@ -326,7 +326,7 @@ function Comunidade() {
               padding: "11px 38px 11px 14px",
               border: "1px solid #e8e8e4",
               borderRadius: "8px",
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--fonte-corpo)",
               fontSize: "14px",
               outline: "none",
               background: "#fff"
@@ -381,7 +381,7 @@ function Comunidade() {
                     border: "none",
                     borderBottom: "1px solid #f2f2f0",
                     padding: "9px 13px",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "var(--fonte-corpo)",
                     fontSize: "13.5px",
                     color: "#1a1a1a",
                     textAlign: "left",
@@ -412,7 +412,7 @@ function Comunidade() {
           maxWidth: "620px"
         }}>
           <p style={{
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--fonte-corpo)",
             fontSize: "14px",
             color: "#5a4a00",
             margin: 0,
@@ -435,7 +435,7 @@ function Comunidade() {
       {!carregando && !filtroId && combinam.length > 0 && (
         <div style={{ marginBottom: "34px" }}>
           <h2 style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "var(--fonte-titulo)",
             fontSize: "21px",
             color: "#1a1a1a",
             margin: "0 0 4px"
@@ -443,7 +443,7 @@ function Comunidade() {
             Combina com você
           </h2>
           <p style={{
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--fonte-corpo)",
             fontSize: "13px",
             color: "#999",
             margin: "0 0 14px",
@@ -468,7 +468,7 @@ function Comunidade() {
           ))}
         </div>
       ) : perfis.length === 0 ? (
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "15px", color: "#888" }}>
+        <p style={{ fontFamily: "var(--fonte-corpo)", fontSize: "15px", color: "#888" }}>
           Nenhum perfil por aqui ainda. Monte seu Top 5 para aparecer nesta página.
         </p>
       ) : (
@@ -477,7 +477,7 @@ function Comunidade() {
           {filtroId ? (
             <div style={{ marginBottom: "14px" }}>
               <h2 style={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "var(--fonte-titulo)",
                 fontSize: "21px",
                 color: "#1a1a1a",
                 margin: "0 0 4px"
@@ -491,7 +491,7 @@ function Comunidade() {
                   background: "none",
                   border: "none",
                   padding: 0,
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "var(--fonte-corpo)",
                   fontSize: "13px",
                   color: "#b8960a",
                   fontWeight: "600",
@@ -503,7 +503,7 @@ function Comunidade() {
             </div>
           ) : combinam.length > 0 && (
             <h2 style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "var(--fonte-titulo)",
               fontSize: "21px",
               color: "#1a1a1a",
               margin: "0 0 14px"

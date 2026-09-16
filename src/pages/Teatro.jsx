@@ -62,7 +62,7 @@ export default function Teatro() {
   if (!teatro) {
     return (
       <div style={{ maxWidth: 800, margin: "60px auto", padding: "0 20px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "Playfair Display, serif", color: "#0a2c59" }}>
+        <h2 style={{ fontFamily: "var(--fonte-titulo)", color: "#0a2c59" }}>
           Teatro não encontrado
         </h2>
         <p style={{ color: "#ccc" }}>
@@ -86,7 +86,7 @@ export default function Teatro() {
         </Link>
         <h1
           style={{
-            fontFamily: "Playfair Display, serif",
+            fontFamily: "var(--fonte-titulo)",
             fontSize: 32,
             color: "#0a2c59",
             margin: "12px 0 4px",
@@ -115,7 +115,7 @@ export default function Teatro() {
       {/* Lista de musicais */}
       <h2
         style={{
-          fontFamily: "Playfair Display, serif",
+          fontFamily: "var(--fonte-titulo)",
           fontSize: 24,
           color: "#0a2c59",
           borderBottom: "1px solid #e8e8e4",

@@ -81,7 +81,7 @@ export default function Destaques() {
                   />
                 ) : (
                   <span style={{
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "var(--fonte-titulo)",
                     fontSize: "40px",
                     color: "#F5C518",
                   }}>

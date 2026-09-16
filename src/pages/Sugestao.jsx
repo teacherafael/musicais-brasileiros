@@ -92,8 +92,8 @@ function Sugestao() {
 
   // ── Estilos reutilizados ────────────────────────────────
   const labelStyle = { display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }
-  const inputStyle = { width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", outline: "none", boxSizing: "border-box" }
-  const btnAdicionar = { background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }
+  const inputStyle = { width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none", boxSizing: "border-box" }
+  const btnAdicionar = { background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer", marginTop: "4px" }
   const btnRemover = { background: "none", border: "none", color: "#cc0000", cursor: "pointer", fontSize: "16px", padding: "10px 4px", flexShrink: 0 }
 
   const campo = (label, chave, obrigatorio = false, placeholder = "") => (
@@ -223,7 +223,7 @@ function Sugestao() {
 
       <button onClick={() => setMostrarDetalhes(v => !v)} style={{
         width: "100%", background: "#faf9f7", border: "1px solid #e8e8e4", borderRadius: "8px",
-        padding: "14px 18px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600",
+        padding: "14px 18px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600",
         color: "#1a1a1a", cursor: "pointer", textAlign: "left", marginTop: "8px", marginBottom: "24px",
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px"
       }}>

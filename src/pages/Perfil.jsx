@@ -951,7 +951,7 @@ async function toggleVerificado() {
 
   const estiloContador = {
     background: "none", border: "none", padding: 0, fontSize: "14px", color: "#555",
-    cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", textDecorationColor: "#ccc"
+    cursor: "pointer", fontFamily: "var(--fonte-corpo)", textDecoration: "underline", textDecorationColor: "#ccc"
   }
 
   const temRedesSociais = redesSociais.instagram || redesSociais.tiktok || redesSociais.x || redesSociais.site
@@ -982,12 +982,12 @@ async function toggleVerificado() {
           <div style={{ marginBottom: "16px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
             <input ref={inputFotoRef} type="file" accept="image/*" onChange={trocarFotoPerfil} style={{ display: "none" }} />
             <button onClick={() => inputFotoRef.current?.click()} disabled={enviandoFoto}
-              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontSize: "12px", color: "#555", cursor: enviandoFoto ? "wait" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: enviandoFoto ? 0.6 : 1 }}>
+              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "20px", padding: "5px 14px", fontSize: "12px", color: "#555", cursor: enviandoFoto ? "wait" : "pointer", fontFamily: "var(--fonte-corpo)", opacity: enviandoFoto ? 0.6 : 1 }}>
               {enviandoFoto ? "Enviando..." : "📷 Trocar foto"}
             </button>
             {fotoCustom && !enviandoFoto && (
               <button onClick={removerFotoPerfil}
-                style={{ background: "none", border: "none", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                style={{ background: "none", border: "none", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "var(--fonte-corpo)", textDecoration: "underline" }}>
                 Remover foto
               </button>
             )}
@@ -1011,11 +1011,11 @@ async function toggleVerificado() {
 
         {isAdmin && !isProprioPerfil && (
           <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
-            <button onClick={toggleVerificado} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #1D9BF0", background: verificado ? "#1D9BF0" : "transparent", color: verificado ? "#fff" : "#1D9BF0", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+            <button onClick={toggleVerificado} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #1D9BF0", background: verificado ? "#1D9BF0" : "transparent", color: verificado ? "#fff" : "#1D9BF0", cursor: "pointer", fontFamily: "var(--fonte-corpo)" }}>
               {verificado ? "✓ Verificado — Remover selo" : "Verificar usuário"}
             </button>
             <button onClick={toggleBanir} disabled={processandoConta}
-              style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #cc0000", background: banido ? "#cc0000" : "transparent", color: banido ? "#fff" : "#cc0000", cursor: processandoConta ? "not-allowed" : "pointer", opacity: processandoConta ? 0.6 : 1, fontFamily: "'DM Sans', sans-serif" }}>
+              style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", border: "1px solid #cc0000", background: banido ? "#cc0000" : "transparent", color: banido ? "#fff" : "#cc0000", cursor: processandoConta ? "not-allowed" : "pointer", opacity: processandoConta ? 0.6 : 1, fontFamily: "var(--fonte-corpo)" }}>
               {processandoConta ? "..." : banido ? "🚫 Banido — Desbanir" : "Banir usuário"}
             </button>
           </div>
@@ -1050,7 +1050,7 @@ async function toggleVerificado() {
             )}
             {isProprioPerfil && !editandoRedes && (
               <button onClick={() => { setRedesTemp({ ...redesSociais }); setBioTemp(bio); setNomeTemp(nomeCustom); setEditandoRedes(true) }}
-                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "4px 12px", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                style={{ background: "none", border: "1px dashed #ccc", borderRadius: "99px", padding: "4px 12px", fontSize: "12px", color: "#aaa", cursor: "pointer", fontFamily: "var(--fonte-corpo)" }}>
                 {(temRedesSociais || bio) ? "✏️ Editar perfil" : "+ Editar perfil"}
               </button>
             )}
@@ -1067,7 +1067,7 @@ async function toggleVerificado() {
                 value={nomeTemp}
                 onChange={e => setNomeTemp(e.target.value.slice(0, 40))}
                 placeholder={usuarioLogado?.displayName || "Seu nome"}
-                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
               />
               <p style={{ fontSize: "11px", color: nomeTemp.length >= 40 ? "#c0392b" : "#aaa", textAlign: "right", marginTop: "2px" }}>
                 {nomeTemp.length}/40 · deixe em branco para usar o nome do Google
@@ -1085,7 +1085,7 @@ async function toggleVerificado() {
                 onChange={e => setBioTemp(e.target.value.slice(0, 200))}
                 placeholder="Conte um pouco sobre você..."
                 rows={3}
-                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", boxSizing: "border-box" }}
               />
               <p style={{ fontSize: "11px", color: bioTemp.length >= 200 ? "#c0392b" : "#aaa", textAlign: "right", marginTop: "2px" }}>
                 {bioTemp.length}/200
@@ -1103,7 +1103,7 @@ async function toggleVerificado() {
                 <input type="text" value={redesTemp[chave]}
                   onChange={e => setRedesTemp(prev => ({ ...prev, [chave]: e.target.value }))}
                   placeholder={placeholder}
-                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
                 />
               </div>
             ))}
@@ -1124,18 +1124,18 @@ async function toggleVerificado() {
           {!isProprioPerfil && usuarioLogado && (
             <>
               <button onClick={toggleSeguir} disabled={carregandoSeguir}
-                style={{ padding: "6px 18px", borderRadius: "20px", border: jaSigo ? "1px solid #ccc" : "none", background: jaSigo ? "transparent" : "#F5C518", color: jaSigo ? "#555" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: carregandoSeguir ? "not-allowed" : "pointer", opacity: carregandoSeguir ? 0.6 : 1 }}>
+                style={{ padding: "6px 18px", borderRadius: "20px", border: jaSigo ? "1px solid #ccc" : "none", background: jaSigo ? "transparent" : "#F5C518", color: jaSigo ? "#555" : "#1a1a1a", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600", cursor: carregandoSeguir ? "not-allowed" : "pointer", opacity: carregandoSeguir ? 0.6 : 1 }}>
                 {carregandoSeguir ? "..." : jaSigo ? "Seguindo" : "Seguir"}
               </button>
               <button onClick={enviarMensagem} disabled={enviandoMensagem}
-                style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+                style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
                 ✉️ Mensagem
               </button>
             </>
           )}
           {isProprioPerfil && (
             <button onClick={() => navigate("/mensagens")}
-              style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+              style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
               ✉️ Mensagens
             </button>
           )}
@@ -1145,7 +1145,7 @@ async function toggleVerificado() {
           <button
             onClick={gerarCardPerfil}
             disabled={gerandoCard}
-            style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: gerandoCard ? "wait" : "pointer", opacity: gerandoCard ? 0.6 : 1, marginTop: "4px" }}>
+            style={{ padding: "6px 18px", borderRadius: "20px", border: "1px solid #e8e8e4", background: "transparent", color: "#555", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600", cursor: gerandoCard ? "wait" : "pointer", opacity: gerandoCard ? 0.6 : 1, marginTop: "4px" }}>
             {gerandoCard ? "Gerando..." : "📷 Compartilhar card do perfil"}
           </button>
         )}
@@ -1172,16 +1172,16 @@ async function toggleVerificado() {
             >
               {typeof navigator !== "undefined" && navigator.canShare && navigator.canShare({ files: [cardPronto.arquivo] }) && (
                 <button onClick={compartilharCardPronto}
-                  style={{ padding: "12px 22px", background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
+                  style={{ padding: "12px 22px", background: "#F5C518", color: "#1a1a1a", border: "none", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
                   📤 Compartilhar
                 </button>
               )}
               <button onClick={baixarCardPronto}
-                style={{ padding: "12px 22px", background: "transparent", color: "#fff", border: "1px solid #fff", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
+                style={{ padding: "12px 22px", background: "transparent", color: "#fff", border: "1px solid #fff", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
                 ⬇️ Baixar
               </button>
               <button onClick={fecharPreviewCard}
-                style={{ padding: "12px 22px", background: "transparent", color: "#aaa", border: "1px solid #555", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", cursor: "pointer" }}>
+                style={{ padding: "12px 22px", background: "transparent", color: "#aaa", border: "1px solid #555", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", cursor: "pointer" }}>
                 Fechar
               </button>
             </div>
@@ -1198,7 +1198,7 @@ async function toggleVerificado() {
           alignItems: "center",
           justifyContent: "center",
           background: "#1a1a1a",
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "var(--fonte-corpo)",
           gap: "0",
         }}>
           {/* Logo */}
@@ -1307,7 +1307,7 @@ async function toggleVerificado() {
       {/* NAVEGAÇÃO INTERNA — botão excluir conta acima do Top 5 */}
       {isProprioPerfil && (
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '0 0 8px 0' }}>
-          <a href="#zona-risco" style={{ color: '#cc0000', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#fff5f5', border: '1px solid #f0c0c0', borderRadius: '20px' }}>
+          <a href="#zona-risco" style={{ color: '#cc0000', textDecoration: 'none', fontFamily: "var(--fonte-corpo)", fontSize: '13px', fontWeight: '600', padding: '6px 14px', background: '#fff5f5', border: '1px solid #f0c0c0', borderRadius: '20px' }}>
             🗑 Excluir minha conta
           </a>
         </div>
@@ -1316,7 +1316,7 @@ async function toggleVerificado() {
       {/* TOP 5 */}
       <div id="top5" style={{ marginBottom: "40px", background: "#1a1a1a", borderRadius: "16px", padding: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 5</h2>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", color: "#F5C518", letterSpacing: "1px" }}>✦ Meu Top 5</h2>
           {isProprioPerfil && !editandoTop3 && (
             <button onClick={() => { setTop3Selecionado(top3.map(t => t.musicalId)); setEditandoTop3(true) }} style={{ background: "none", border: "none", fontSize: "13px", color: "#666", cursor: "pointer", padding: 0 }}>
               ✏️ Editar
@@ -1346,7 +1346,7 @@ async function toggleVerificado() {
             </div>
             <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>Selecione até 5 musicais favoritos ({top3Selecionado.length}/5)</p>
             <input type="text" placeholder="Buscar musical..." value={buscaTop3} onChange={e => setBuscaTop3(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", outline: "none", marginBottom: "12px" }}
+              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", marginBottom: "12px" }}
             />
             <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #333", borderRadius: "8px", marginBottom: "16px" }}>
               {musicaisFiltradosTop3.map(m => (
@@ -1394,7 +1394,7 @@ async function toggleVerificado() {
                   }
                 </div>
                 <div style={{ width: "100%" }}>
-                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "12px", fontWeight: "700", marginBottom: "2px", lineHeight: "1.3" }}>{item.titulo}</p>
+                  <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "12px", fontWeight: "700", marginBottom: "2px", lineHeight: "1.3" }}>{item.titulo}</p>
                   <p style={{ fontSize: "11px", color: "#666" }}>Dir. {item.direcao || "—"}</p>
                 </div>
               </a>
@@ -1417,7 +1417,7 @@ async function toggleVerificado() {
         ].map(tab => (
           <button key={tab.id} onClick={() => setTabAtiva(tab.id)} style={{
             background: 'none', border: 'none', borderBottom: tabAtiva === tab.id ? '2px solid #F5C518' : '2px solid transparent',
-            marginBottom: '-2px', padding: '10px 16px', fontFamily: "'DM Sans', sans-serif",
+            marginBottom: '-2px', padding: '10px 16px', fontFamily: "var(--fonte-corpo)",
             fontSize: '14px', fontWeight: tabAtiva === tab.id ? '600' : '400',
             color: tabAtiva === tab.id ? '#1a1a1a' : '#888', cursor: 'pointer', whiteSpace: 'nowrap'
           }}>
@@ -1474,7 +1474,7 @@ async function toggleVerificado() {
               <span style={{ fontSize: "13px", color: "#555", flex: 1 }}>
                 {reacoesPublicas ? "Suas recomendações são visíveis no seu perfil público." : "Suas recomendações estão ocultas para outros visitantes."}
               </span>
-              <button onClick={toggleReacoesPublicas} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", border: "1px solid #e8e8e4", background: reacoesPublicas ? "#F5C518" : "transparent", color: reacoesPublicas ? "#1a1a1a" : "#888", cursor: "pointer", fontWeight: "600", whiteSpace: "nowrap" }}>
+              <button onClick={toggleReacoesPublicas} style={{ padding: "5px 14px", borderRadius: "20px", fontSize: "12px", fontFamily: "var(--fonte-corpo)", border: "1px solid #e8e8e4", background: reacoesPublicas ? "#F5C518" : "transparent", color: reacoesPublicas ? "#1a1a1a" : "#888", cursor: "pointer", fontWeight: "600", whiteSpace: "nowrap" }}>
                 {reacoesPublicas ? "🌐 Públicas" : "🔒 Ocultas"}
               </button>
             </div>
@@ -1499,7 +1499,7 @@ async function toggleVerificado() {
                     ))}
                   </ol>
                   {reacoesUsuario.gostei.length > 10 && (
-                    <button onClick={() => setVerMaisGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" }}>
+                    <button onClick={() => setVerMaisGostei(p => !p)} style={{ marginTop: "12px", background: "none", border: "none", color: "#b8960a", fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: "var(--fonte-corpo)", textDecoration: "underline" }}>
                       {verMaisGostei ? "Ver menos" : `Ver mais ${reacoesUsuario.gostei.length - 10} musicais`}
                     </button>
                   )}
@@ -1516,7 +1516,7 @@ async function toggleVerificado() {
             <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
               <button onClick={() => setFiltroJaVi("todos")}
                 style={{
-                  padding: "6px 16px", borderRadius: "20px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600",
+                  padding: "6px 16px", borderRadius: "20px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600",
                   border: filtroJaVi === "todos" ? "none" : "1px solid #e8e8e4",
                   background: filtroJaVi === "todos" ? "#F5C518" : "transparent",
                   color: filtroJaVi === "todos" ? "#1a1a1a" : "#555",
@@ -1526,7 +1526,7 @@ async function toggleVerificado() {
               </button>
               <button onClick={() => setFiltroJaVi("sem-avaliacao")} disabled={jaViSemAvaliacao.length === 0}
                 style={{
-                  padding: "6px 16px", borderRadius: "20px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600",
+                  padding: "6px 16px", borderRadius: "20px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600",
                   border: filtroJaVi === "sem-avaliacao" ? "none" : "1px solid #e8e8e4",
                   background: filtroJaVi === "sem-avaliacao" ? "#F5C518" : "transparent",
                   color: filtroJaVi === "sem-avaliacao" ? "#1a1a1a" : (jaViSemAvaliacao.length === 0 ? "#ccc" : "#555"),
@@ -1645,7 +1645,7 @@ async function toggleVerificado() {
                             }
                             if (e.key === "Escape") setEditandoListaId(null)
                           }}
-                          style={{ flex: 1, padding: "6px 10px", border: "1px solid #F5C518", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "15px", fontWeight: "600", outline: "none" }}
+                          style={{ flex: 1, padding: "6px 10px", border: "1px solid #F5C518", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", fontWeight: "600", outline: "none" }}
                         />
                         <button
                           onClick={async () => {
@@ -1655,15 +1655,15 @@ async function toggleVerificado() {
                             setListas(prev => prev.map(l => l.id === lista.id ? { ...l, nome } : l))
                             setEditandoListaId(null)
                           }}
-                          style={{ background: "#F5C518", border: "none", borderRadius: "6px", padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+                          style={{ background: "#F5C518", border: "none", borderRadius: "6px", padding: "6px 14px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
                           Salvar
                         </button>
-                        <button onClick={() => setEditandoListaId(null)} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "6px 12px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", cursor: "pointer", color: "#888" }}>Cancelar</button>
+                        <button onClick={() => setEditandoListaId(null)} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "6px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", cursor: "pointer", color: "#888" }}>Cancelar</button>
                       </div>
                     ) : (
                       <>
                         <div style={{ flex: 1 }}>
-                          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "17px", fontWeight: "700", margin: 0, color: "#1a1a1a" }}>{lista.nome}</p>
+                          <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "17px", fontWeight: "700", margin: 0, color: "#1a1a1a" }}>{lista.nome}</p>
                           <p style={{ fontSize: "12px", color: "#888", margin: "2px 0 0" }}>{lista.itens.length} {lista.itens.length === 1 ? "musical" : "musicais"}</p>
                         </div>
                         {isProprioPerfil && (
@@ -1674,12 +1674,12 @@ async function toggleVerificado() {
                                 await setDoc(doc(db, "usuarios", userId, "listas", lista.id), { publica: nova }, { merge: true })
                                 setListas(prev => prev.map(l => l.id === lista.id ? { ...l, publica: nova } : l))
                               }}
-                              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: lista.publica === false ? "#888" : "#5a9e6f", cursor: "pointer" }}>
+                              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: lista.publica === false ? "#888" : "#5a9e6f", cursor: "pointer" }}>
                               {lista.publica === false ? "🔒 Privada" : "🌐 Pública"}
                             </button>
                             <button
                               onClick={() => { setEditandoListaId(lista.id); setEditandoListaNome(lista.nome) }}
-                              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#888", cursor: "pointer" }}>
+                              style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "6px", padding: "5px 10px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: "#888", cursor: "pointer" }}>
                               ✏️ Renomear
                             </button>
                             <button
@@ -1692,7 +1692,7 @@ async function toggleVerificado() {
                                 setListas(prev => prev.filter(l => l.id !== lista.id))
                                 setMinhasListas(prev => prev.filter(l => l.id !== lista.id))
                               }}
-                              style={{ background: "none", border: "1px solid #f0c0c0", borderRadius: "6px", padding: "5px 10px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#cc0000", cursor: "pointer" }}>
+                              style={{ background: "none", border: "1px solid #f0c0c0", borderRadius: "6px", padding: "5px 10px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: "#cc0000", cursor: "pointer" }}>
                               🗑 Deletar
                             </button>
                           </div>
@@ -1754,7 +1754,7 @@ async function toggleVerificado() {
               const m = musicais[mid] || { id: mid, titulo: mid }
               return (
                 <div key={mid} style={{ borderBottom: "1px solid #e8e8e4", padding: "14px 0" }}>
-                  <a href={"/musical/" + mid} style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: "700", color: "#1a1a1a", textDecoration: "none" }}
+                  <a href={"/musical/" + mid} style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", fontWeight: "700", color: "#1a1a1a", textDecoration: "none" }}
                     onMouseOver={e => e.currentTarget.style.color = "#b8960a"}
                     onMouseOut={e => e.currentTarget.style.color = "#1a1a1a"}>
                     {m.titulo}
@@ -1781,7 +1781,7 @@ async function toggleVerificado() {
             Deletar sua conta apaga permanentemente suas avaliações, listas ("já vi", "quero ver", top 5), conexões de seguir e mensagens. Seus comentários são mantidos, mas ficam anônimos ("Usuário removido"). Essa ação não pode ser desfeita.
           </p>
           <button onClick={deletarPropriaConta} disabled={processandoConta}
-            style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "'DM Sans', sans-serif", fontSize: "14px", cursor: processandoConta ? "not-allowed" : "pointer", opacity: processandoConta ? 0.6 : 1 }}>
+            style={{ background: "transparent", color: "#cc0000", border: "1px solid #cc0000", borderRadius: "6px", padding: "10px 20px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", cursor: processandoConta ? "not-allowed" : "pointer", opacity: processandoConta ? 0.6 : 1 }}>
             {processandoConta ? "Processando..." : "Deletar minha conta"}
           </button>
         </div>

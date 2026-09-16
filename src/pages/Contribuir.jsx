@@ -24,7 +24,7 @@ export default function Contribuir() {
           ← Voltar
         </button>
 
-        <h1 style={{ fontFamily: "Playfair Display, serif", fontSize: 36, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+        <h1 style={{ fontFamily: "var(--fonte-titulo)", fontSize: 36, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
           Apoie o MCDb
         </h1>
         <div style={{ width: 48, height: 4, backgroundColor: "#F5C518", borderRadius: 2, marginBottom: 32 }} />
@@ -45,7 +45,7 @@ export default function Contribuir() {
         </div>
 
         <div style={{ backgroundColor: "#fff", border: "1px solid #e8e8e4", borderRadius: 12, padding: 32, marginTop: 40, textAlign: "center" }}>
-          <p style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, marginBottom: 24, color: "#1a1a1a" }}>
+          <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: 22, fontWeight: 700, marginBottom: 24, color: "#1a1a1a" }}>
             Contribuir via Pix
           </p>
           <img

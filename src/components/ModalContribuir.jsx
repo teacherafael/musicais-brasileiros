@@ -69,7 +69,7 @@ export default function ModalContribuir({ marco, onFechar }) {
       >
         <h3
           style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "var(--fonte-titulo)",
             fontSize: "1.4rem",
             margin: "0 0 12px",
             color: "#F5C518",
