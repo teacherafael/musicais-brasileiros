@@ -32,6 +32,14 @@ function ordenarPorBayesiana(lista) {
   return [...lista].sort((a, b) => calcularNotaBayesiana(b, mediaGeral) - calcularNotaBayesiana(a, mediaGeral))
 }
 
+function CardSkeletonPequeno() {
+  return (
+    <div style={{ width: "140px", flexShrink: 0, scrollSnapAlign: "start" }}>
+      <div style={{ width: "140px", height: "200px", marginBottom: "10px", borderRadius: "6px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+      <div style={{ height: "16px", width: "80%", borderRadius: "4px", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+    </div>
+  )
+}
 
 function Home() {
   const [musicais, setMusicais] = useState([])
@@ -392,7 +400,7 @@ function scrollDestaques(direcao) {
         <button className="btn-comentar" onClick={() => navigate("/contribuir")} style={{ background: "transparent", color: "#1a1a1a", border: "2px solid #1a1a1a" }}>$ Contribuir</button>
       </div>
 
-      {destaques.length > 0 && (
+      {(carregando || destaques.length > 0) && (
   <div style={{ marginBottom: "40px" }}>
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
       <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", margin: 0 }}>EM CARTAZ</p>
@@ -402,12 +410,14 @@ function scrollDestaques(direcao) {
       </div>
     </div>
     <div ref={carrosselDestaquesRef} onScroll={atualizarBotoesDestaques} style={{ display: "flex", gap: "16px", overflowX: "auto", overflowY: "visible", paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}>
-      {destaques.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" mostrarSeloMC dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
+      {carregando
+        ? Array.from({ length: 4 }).map((_, i) => <CardSkeletonPequeno key={i} />)
+        : destaques.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" mostrarSeloMC dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
     </div>
   </div>
 )}
 
-      {recentesIds.length > 0 && (
+      {(carregando || recentesIds.length > 0) && (
         <div style={{ marginBottom: "40px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
             <p style={{ fontSize: "14px", fontWeight: "600", color: "#888", textTransform: "uppercase", letterSpacing: "1.5px", margin: 0 }}>Recém adicionados</p>
@@ -417,7 +427,9 @@ function scrollDestaques(direcao) {
             </div>
           </div>
           <div ref={carrosselRef} onScroll={atualizarBotoes} style={{ display: "flex", gap: "16px", overflowX: "auto", overflowY: "visible", paddingBottom: "8px", scrollbarWidth: "none", msOverflowStyle: "none", scrollSnapType: "x mandatory" }}>
-            {recentesIds.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
+            {carregando
+              ? Array.from({ length: 4 }).map((_, i) => <CardSkeletonPequeno key={i} />)
+              : recentesIds.map(m => <div key={m.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}><CardMusical musical={m} tamanho="pequeno" dropdownAberto={dropdownListasAberto === m.id} {...cardProps} /></div>)}
           </div>
         </div>
       )}
@@ -475,7 +487,7 @@ function scrollDestaques(direcao) {
 
       <div className="grid-musicais" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px" }}>
         {carregando ? (
-          Array.from({ length: 12 }).map((_, i) => (
+          Array.from({ length: 24 }).map((_, i) => (
             <div key={i} style={{ maxWidth: "200px", margin: "0 auto", width: "100%", border: "1px solid #e8e8e4", borderRadius: "12px", overflow: "hidden", background: "#fff" }}>
               <div style={{ width: "100%", aspectRatio: "2/3", background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
               <div style={{ padding: "10px 12px 12px" }}>
