@@ -515,4 +515,6 @@ color: #efefef;
 
 .musical-titulo {
   color: var(--cor-titulo);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }

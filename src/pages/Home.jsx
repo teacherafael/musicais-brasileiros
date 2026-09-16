@@ -392,7 +392,7 @@ function scrollDestaques(direcao) {
       <p className="section-label">Musical Cast Database</p>
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", margin: "8px 0 4px" }}>
         <span style={{ fontFamily: "var(--fonte-titulo)", fontSize: "64px", fontWeight: "700", color: "#F5C518", lineHeight: "1" }}>{musicais.length}</span>
-        <h1 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2" }}>musicais brasileiros<br />catalogados</h1>
+        <h1 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "28px", fontWeight: "700", margin: 0, lineHeight: "1.2", color: "var(--cor-titulo)" }}>musicais brasileiros<br />catalogados</h1>
       </div>
       <p style={{ fontSize: "15px", color: "#888", marginTop: "8px", marginBottom: "16px" }}>O maior arquivo digital do teatro musical brasileiro.</p>
       <div style={{ marginBottom: "32px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
