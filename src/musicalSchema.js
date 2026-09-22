@@ -30,7 +30,7 @@ export const ESSENCIAL_CAMPO = {
 }
 
 // ── YouTube ──────────────────────────────────────────────────────────────────
-// Extrai o ID de um link do YouTube (youtube.com/watch?v=, youtu.be/, /embed/, /shorts/).
+// Extrai o ID de um link do YouTube (youtube.com/watch?v=, youtu.be/, /embed/, /shorts/, /live/).
 // Se já for um ID puro (11 caracteres), devolve como está. Caso não reconheça, devolve "".
 export function extrairIdYoutube(entrada) {
   const texto = (entrada || "").trim()
@@ -41,6 +41,7 @@ export function extrairIdYoutube(entrada) {
     /youtu\.be\/([a-zA-Z0-9_-]{11})/,
     /\/embed\/([a-zA-Z0-9_-]{11})/,
     /\/shorts\/([a-zA-Z0-9_-]{11})/,
+    /\/live\/([a-zA-Z0-9_-]{11})/,
   ]
   for (const p of padroes) {
     const m = texto.match(p)
