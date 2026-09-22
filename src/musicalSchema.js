@@ -65,6 +65,24 @@ export function rotuloAlbum(url) {
   return "Ouvir o álbum"
 }
 
+// ── Músicas ──────────────────────────────────────────────────────────────────
+// O campo `musicas` é uma string multilinha: uma música por linha, e uma linha
+// só com "---" separando os atos. Sem "---", é tudo um ato só.
+// Devolve um array de atos, cada um sendo um array de títulos. Atos vazios
+// (ex: "---" digitado duas vezes seguidas) são descartados.
+export const NOMES_ATOS = ["Primeiro ato", "Segundo ato", "Terceiro ato", "Quarto ato"]
+
+export function lerMusicas(texto) {
+  const atos = [[]]
+  ;(texto || "").split("\n").forEach(linha => {
+    const l = linha.trim()
+    if (!l) return
+    if (/^-{3,}$/.test(l)) { atos.push([]); return }
+    atos[atos.length - 1].push(l)
+  })
+  return atos.filter(ato => ato.length > 0)
+}
+
 // ── Cargos complementares ────────────────────────────────────────────────────
 // Gravam dentro do array `equipeCriativa`. Esta é a lista que aparece tanto no
 // admin quanto (a partir de agora) no formulário público de sugestão.
@@ -256,6 +274,7 @@ export function montarPayload(form, equipe, musicos, teatros, capa, fontes, prem
     capa: capa || "",
     programaDigital: form.programaDigital || "",
     linkAlbum: form.linkAlbum || "",
+    musicas: (form.musicas || "").trim(),
     fontes: fontesLimpas,
     premios: premiosLimpos,
   }

@@ -21,6 +21,7 @@ function Sugestao() {
     elencoAdicional: "",
     ano: "",
     programaDigital: "",
+    musicas: "",
   })
   const [equipe, setEquipe] = useState(equipeInicial())
   const [teatros, setTeatros] = useState([])
@@ -228,7 +229,7 @@ function Sugestao() {
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px"
       }}>
         <span>{mostrarDetalhes ? "− Ocultar detalhes adicionais" : "+ Adicionar mais detalhes da ficha técnica (opcional)"}</span>
-        {!mostrarDetalhes && <span style={{ color: "#aaa", fontSize: "12px", flexShrink: 0 }}>equipe criativa · músicos · fontes</span>}
+        {!mostrarDetalhes && <span style={{ color: "#aaa", fontSize: "12px", flexShrink: 0 }}>equipe criativa · músicos · músicas · fontes</span>}
       </button>
 
       {mostrarDetalhes && (
@@ -259,6 +260,16 @@ function Sugestao() {
             </div>
           ))}
           <button onClick={adicionarMusico} style={btnAdicionar}>+ Adicionar local</button>
+
+          {divisoria("Músicas")}
+          <p style={{ fontSize: "13px", color: "#aaa", marginTop: "-12px", marginBottom: "16px", lineHeight: 1.5 }}>
+            Uma música por linha, com o título em português usado na montagem. Se o musical tiver dois atos, coloque uma linha só com <strong>---</strong> entre o último número do primeiro ato e o primeiro do segundo.
+          </p>
+          <div style={{ marginBottom: "16px" }}>
+            <textarea value={form.musicas} onChange={e => atualizar("musicas", e.target.value)} rows={10}
+              placeholder={"Abertura\nPrimeira música\nSegunda música\n---\nEntreato\nTerceira música"}
+              style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }} />
+          </div>
 
           {divisoria("Fontes")}
           <p style={{ fontSize: "13px", color: "#aaa", marginTop: "-12px", marginBottom: "16px" }}>

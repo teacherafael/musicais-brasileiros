@@ -19,6 +19,7 @@ import {
   montarPayload,
   TIPOS_OBRA,
   extrairIdYoutube,
+  lerMusicas,
 } from "../musicalSchema"
 
 const normalizarNome = (texto) =>
@@ -489,6 +490,7 @@ async function fazerUploadCapaNovo(arquivo) {
       ano: r.ano || "",
       programaDigital: r.programaDigital || "",
       linkAlbum: r.linkAlbum || "",
+      musicas: r.musicas || "",
       galeria: (r.galeria || [])
         .map(f => (typeof f === "string" ? f : `${f.url}${f.credito ? ` | ${f.credito}` : ""}`))
         .join("\n"),
@@ -533,6 +535,7 @@ async function fazerUploadCapaNovo(arquivo) {
       ano: s.ano || "",
       programaDigital: s.programaDigital || "",
       linkAlbum: s.linkAlbum || "",
+      musicas: s.musicas || "",
     })
     setEquipeEdicao(equipeDeDocumento(s))
     setMusicosEdicao(musicosDeDocumento(s))
@@ -584,6 +587,7 @@ async function fazerUploadCapaNovo(arquivo) {
         ano: sugestao.ano,
         programaDigital: sugestao.programaDigital,
         linkAlbum: sugestao.linkAlbum,
+        musicas: sugestao.musicas,
       },
       equipeDeDocumento(sugestao),
       musicosDeDocumento(sugestao),
@@ -938,6 +942,32 @@ async function fazerUploadCapaNovo(arquivo) {
     )
   }
 
+  // Editor de músicas genérico (string multilinha; "---" separa os atos)
+  function renderEditorMusicas(valor, aoMudar) {
+    return (
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+          Músicas
+        </label>
+        <p style={{ fontSize: "13px", color: "#aaa", marginTop: 0, marginBottom: "8px", lineHeight: 1.5 }}>
+          Uma por linha, com o título em português da montagem. Em musicais de dois atos, uma linha só com --- separa o primeiro do segundo.
+        </p>
+        <textarea value={valor || ""} onChange={e => aoMudar(e.target.value)} rows={12}
+          placeholder={"Abertura\nPrimeira música\n---\nEntreato\nSegunda música"}
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e8e8e4", borderRadius: "6px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
+      </div>
+    )
+  }
+
+  // Resumo das músicas para o card da sugestão (ex: "22 músicas em 2 atos")
+  function resumoMusicas(texto) {
+    const atos = lerMusicas(texto)
+    const total = atos.reduce((soma, ato) => soma + ato.length, 0)
+    if (total === 0) return ""
+    const base = `${total} ${total === 1 ? "música" : "músicas"}`
+    return atos.length > 1 ? `${base} em ${atos.length} atos` : base
+  }
+
   // Editor de fontes genérico
   function renderEditorFontes(fontes, setFontes) {
     return (
@@ -1138,6 +1168,7 @@ async function fazerUploadCapaNovo(arquivo) {
                   {renderEditorMusicos(musicosEdicao, setMusicosEdicao)}
                   {campoSugestao("Ano", "ano")}
                   {renderEditorTeatros(teatrosEdicao, setTeatrosEdicao, moverTeatroEdicao)}
+                  {renderEditorMusicas(formSugestao.musicas, valor => setFormSugestao(prev => ({ ...prev, musicas: valor })))}
                   {campoSugestao("Link do programa digital (opcional)", "programaDigital")}
                   {campoSugestao("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
                   {renderEditorPremios(premiosEdicao, setPremiosEdicao)}
@@ -1190,6 +1221,11 @@ async function fazerUploadCapaNovo(arquivo) {
                   {Array.isArray(s.musicos) && s.musicos.length > 0 && (
                     <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}>
                       <strong>Músicos:</strong> {s.musicos.map(m => `${m.local}: ${Array.isArray(m.nomes) ? m.nomes.join(", ") : m.nomes}`).join(" · ")}
+                    </p>
+                  )}
+                  {resumoMusicas(s.musicas) && (
+                    <p style={{ fontSize: "14px", color: "#444", marginBottom: "4px" }}>
+                      <strong>Músicas:</strong> {resumoMusicas(s.musicas)} <span style={{ color: "#aaa" }}>(abra em Editar para conferir)</span>
                     </p>
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginTop: "12px", marginBottom: "16px" }}>
@@ -1275,6 +1311,7 @@ async function fazerUploadCapaNovo(arquivo) {
           {editorMusicos}
           {campoNovo("Ano", "ano")}
           {renderEditorTeatros(teatrosNovo, setTeatrosNovo, moverTeatroNovo)}
+          {renderEditorMusicas(formNovo.musicas, valor => setFormNovo(prev => ({ ...prev, musicas: valor })))}
 
           {campoNovo("Galeria de fotos (uma URL por linha — opcional: url | crédito)", "galeria", true)}
           {campoNovo("Vídeos do YouTube (um link por linha — opcional: link | título)", "videos", true)}

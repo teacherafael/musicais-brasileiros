@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { encontrarTeatroPorNome } from "../data/teatros";
 import { ehAdmin } from "../admins";
 import ModalContribuir, { registrarAvaliacao } from "../components/ModalContribuir";
-import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube, rotuloAlbum, premiosDeDocumento } from "../musicalSchema";
+import { ESSENCIAIS, ESSENCIAL_CAMPO, COMPLEMENTARES, TIPOS_OBRA, montarEquipeDeStrings, extrairIdYoutube, rotuloAlbum, premiosDeDocumento, lerMusicas, NOMES_ATOS } from "../musicalSchema";
 
 function nomesClicaveis(texto) {
   if (!texto) return null
@@ -359,6 +359,7 @@ async function fazerUploadCapa(arquivo) {
       ano: musical.ano || "", teatro: musical.teatro || "",
       capa: musical.capa || "", programaDigital: musical.programaDigital || "",
       linkAlbum: musical.linkAlbum || "",
+      musicas: musical.musicas || "",
       tituloOriginal: musical.tituloOriginal || "",
       tipoObra: musical.tipoObra || "Musical",
       galeria: (musical.galeria || []).map(foto => {
@@ -469,6 +470,7 @@ async function fazerUploadCapa(arquivo) {
 
     const dadosFinais = {
       ...formEdicao,
+      musicas: (formEdicao.musicas || "").trim(),
       galeria: galeriaLimpa,
       videos: videosLimpos,
       direcao: planos.direcao,
@@ -788,6 +790,7 @@ if (!musical) return (
   const equipeSecundaria = equipeSecundariaOrdenada(musical.equipeCriativa)
   const musicosExibicao = Array.isArray(musical.musicos) ? musical.musicos.filter(m => m.local && m.nomes && m.nomes.length > 0) : []
   const temBlocoEquipe = equipeSecundaria.length > 0 || musicosExibicao.length > 0
+  const atosMusicas = lerMusicas(musical.musicas)
 
   const estrelasSVG = (nota) => {
     return [1, 2, 3, 4, 5].map(i => {
@@ -964,6 +967,19 @@ if (!musical) return (
               style={{ background: "none", border: "1px dashed #ccc", borderRadius: "6px", padding: "8px 16px", fontFamily: "var(--fonte-corpo)", fontSize: "13px", color: "#888", cursor: "pointer" }}>
               + Adicionar teatro
             </button>
+          </div>
+
+          {/* Editor de músicas */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>
+              Músicas
+            </label>
+            <p style={{ fontSize: "13px", color: "#aaa", marginTop: 0, marginBottom: "8px", lineHeight: 1.5 }}>
+              Uma por linha, com o título em português da montagem. Em musicais de dois atos, uma linha só com --- separa o primeiro do segundo.
+            </p>
+            <textarea value={formEdicao.musicas || ""} onChange={e => setFormEdicao(prev => ({ ...prev, musicas: e.target.value }))} rows={12}
+              placeholder={"Abertura\nPrimeira música\n---\nEntreato\nSegunda música"}
+              style={{ width: "100%", padding: "10px 14px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "15px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
           </div>
 
 <div style={{ marginBottom: "16px" }}>
@@ -1360,6 +1376,34 @@ if (!musical) return (
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* ── MÚSICAS ── */}
+          {/* Um ato: lista única, sem título de ato. Dois ou mais: um bloco por ato,
+              lado a lado no computador e empilhados no celular (o auto-fit decide). */}
+          {atosMusicas.length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <hr className="divider" />
+              <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>Músicas</p>
+              <div style={{ display: "grid", gridTemplateColumns: atosMusicas.length > 1 ? "repeat(auto-fit, minmax(240px, 1fr))" : "1fr", gap: "24px 40px" }}>
+                {atosMusicas.map((ato, i) => (
+                  <div key={i}>
+                    {atosMusicas.length > 1 && (
+                      <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 4px", paddingBottom: "6px", borderBottom: "2px solid #F5C518" }}>
+                        {NOMES_ATOS[i] || `Ato ${i + 1}`}
+                      </p>
+                    )}
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                      {ato.map((tituloMusica, j) => (
+                        <li key={j} style={{ fontSize: "14px", color: "#444", lineHeight: 1.4, padding: "7px 0", borderBottom: j < ato.length - 1 ? "1px solid #f0f0ec" : "none" }}>
+                          {tituloMusica}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </div>
           )}
