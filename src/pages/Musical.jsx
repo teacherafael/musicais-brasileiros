@@ -1397,7 +1397,7 @@ if (!musical) return (
                     )}
                     <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                       {ato.map((tituloMusica, j) => (
-                        <li key={j} style={{ fontSize: "14px", color: "#444", lineHeight: 1.4, padding: "7px 0", borderBottom: j < ato.length - 1 ? "1px solid #f0f0ec" : "none" }}>
+                        <li key={j} style={{ fontSize: "14px", color: "#444", lineHeight: 1.15, padding: "4px 0", borderBottom: j < ato.length - 1 ? "1px solid #f0f0ec" : "none" }}>
                           {tituloMusica}
                         </li>
                       ))}
