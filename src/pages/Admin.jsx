@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 import EnviarComunicado from "../components/EnviarComunicado"
+import PainelPendencias from "../components/PainelPendencias"
 import {
   ESSENCIAIS,
   ESSENCIAL_CAMPO,
@@ -1134,6 +1135,9 @@ async function fazerUploadCapaNovo(arquivo) {
         <button onClick={() => trocarAba("entidades")} className={aba === "entidades" ? "btn-comentar" : "btn-sair"}>
           🎭 Entidades {carregadas.has("entidades") && entidades.length > 0 && `(${entidades.length})`}
         </button>
+        <button onClick={() => trocarAba("pendencias")} className={aba === "pendencias" ? "btn-comentar" : "btn-sair"}>
+          Pendências
+        </button>
         <button onClick={() => trocarAba("comunicado")} className={aba === "comunicado" ? "btn-comentar" : "btn-sair"}>
           📢 Comunicado
         </button>
@@ -1701,6 +1705,8 @@ async function fazerUploadCapaNovo(arquivo) {
             ))
           )}
         </>
+      ) : aba === "pendencias" ? (
+        <PainelPendencias />
       ) : aba === "comunicado" ? (
         <div style={{ background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px" }}>
           <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "20px", marginBottom: "16px" }}>Enviar comunicado</h2>
