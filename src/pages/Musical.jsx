@@ -1489,9 +1489,9 @@ if (!musical) return (
             <div style={{ marginBottom: "24px" }}>
               <hr className="divider" />
               <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--cor-titulo)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>Prêmios</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ columns: "2 320px", columnGap: "40px" }}>
                 {musical.premios.filter(p => p && p.nome).map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px", breakInside: "avoid", marginBottom: "16px" }}>
                     <span style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#0a2c59", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>🏆</span>
                     <div>
                       <p style={{ margin: 0, fontSize: "14px", fontWeight: "500", color: "#1a1a1a" }}>{p.nome}</p>
