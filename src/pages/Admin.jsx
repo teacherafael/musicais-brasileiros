@@ -320,6 +320,14 @@ function Admin() {
     setTeatrosEdicao(novo)
   }
 
+  function moverCuriosidadeNovo(index, direcao) {
+    const destino = index + direcao
+    if (destino < 0 || destino >= curiosidadesNovo.length) return
+    const novo = [...curiosidadesNovo]
+    ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
+    setCuriosidadesNovo(novo)
+  }
+
   // ── montarPayload agora vem de ../musicalSchema (fonte única) ────────────────
 async function fazerUploadCapaNovo(arquivo) {
     if (!arquivo) return
@@ -1027,7 +1035,7 @@ async function fazerUploadCapaNovo(arquivo) {
   }
 
   // Editor de curiosidades genérico
-  function renderEditorCuriosidades(curiosidades, setCuriosidades) {
+  function renderEditorCuriosidades(curiosidades, setCuriosidades, moverCuriosidade) {
     return (
       <div style={{ marginBottom: "20px" }}>
         <label style={{ display: "block", fontSize: "12px", fontWeight: "500", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
@@ -1035,6 +1043,12 @@ async function fazerUploadCapaNovo(arquivo) {
         </label>
         {curiosidades.map((texto, i) => (
           <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <button onClick={() => moverCuriosidade(i, -1)} disabled={i === 0}
+                style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para cima">▲</button>
+              <button onClick={() => moverCuriosidade(i, 1)} disabled={i === curiosidades.length - 1}
+                style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === curiosidades.length - 1 ? "default" : "pointer", color: i === curiosidades.length - 1 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para baixo">▼</button>
+            </div>
             <textarea placeholder="Curiosidade" value={texto} rows={2}
               onChange={e => { const novo = [...curiosidades]; novo[i] = e.target.value; setCuriosidades(novo) }}
               style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
@@ -1348,7 +1362,7 @@ async function fazerUploadCapaNovo(arquivo) {
           </div>
 
           {renderEditorFontes(fontesNovo, setFontesNovo)}
-          {renderEditorCuriosidades(curiosidadesNovo, setCuriosidadesNovo)}
+          {renderEditorCuriosidades(curiosidadesNovo, setCuriosidadesNovo, moverCuriosidadeNovo)}
 
           {rascunhoId && (
             <div style={{ background: "#fffbe6", border: "1px solid #F5C518", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "#666" }}>

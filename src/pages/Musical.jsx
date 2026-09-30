@@ -501,6 +501,14 @@ async function fazerUploadCapa(arquivo) {
     setTeatrosAdicionais(novo)
   }
 
+  function moverCuriosidade(index, direcao) {
+    const destino = index + direcao
+    if (destino < 0 || destino >= curiosidadesEdicao.length) return
+    const novo = [...curiosidadesEdicao]
+    ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
+    setCuriosidadesEdicao(novo)
+  }
+
   async function toggleDestaque() {
     const novoValor = !musical.destaque
     await updateDoc(doc(db, "musicais", id), { destaque: novoValor })
@@ -1068,6 +1076,12 @@ if (!musical) return (
             </label>
             {curiosidadesEdicao.map((texto, i) => (
               <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <button onClick={() => moverCuriosidade(i, -1)} disabled={i === 0}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === 0 ? "default" : "pointer", color: i === 0 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para cima">▲</button>
+                  <button onClick={() => moverCuriosidade(i, 1)} disabled={i === curiosidadesEdicao.length - 1}
+                    style={{ background: "none", border: "1px solid #e8e8e4", borderRadius: "4px", padding: "2px 6px", cursor: i === curiosidadesEdicao.length - 1 ? "default" : "pointer", color: i === curiosidadesEdicao.length - 1 ? "#ddd" : "#888", fontSize: "12px" }} title="Mover para baixo">▼</button>
+                </div>
                 <textarea placeholder="Curiosidade" value={texto} rows={2}
                   onChange={e => { const novo = [...curiosidadesEdicao]; novo[i] = e.target.value; setCuriosidadesEdicao(novo) }}
                   style={{ flex: 1, padding: "10px 12px", border: "1px solid #e8e8e4", borderRadius: "8px", fontFamily: "var(--fonte-corpo)", fontSize: "14px", outline: "none", resize: "vertical", lineHeight: 1.5 }} />
