@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy, serverTimestamp } from "firebase/firestore"
+import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where, orderBy, serverTimestamp, writeBatch } from "firebase/firestore"
 import { db, auth } from "../firebase"
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
@@ -59,17 +59,77 @@ function montarItemIndice(id, m) {
   }
 }
 
+// Limite de segurança por parte do índice. O Firestore aceita até 1.048.576 bytes
+// por documento; 900.000 deixa folga para a conta aproximada e o resto do documento.
+const LIMITE_PARTE_INDICE = 900000
+
+const codificador = new TextEncoder()
+
+// Tamanho de um valor pela regra do Firestore (string = bytes + 1, número = 8 etc.)
+function tamanhoFirestore(v) {
+  if (v === null || v === undefined) return 1
+  if (typeof v === "boolean") return 1
+  if (typeof v === "number") return 8
+  if (typeof v === "string") return codificador.encode(v).length + 1
+  if (v instanceof Date) return 8
+  if (Array.isArray(v)) return v.reduce((s, x) => s + tamanhoFirestore(x), 0)
+  if (typeof v === "object") {
+    return Object.entries(v).reduce((s, [k, x]) => s + codificador.encode(k).length + 1 + tamanhoFirestore(x), 0)
+  }
+  return 0
+}
+
+// Reparte os itens em grupos que caibam no limite de uma parte
+function dividirEmPartes(itens) {
+  const partes = [[]]
+  let tamanhoAtual = 0
+  for (const item of itens) {
+    const t = tamanhoFirestore(item)
+    if (tamanhoAtual + t > LIMITE_PARTE_INDICE && partes[partes.length - 1].length > 0) {
+      partes.push([])
+      tamanhoAtual = 0
+    }
+    partes[partes.length - 1].push(item)
+    tamanhoAtual += t
+  }
+  return partes
+}
+
 async function gerarIndiceHome() {
   const snap = await getDocs(collection(db, "musicais"))
   const itens = snap.docs
     .filter(d => d.data().status !== "rascunho")
     .filter(d => d.data().arquivado !== true)
     .map(d => montarItemIndice(d.id, d.data()))
-  await setDoc(doc(db, "indices", "home"), {
-    itens,
+
+  const partes = dividirEmPartes(itens)
+  const agora = new Date()
+
+  // Quantas partes existiam antes, para apagar as que sobrarem
+  const anteriorSnap = await getDoc(doc(db, "indices", "home"))
+  const partesAnteriores = anteriorSnap.exists() ? (Number(anteriorSnap.data().partes) || 1) : 1
+
+  // Tudo num lote só: ou grava todas as partes, ou nenhuma
+  const lote = writeBatch(db)
+  lote.set(doc(db, "indices", "home"), {
+    itens: partes[0],
     total: itens.length,
-    atualizadoEm: new Date()
+    partes: partes.length,
+    atualizadoEm: agora
   })
+  for (let i = 1; i < partes.length; i++) {
+    lote.set(doc(db, "indices", `home-${i + 1}`), {
+      itens: partes[i],
+      parte: i + 1,
+      atualizadoEm: agora
+    })
+  }
+  for (let n = partes.length + 1; n <= partesAnteriores; n++) {
+    lote.delete(doc(db, "indices", `home-${n}`))
+  }
+  await lote.commit()
+
+  console.log(`Índice da Home: ${itens.length} musicais em ${partes.length} parte(s)`)
   return itens.length
 }
 
