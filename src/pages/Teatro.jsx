@@ -1,8 +1,7 @@
 // src/pages/Teatro.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { lerIndiceHome } from "../indiceHome";
 import { teatros, encontrarTeatroPorNome } from "../data/teatros";
 
 export default function Teatro() {
@@ -39,8 +38,8 @@ export default function Teatro() {
     async function buscarMusicais() {
       setCarregando(true);
       // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
-      const indiceSnap = await getDoc(doc(db, "indices", "home"));
-      const todos = indiceSnap.exists() ? (indiceSnap.data().itens || []) : [];
+      const indice = await lerIndiceHome();
+      const todos = indice ? indice.itens : [];
 
       const nomesDoTeatro = [teatro.nomeOficial, ...teatro.aliases].map((n) =>
         n.trim().toLowerCase()

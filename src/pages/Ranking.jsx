@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-import { getDoc, doc } from "firebase/firestore"
-import { db } from "../firebase"
+import { lerIndiceHome } from "../indiceHome"
 import { useNavigate } from "react-router-dom"
 
 function otimizarImagem(url, largura) {
@@ -102,9 +101,9 @@ function Ranking() {
   useEffect(() => {
     async function buscarRanking() {
       try {
-        const indiceSnap = await getDoc(doc(db, "indices", "home"))
-        if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
-          const itens = indiceSnap.data().itens
+        const indice = await lerIndiceHome()
+        if (indice) {
+          const itens = indice.itens
 
           // ── Mais assistidos (só "já vi"; "quero ver" nunca incrementa popularidade) ──
           const listaPopulares = itens

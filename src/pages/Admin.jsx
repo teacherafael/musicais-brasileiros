@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 import EnviarComunicado from "../components/EnviarComunicado"
 import PainelPendencias from "../components/PainelPendencias"
+import { lerIndiceHome } from "../indiceHome"
 import {
   ESSENCIAIS,
   ESSENCIAL_CAMPO,
@@ -73,11 +74,10 @@ async function gerarIndiceHome() {
 }
 
 async function gerarIndiceComunidade() {
-  const indiceSnap = await getDoc(doc(db, "indices", "home"))
+  const indice = await lerIndiceHome()
+  const itensIndice = indice ? indice.itens : []
   const mapaCapas = {}
-  if (indiceSnap.exists()) {
-    (indiceSnap.data().itens || []).forEach(it => { mapaCapas[it.id] = it.capa || "" })
-  }
+  itensIndice.forEach(it => { mapaCapas[it.id] = it.capa || "" })
   const snap = await getDocs(query(collection(db, "usuarios"), where("tamanhoTop5", "==", 5)))
   const perfis = snap.docs
     .filter(d => d.data().ocultarDaComunidade !== true)
@@ -99,7 +99,7 @@ async function gerarIndiceComunidade() {
   const musicais = {}
   const usados = new Set()
   perfis.forEach(p => p.ids.forEach(id => usados.add(id)))
-  if (indiceSnap.exists()) { (indiceSnap.data().itens || []).forEach(it => { if (usados.has(it.id)) musicais[it.id] = it.titulo || "" }) }
+  itensIndice.forEach(it => { if (usados.has(it.id)) musicais[it.id] = it.titulo || "" })
   await setDoc(doc(db, "indices", "comunidade"), {
     perfis,
     musicais,
@@ -178,8 +178,8 @@ function Admin() {
         const snap = await getDocs(query(collection(db, "relatorios"), orderBy("data", "desc")))
         setRelatos(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.tipo !== "denuncia_comentario"))
       } else if (qual === "musicais") {
-        const indiceSnap = await getDoc(doc(db, "indices", "home"))
-        const itens = (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) ? indiceSnap.data().itens : []
+        const indice = await lerIndiceHome()
+        const itens = indice ? indice.itens : []
         setMusicais(
           itens
             .slice()
@@ -198,14 +198,14 @@ function Admin() {
       } else if (qual === "emalta") {
         const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         const q = query(collectionGroup(db, "votos"), where("data", ">=", trintaDiasAtras))
-        const [snap, indiceSnap] = await Promise.all([
+        const [snap, indice] = await Promise.all([
           getDocs(q),
-          getDoc(doc(db, "indices", "home"))
+          lerIndiceHome()
         ])
         setEmAltaVotos(snap.docs.map(d => d.data()).filter(v => v.data && v.musicalId))
         const mapaCapas = {}
-        if (indiceSnap.exists()) {
-          (indiceSnap.data().itens || []).forEach(it => { mapaCapas[it.id] = it.capa || "" })
+        if (indice) {
+          indice.itens.forEach(it => { mapaCapas[it.id] = it.capa || "" })
         }
         setCapasAtuais(mapaCapas)
       } else if (qual === "entidades") {

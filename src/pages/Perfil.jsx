@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { onAuthStateChanged, reauthenticateWithPopup } from "firebase/auth"
 import { ehAdmin } from "../admins"
 import CardMusical from "../components/CardMusical"
+import { lerIndiceHome } from "../indiceHome"
 import CropperFoto from "../components/CropperFoto"
 import html2canvas from "html2canvas"
 import logoCard from "../assets/mcdb-logo-card.png"
@@ -105,8 +106,8 @@ const [reacoesPublicas, setReacoesPublicas] = useState(true)
   useEffect(() => {
     async function buscarDados() {
       try {
-        const [indiceSnap, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
-          getDoc(doc(db, "indices", "home")),
+        const [indice, queroVerSnap, jaViSnap, top3Snap, seguindoSnap, seguidoresSnap, usuarioDoc, sessoesSnap] = await Promise.all([
+          lerIndiceHome(),
           getDocs(collection(db, "usuarios", userId, "queroVer")),
           getDocs(collection(db, "usuarios", userId, "jaVi")),
           getDocs(collection(db, "usuarios", userId, "top3")),
@@ -117,7 +118,7 @@ const [reacoesPublicas, setReacoesPublicas] = useState(true)
         ])
 
         const musicaisMap = {}
-        const itensIndice = (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) ? indiceSnap.data().itens : []
+        const itensIndice = indice ? indice.itens : []
         itensIndice.forEach(item => {
           if (item && item.id) musicaisMap[item.id] = { ...item, id: item.id }
         })

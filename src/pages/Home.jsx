@@ -4,6 +4,7 @@ import { db, auth } from "../firebase"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import CardMusical from "../components/CardMusical"
+import { lerIndiceHome } from "../indiceHome"
 
 const normalizar = (texto) => {
   const base = texto?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() ?? ""
@@ -164,9 +165,9 @@ function scrollDestaques(direcao) {
   useEffect(() => {
     async function buscarMusicais() {
       try {
-        const indiceSnap = await getDoc(doc(db, "indices", "home"))
-        if (indiceSnap.exists() && Array.isArray(indiceSnap.data().itens)) {
-          const lista = indiceSnap.data().itens.map(m => ({ ...m, id: m.id, dataCriacao: m.dataCriacao || null }))
+        const indice = await lerIndiceHome()
+        if (indice) {
+          const lista = indice.itens.map(m => ({ ...m, id: m.id, dataCriacao: m.dataCriacao || null }))
           setMusicais(lista)
           setDestaques(ordenarPorBayesiana(lista.filter(m => m.destaque === true)))
           setCarregando(false)

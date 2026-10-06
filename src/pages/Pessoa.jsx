@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "firebase/auth"
 import { ADMINS } from "../admins"
 import { useParams, useNavigate } from "react-router-dom"
 import ALIASES from "../aliases.json"
+import { lerIndiceHome } from "../indiceHome"
 
 // Mapeamento de aliases para nome canônico
 // Chave: nome antigo (lowercase), Valor: nome atual (como aparece nos créditos)
@@ -98,8 +99,8 @@ function Pessoa() {
     if (nomeCanonicoDoAlias) return // aguarda o redirect
     async function buscar() {
       // Lê o índice pré-pronto (1 leitura) em vez da coleção musicais inteira
-      const indiceSnap = await getDoc(doc(db, "indices", "home"))
-      const itens = indiceSnap.exists() ? (indiceSnap.data().itens || []) : []
+      const indice = await lerIndiceHome()
+      const itens = indice ? indice.itens : []
       const lista = itens
         .filter(m => {
           const campos = [
