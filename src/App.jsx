@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound"
 import Ranking from "./pages/Ranking"
 import Destaques from "./pages/Destaques"
 import Comunidade from "./pages/Comunidade"
+import Museu from "./pages/Museu"
 import Termos from "./pages/Termos"
 import Privacidade from "./pages/Privacidade"
 import FAQ from "./pages/FAQ"
@@ -90,6 +91,7 @@ function App() {
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/destaques" element={<Destaques />} />
         <Route path="/comunidade" element={<Comunidade />} />
+        <Route path="/museu" element={<Museu />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
         <Route path="/faq" element={<FAQ />} />

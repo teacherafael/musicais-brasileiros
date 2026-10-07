@@ -290,6 +290,12 @@ function Header() {
               >
                 Top 15
               </Link>
+              <Link
+                to="/museu"
+                style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
+              >
+                Museu
+              </Link>
             </>
           )}
 
@@ -468,6 +474,9 @@ function Header() {
                   </Link>
                   <Link to="/ranking" onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Top 15
+                  </Link>
+                  <Link to="/museu" onClick={() => setMenuAberto(false)} style={itemMenu}>
+                    Museu
                   </Link>
                   <Link to="/sobre" onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Sobre
