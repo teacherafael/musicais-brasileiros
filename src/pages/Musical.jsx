@@ -516,6 +516,13 @@ async function fazerUploadCapa(arquivo) {
     mostrarToast(novoValor ? "Musical adicionado ao destaque!" : "Musical removido do destaque.")
   }
 
+  async function toggleMuseu() {
+    const novoValor = !musical.museu
+    await updateDoc(doc(db, "musicais", id), { museu: novoValor })
+    setMusical(prev => ({ ...prev, museu: novoValor }))
+    mostrarToast(novoValor ? "Musical adicionado ao Museu!" : "Musical removido do Museu.")
+  }
+
   async function toggleRecomendadoMC() {
     const novoValor = !musical.recomendadoMC
     await updateDoc(doc(db, "musicais", id), { recomendadoMC: novoValor })
@@ -1242,6 +1249,9 @@ if (!musical) return (
                   <button onClick={abrirEdicao} style={{ background: "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: "#aaa", cursor: "pointer" }}>✏️ Editar</button>
                   <button onClick={toggleDestaque} style={{ background: musical.destaque ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: musical.destaque ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
                     {musical.destaque ? "★ Em destaque" : "☆ Destaque"}
+                  </button>
+                  <button onClick={toggleMuseu} style={{ background: musical.museu ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: musical.museu ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
+                    {musical.museu ? "✓ No Museu" : "Museu"}
                   </button>
                   <button onClick={toggleRecomendadoMC} style={{ background: musical.recomendadoMC ? "#F5C518" : "none", border: "1px solid #ddd", borderRadius: "6px", padding: "5px 12px", fontFamily: "var(--fonte-corpo)", fontSize: "12px", color: musical.recomendadoMC ? "#1a1a1a" : "#aaa", cursor: "pointer" }}>
                     {musical.recomendadoMC ? "✓ Recomendado MC" : "Recomendar (MC)"}

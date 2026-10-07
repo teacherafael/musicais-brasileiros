@@ -53,6 +53,7 @@ function montarItemIndice(id, m) {
     totalLikes: Number(m.totalLikes) || 0,
     destaque: m.destaque === true,
     recomendadoMC: m.recomendadoMC === true,
+    ...(m.museu === true ? { museu: true } : {}),
     dataCriacao: m.dataCriacao?.seconds
       ? { seconds: m.dataCriacao.seconds }
       : (m.dataCriacao instanceof Date ? { seconds: Math.floor(m.dataCriacao.getTime() / 1000) } : null)
