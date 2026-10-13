@@ -25,7 +25,76 @@ function otimizarImagem(url, largura) {
 const PESO = 5 // quantos votos um musical precisa pra "soltar" da média geral
 const TETO_VOTOS = 60 // a partir daqui, votos extras não aumentam mais o peso do musical na fórmula — evita que fandom grande domine só por volume
 
-function CardRanking({ musical, index, navigate, contador, labelSingular, labelPlural, mostrarContador = true }) {
+// Visual de cada coluna. O pódio (1º, 2º e 3º) é igual nas duas;
+// da 4ª posição em diante o círculo usa a cor da coluna.
+const TEMA_ASSISTIDOS = {
+  fundoCabecalho: "var(--cor-titulo)",
+  corTitulo: "#ffffff",
+  corSubtitulo: "#c9d4e5",
+  fundoPosicao: "var(--cor-titulo)",
+  textoPosicao: "#ffffff",
+  corHover: "var(--cor-titulo)"
+}
+
+const TEMA_AVALIADOS = {
+  fundoCabecalho: "#1a1a1a",
+  corTitulo: "#F5C518",
+  corSubtitulo: "#d0d0d0",
+  fundoPosicao: "#1a1a1a",
+  textoPosicao: "#F5C518",
+  corHover: "#F5C518"
+}
+
+// Ícones em SVG (e não emoji) para a cor sair igual em qualquer aparelho
+function IconeOlho() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function IconeEstrela() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="#F5C518" stroke="#F5C518" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z" />
+    </svg>
+  )
+}
+
+function CabecalhoColuna({ tema, icone, titulo, subtitulo }) {
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "14px",
+      padding: "16px 18px",
+      borderRadius: "12px",
+      background: tema.fundoCabecalho,
+      marginBottom: "16px"
+    }}>
+      {icone}
+      <div style={{ minWidth: 0 }}>
+        <h2 style={{
+          fontFamily: "var(--fonte-titulo)",
+          fontSize: "22px",
+          fontWeight: "600",
+          lineHeight: 1.1,
+          textTransform: "uppercase",
+          letterSpacing: "0.02em",
+          color: tema.corTitulo,
+          margin: 0
+        }}>
+          {titulo}
+        </h2>
+        <p style={{ fontSize: "14px", color: tema.corSubtitulo, margin: "2px 0 0" }}>{subtitulo}</p>
+      </div>
+    </div>
+  )
+}
+
+function CardRanking({ musical, index, navigate, contador, labelSingular, labelPlural, mostrarContador = true, tema = TEMA_AVALIADOS }) {
   return (
     <div
       onClick={() => navigate(`/musical/${musical.id}`)}
@@ -41,15 +110,15 @@ function CardRanking({ musical, index, navigate, contador, labelSingular, labelP
         cursor: "pointer",
         transition: "border-color 0.15s"
       }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = "#F5C518"}
+      onMouseEnter={e => e.currentTarget.style.borderColor = tema.corHover}
       onMouseLeave={e => e.currentTarget.style.borderColor = "#e8e8e4"}
     >
       <div style={{
         width: "32px",
         height: "32px",
         borderRadius: "50%",
-        background: index === 0 ? "#F5C518" : index === 1 ? "#e0e0e0" : index === 2 ? "#c8a06e" : "#1a1a1a",
-        color: index === 0 ? "#1a1a1a" : index === 1 ? "#1a1a1a" : index === 2 ? "#fff" : "#F5C518",
+        background: index === 0 ? "#F5C518" : index === 1 ? "#e0e0e0" : index === 2 ? "#c8a06e" : tema.fundoPosicao,
+        color: index === 0 ? "#1a1a1a" : index === 1 ? "#1a1a1a" : index === 2 ? "#fff" : tema.textoPosicao,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -155,10 +224,14 @@ function Ranking() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "32px", alignItems: "start" }}>
 
-          {/* Coluna: Mais populares */}
+          {/* Coluna: Mais assistidos */}
           <div>
-            <p style={{ fontSize: "15px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Mais assistidos</p>
-            <p style={{ fontSize: "15px", color: "#aaa", marginBottom: "16px" }}>por quem já assistiu</p>
+            <CabecalhoColuna
+              tema={TEMA_ASSISTIDOS}
+              icone={<IconeOlho />}
+              titulo="Mais assistidos"
+              subtitulo="O que mais gente marcou como visto"
+            />
             {populares.length === 0 ? (
               <p style={{ color: "#888", fontSize: "14px" }}>Nenhum musical ainda.</p>
             ) : (
@@ -169,6 +242,7 @@ function Ranking() {
                   index={index}
                   navigate={navigate}
                   mostrarContador={false}
+                  tema={TEMA_ASSISTIDOS}
                 />
               ))
             )}
@@ -176,8 +250,12 @@ function Ranking() {
 
           {/* Coluna: Mais bem avaliados */}
           <div>
-            <p style={{ fontSize: "15px", fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Mais bem avaliados</p>
-            <p style={{ fontSize: "15px", color: "#aaa", marginBottom: "16px" }}>pela avaliação da comunidade</p>
+            <CabecalhoColuna
+              tema={TEMA_AVALIADOS}
+              icone={<IconeEstrela />}
+              titulo="Mais bem avaliados"
+              subtitulo="A melhor nota, com peso para o número de votos"
+            />
             {avaliados.length === 0 ? (
               <p style={{ color: "#888", fontSize: "14px" }}>Nenhuma avaliação ainda.</p>
             ) : (
@@ -188,6 +266,7 @@ function Ranking() {
                   index={index}
                   navigate={navigate}
                   mostrarContador={false}
+                  tema={TEMA_AVALIADOS}
                 />
               ))
             )}
