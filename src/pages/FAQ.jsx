@@ -28,11 +28,11 @@ function FAQ() {
         },
         {
           pergunta: "Minhas notas ficam públicas no meu perfil?",
-          resposta: "Não. As notas em estrelas são sempre privadas, sem exceção. O que você pode escolher deixar público é a sua reação 👍 / 👎 em cada musical, através de uma opção nas configurações do seu perfil."
+          resposta: "Não. As notas em estrelas são sempre privadas, sem exceção. O que você pode escolher deixar visível no seu perfil é a lista dos musicais que você recomendou."
         },
         {
-          pergunta: "O que são os 👍 e 👎?",
-          resposta: "São reações rápidas de recomendação: um jeito de dizer se você indica ou não um musical, sem entrar no detalhe da nota. Diferente das estrelas, essas reações podem aparecer no seu perfil — mas só se você ativar a opção de avaliações públicas."
+          pergunta: "Como funciona o botão \"Recomendar\"?",
+          resposta: "É um jeito rápido de indicar um musical para outras pessoas, sem entrar no detalhe da nota. O botão fica na página de cada musical e funciona depois que você marca \"Já vi\". O contador ao lado mostra quantas pessoas recomendaram aquela produção. No seu perfil, a aba \"Recomendados\" reúne os musicais que você indicou, e você decide se ela fica visível para os outros."
         },
         {
           pergunta: "Como funciona o \"Meu Top 5\"?",
@@ -49,6 +49,10 @@ function FAQ() {
         {
           pergunta: "Como o ranking é calculado?",
           resposta: "O ranking usa uma média ponderada, e não a média pura das notas. Isso evita que um musical com pouquíssimos votos e uma nota alta dispare para o topo na frente de produções muito mais avaliadas. Na prática, quanto mais avaliações um musical recebe, mais perto do seu valor real ele fica no ranking."
+        },
+        {
+          pergunta: "O que acontece com votações combinadas?",
+          resposta: "O MCDb cruza dados como a data de criação das contas, o histórico de atividade de cada usuário e o padrão das notas recebidas para identificar quando um grupo de pessoas foi mobilizado para avaliar um musical. Nesses casos, essas avaliações podem ser removidas, assim como as marcações de \"Já vi\" e as recomendações associadas a elas. A ideia não é punir nenhum espetáculo, e sim manter o ranking justo para todas as montagens, grandes ou pequenas."
         },
         {
           pergunta: "Como posso apoiar o projeto?",
