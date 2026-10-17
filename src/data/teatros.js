@@ -425,6 +425,14 @@ export const teatros = [
     bairro: "Pinheiros",
     cidade: "São Paulo – SP",
   },
+    {
+    id: "teatro-maria-della-costa",
+    nomeOficial: "Teatro Maria Della Costa",
+    aliases: [],
+    endereco: "R. Paim, 72",
+    bairro: "Bela Vista",
+    cidade: "São Paulo – SP",
+  },
    {
     id: "sesc-pinheiros",
     nomeOficial: "Sesc Pinheiros",
