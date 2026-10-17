@@ -100,7 +100,6 @@ function ReportarErro({ musicalId, musicalTitulo, usuario }) {
                 value={texto}
                 onChange={e => setTexto(e.target.value)}
                 maxLength={2000}
-                placeholder="Ex.: a produtora está errada; meu nome não aparece entre os músicos."
                 style={{ ...estiloCampo, height: "70px" }}
               />
 
@@ -109,7 +108,6 @@ function ReportarErro({ musicalId, musicalTitulo, usuario }) {
                 value={correcao}
                 onChange={e => setCorrecao(e.target.value)}
                 maxLength={2000}
-                placeholder="Ex.: a produção é da Empresa X; meu nome é Fulano de Tal e toquei reed 1 e 2 na temporada de São Paulo."
                 style={{ ...estiloCampo, height: "70px" }}
               />
 
@@ -119,7 +117,6 @@ function ReportarErro({ musicalId, musicalTitulo, usuario }) {
                 value={fonte}
                 onChange={e => setFonte(e.target.value)}
                 maxLength={500}
-                placeholder="Link, programa da peça ou &quot;eu participei da montagem&quot;"
                 style={estiloCampo}
               />
 
