@@ -8,6 +8,7 @@ import { equipeInicial, montarPayload, TIPOS_OBRA } from "../musicalSchema"
 function Sugestao() {
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(null)
+  const [carregandoAuth, setCarregandoAuth] = useState(true)
   const [enviado, setEnviado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [mostrarDetalhes, setMostrarDetalhes] = useState(false)
@@ -29,7 +30,11 @@ function Sugestao() {
   const [fontes, setFontes] = useState([])
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => setUsuario(user))
+    const parar = onAuthStateChanged(auth, (user) => {
+      setUsuario(user)
+      setCarregandoAuth(false)
+    })
+    return () => parar()
   }, [])
 
   function atualizar(campo, valor) {
@@ -72,6 +77,7 @@ function Sugestao() {
   function removerFonte(index) { setFontes(prev => prev.filter((_, i) => i !== index)) }
 
   async function enviar() {
+    if (!usuario) return
     if (!form.titulo.trim()) return alert("O título é obrigatório.")
     if (enviando) return
     setEnviando(true)
@@ -79,13 +85,14 @@ function Sugestao() {
       const payload = montarPayload(form, equipe, musicos, teatros, "", fontes)
       await addDoc(collection(db, "sugestoes"), {
         ...payload,
-        nome: usuario ? usuario.displayName : "Anônimo",
-        userId: usuario ? usuario.uid : null,
+        nome: usuario.displayName || "Sem nome",
+        userId: usuario.uid,
         data: serverTimestamp(),
         status: "pendente",
       })
       setEnviado(true)
     } catch (e) {
+      console.error("Erro ao enviar sugestão:", e)
       alert("Erro ao enviar a sugestão. Tente novamente.")
       setEnviando(false)
     }
@@ -151,6 +158,29 @@ function Sugestao() {
       <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
       <h1 className="page-title">Obrigado pela sugestão!</h1>
       <p style={{ color: "#888", fontSize: "15px" }}>Sua sugestão foi enviada e será analisada em breve.</p>
+    </main>
+  )
+
+  if (carregandoAuth) return (
+    <main>
+      <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
+      <p style={{ color: "#888", fontSize: "15px" }}>Carregando...</p>
+    </main>
+  )
+
+  if (!usuario) return (
+    <main>
+      <button className="voltar" onClick={() => navigate("/")}>← Voltar</button>
+      <p className="section-label">Musicais Brasileiros Database</p>
+      <h1 className="page-title">Sugerir um musical</h1>
+      <div style={{ background: "#faf9f7", border: "1px solid #e8e8e4", borderRadius: "8px", padding: "18px 20px", marginBottom: "32px" }}>
+        <p style={{ fontSize: "15px", color: "#333", lineHeight: "1.6", marginBottom: "10px" }}>
+          Para sugerir um musical, entre com sua conta Google pelo botão "Entrar" no topo da página. Assim conseguimos falar com você se precisarmos conferir alguma informação.
+        </p>
+        <p style={{ fontSize: "14px", color: "#888", lineHeight: "1.6", margin: 0 }}>
+          Não consegue entrar? Escreva para <a href="mailto:musicalcastbr@gmail.com" style={{ color: "#555" }}>musicalcastbr@gmail.com</a>.
+        </p>
+      </div>
     </main>
   )
 

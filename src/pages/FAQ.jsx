@@ -44,7 +44,7 @@ function FAQ() {
         },
         {
           pergunta: "Encontrei uma informação errada. E agora?",
-          resposta: "Cada página de musical tem um botão para reportar erro. É só descrever o que está incorreto que revisamos e corrigimos."
+          resposta: "Cada página de musical tem um botão para reportar erro. Basta entrar com sua conta Google, dizer o que está incorreto e qual é a informação certa. Revisamos e corrigimos."
         },
         {
           pergunta: "Como o ranking é calculado?",

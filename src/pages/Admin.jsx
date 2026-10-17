@@ -1451,6 +1451,16 @@ async function fazerUploadCapaNovo(arquivo) {
                 <p style={{ fontSize: "13px", fontWeight: "500", color: "#F5C518" }}>{r.musicalTitulo}</p>
               </div>
               <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>{r.texto}</p>
+              {r.correcao && (
+                <p style={{ fontSize: "15px", color: "#333", marginBottom: "12px", lineHeight: "1.6" }}>
+                  <strong>Informação correta:</strong> {r.correcao}
+                </p>
+              )}
+              {r.fonte && (
+                <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px", lineHeight: "1.5" }}>
+                  <strong>Fonte:</strong> {r.fonte}
+                </p>
+              )}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "16px" }}>
                 <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>Reportado por: {r.nome}</p>
                 {r.userId && r.userId !== usuario.uid && (
