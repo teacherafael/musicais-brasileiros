@@ -22,7 +22,7 @@ function otimizarImagem(url, largura) {
 
 // Constantes do ranking bayesiano no escopo do módulo: o texto explicativo
 // no fim da página usa TETO_VOTOS, então os dois nunca saem de sincronia.
-const PESO = 5 // quantos votos um musical precisa pra "soltar" da média geral
+const PESO = 15 // quantos votos um musical precisa pra "soltar" da média geral
 const TETO_VOTOS = 60 // a partir daqui, votos extras não aumentam mais o peso do musical na fórmula — evita que fandom grande domine só por volume
 
 // Visual de cada coluna. O pódio (1º, 2º e 3º) é igual nas duas;
