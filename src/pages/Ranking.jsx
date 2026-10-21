@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { lerIndiceHome } from "../indiceHome"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 
 function otimizarImagem(url, largura) {
   if (!url) return url;
@@ -22,8 +22,11 @@ function otimizarImagem(url, largura) {
 
 // Constantes do ranking bayesiano no escopo do módulo: o texto explicativo
 // no fim da página usa TETO_VOTOS, então os dois nunca saem de sincronia.
-const PESO = 15 // quantos votos um musical precisa pra "soltar" da média geral
+const PESO = 10 // quantos votos um musical precisa pra "soltar" da média geral
 const TETO_VOTOS = 60 // a partir daqui, votos extras não aumentam mais o peso do musical na fórmula — evita que fandom grande domine só por volume
+
+// Quantas posições cada coluna mostra
+const TAMANHO_RANKING = 20
 
 // Visual de cada coluna. O pódio (1º, 2º e 3º) é igual nas duas;
 // da 4ª posição em diante o círculo usa a cor da coluna.
@@ -94,10 +97,13 @@ function CabecalhoColuna({ tema, icone, titulo, subtitulo }) {
   )
 }
 
-function CardRanking({ musical, index, navigate, contador, labelSingular, labelPlural, mostrarContador = true, tema = TEMA_AVALIADOS }) {
+// O card é um <Link> (e não um <div> com onClick) para o navegador reconhecer
+// como link: botão do meio abre em nova aba e o botão direito mostra
+// "Abrir link em nova aba". O clique normal continua navegando sem recarregar.
+function CardRanking({ musical, index, contador, labelSingular, labelPlural, mostrarContador = true, tema = TEMA_AVALIADOS }) {
   return (
-    <div
-      onClick={() => navigate(`/musical/${musical.id}`)}
+    <Link
+      to={`/musical/${musical.id}`}
       style={{
         display: "flex",
         alignItems: "center",
@@ -108,7 +114,9 @@ function CardRanking({ musical, index, navigate, contador, labelSingular, labelP
         padding: "12px",
         marginBottom: "10px",
         cursor: "pointer",
-        transition: "border-color 0.15s"
+        transition: "border-color 0.15s",
+        textDecoration: "none",
+        color: "inherit"
       }}
       onMouseEnter={e => e.currentTarget.style.borderColor = tema.corHover}
       onMouseLeave={e => e.currentTarget.style.borderColor = "#e8e8e4"}
@@ -157,7 +165,7 @@ function CardRanking({ musical, index, navigate, contador, labelSingular, labelP
           </p>
         </div>
       )}
-    </div>
+    </Link>
   )
 }
 
@@ -178,7 +186,7 @@ function Ranking() {
           const listaPopulares = itens
             .filter(m => (m.popularidade || 0) > 0)
             .sort((a, b) => (b.popularidade || 0) - (a.popularidade || 0))
-            .slice(0, 15)
+            .slice(0, TAMANHO_RANKING)
 
           // ── Mais bem avaliados (média bayesiana — só a ordem) ──
           // Âncora = média geral da plataforma, calculada em memória a partir do índice (custo zero)
@@ -200,7 +208,7 @@ function Ranking() {
               return { ...m, _score: score }
             })
             .sort((a, b) => b._score - a._score)
-            .slice(0, 15)
+            .slice(0, TAMANHO_RANKING)
 
           setPopulares(listaPopulares)
           setAvaliados(listaAvaliados)
@@ -240,7 +248,6 @@ function Ranking() {
                   key={musical.id}
                   musical={musical}
                   index={index}
-                  navigate={navigate}
                   mostrarContador={false}
                   tema={TEMA_ASSISTIDOS}
                 />
@@ -264,7 +271,6 @@ function Ranking() {
                   key={musical.id}
                   musical={musical}
                   index={index}
-                  navigate={navigate}
                   mostrarContador={false}
                   tema={TEMA_AVALIADOS}
                 />
