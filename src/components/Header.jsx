@@ -288,7 +288,7 @@ function Header() {
                 to="/ranking"
                 style={{ fontSize: "14px", color: "#aaa", textDecoration: "none" }}
               >
-                Top 15
+                Top 20
               </Link>
               <Link
                 to="/museu"
@@ -473,7 +473,7 @@ function Header() {
                     Destaques
                   </Link>
                   <Link to="/ranking" onClick={() => setMenuAberto(false)} style={itemMenu}>
-                    Top 15
+                    Top 20
                   </Link>
                   <Link to="/museu" onClick={() => setMenuAberto(false)} style={itemMenu}>
                     Museu
