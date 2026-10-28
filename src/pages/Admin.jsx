@@ -188,6 +188,7 @@ function Admin() {
   const [teatrosEdicao, setTeatrosEdicao] = useState([])
   const [fontesEdicao, setFontesEdicao] = useState([])
   const [premiosEdicao, setPremiosEdicao] = useState([])
+  const [curiosidadesEdicao, setCuriosidadesEdicao] = useState([])
   const [indiceStatus, setIndiceStatus] = useState("")
   const [comunidadeStatus, setComunidadeStatus] = useState("")
   const [emAltaVotos, setEmAltaVotos] = useState([])
@@ -466,24 +467,8 @@ async function fazerUploadCapaNovo(arquivo) {
       return
     }
 
-    const galeriaNova = (formNovo.galeria || "")
-      .split("\n")
-      .map(linha => linha.trim())
-      .filter(Boolean)
-      .map(linha => {
-        const [url, ...resto] = linha.split("|")
-        return { url: url.trim(), credito: resto.join("|").trim() }
-      })
-
-    const videosNovos = (formNovo.videos || "")
-      .split("\n")
-      .map(linha => linha.trim())
-      .filter(Boolean)
-      .map(linha => {
-        const [link, ...resto] = linha.split("|")
-        return { id: extrairIdYoutube(link.trim()), titulo: resto.join("|").trim() }
-      })
-      .filter(v => v.id)
+    const galeriaNova = galeriaDeTexto(formNovo.galeria)
+    const videosNovos = videosDeTexto(formNovo.videos)
 
     const payload = {
       ...montarPayload(formNovo, equipeNovo, musicosNovo, teatrosNovo, capaNovo, fontesNovo, premiosNovo),
@@ -561,18 +546,15 @@ async function fazerUploadCapaNovo(arquivo) {
       programaDigital: r.programaDigital || "",
       linkAlbum: r.linkAlbum || "",
       musicas: r.musicas || "",
-      galeria: (r.galeria || [])
-        .map(f => (typeof f === "string" ? f : `${f.url}${f.credito ? ` | ${f.credito}` : ""}`))
-        .join("\n"),
-      videos: (r.videos || [])
-        .map(v => `https://www.youtube.com/watch?v=${v.id}${v.titulo ? ` | ${v.titulo}` : ""}`)
-        .join("\n"),
+      galeria: galeriaParaTexto(r.galeria),
+      videos: videosParaTexto(r.videos),
     })
     setEquipeNovo(equipeDeDocumento(r))
     setMusicosNovo(musicosDeDocumento(r))
     setTeatrosNovo(teatrosDeDocumento(r))
     setFontesNovo(fontesDeDocumento(r))
     setPremiosNovo(premiosDeDocumento(r))
+    setCuriosidadesNovo(Array.isArray(r.curiosidades) ? r.curiosidades : [])
     setCapaNovo(r.capa || "")
     setRascunhoId(r.id)
   }
@@ -594,6 +576,56 @@ async function fazerUploadCapaNovo(arquivo) {
     }
   }
 
+  // Conversões de galeria e vídeos entre texto (um item por linha) e lista.
+  // Usadas na aba Adicionar, no rascunho e na edição de sugestão: um formato
+  // novo de link passa a valer nos três lugares de uma vez.
+  function galeriaDeTexto(texto) {
+    if (Array.isArray(texto)) return texto
+    return (texto || "")
+      .split("\n")
+      .map(linha => linha.trim())
+      .filter(Boolean)
+      .map(linha => {
+        const [url, ...resto] = linha.split("|")
+        return { url: url.trim(), credito: resto.join("|").trim() }
+      })
+  }
+
+  function videosDeTexto(texto) {
+    if (Array.isArray(texto)) return texto
+    return (texto || "")
+      .split("\n")
+      .map(linha => linha.trim())
+      .filter(Boolean)
+      .map(linha => {
+        const [link, ...resto] = linha.split("|")
+        return { id: extrairIdYoutube(link.trim()), titulo: resto.join("|").trim() }
+      })
+      .filter(v => v.id)
+  }
+
+  function galeriaParaTexto(galeria) {
+    if (typeof galeria === "string") return galeria
+    return (galeria || [])
+      .map(f => (typeof f === "string" ? f : `${f.url}${f.credito ? ` | ${f.credito}` : ""}`))
+      .join("\n")
+  }
+
+  function videosParaTexto(videos) {
+    if (typeof videos === "string") return videos
+    return (videos || [])
+      .map(v => `https://www.youtube.com/watch?v=${v.id}${v.titulo ? ` | ${v.titulo}` : ""}`)
+      .join("\n")
+  }
+
+  function moverCuriosidadeEdicao(index, direcao) {
+    const destino = index + direcao
+    if (destino < 0 || destino >= curiosidadesEdicao.length) return
+    const novo = [...curiosidadesEdicao]
+    ;[novo[index], novo[destino]] = [novo[destino], novo[index]]
+    setCuriosidadesEdicao(novo)
+  }
+
   function abrirEdicaoSugestao(s) {
     setFormSugestao({
       titulo: s.titulo || "",
@@ -606,18 +638,26 @@ async function fazerUploadCapaNovo(arquivo) {
       programaDigital: s.programaDigital || "",
       linkAlbum: s.linkAlbum || "",
       musicas: s.musicas || "",
+      galeria: galeriaParaTexto(s.galeria),
+      videos: videosParaTexto(s.videos),
     })
     setEquipeEdicao(equipeDeDocumento(s))
     setMusicosEdicao(musicosDeDocumento(s))
     setTeatrosEdicao(teatrosDeDocumento(s))
     setFontesEdicao(fontesDeDocumento(s))
     setPremiosEdicao(premiosDeDocumento(s))
+    setCuriosidadesEdicao(Array.isArray(s.curiosidades) ? s.curiosidades : [])
     setCapas(prev => ({ ...prev, [s.id]: s.capa || prev[s.id] || "" }))
     setEditandoSugestao(s.id)
   }
 
   async function salvarEdicaoSugestao(sugestaoId) {
-    const payload = montarPayload(formSugestao, equipeEdicao, musicosEdicao, teatrosEdicao, capas[sugestaoId] || "", fontesEdicao, premiosEdicao)
+    const payload = {
+      ...montarPayload(formSugestao, equipeEdicao, musicosEdicao, teatrosEdicao, capas[sugestaoId] || "", fontesEdicao, premiosEdicao),
+      curiosidades: curiosidadesEdicao.map(t => t.trim()).filter(Boolean),
+      galeria: galeriaDeTexto(formSugestao.galeria),
+      videos: videosDeTexto(formSugestao.videos),
+    }
     await updateDoc(doc(db, "sugestoes", sugestaoId), payload)
     setSugestoes(prev => prev.map(s => s.id === sugestaoId ? { ...s, ...payload } : s))
     setEditandoSugestao(null)
@@ -627,6 +667,7 @@ async function fazerUploadCapaNovo(arquivo) {
     setTeatrosEdicao([])
     setFontesEdicao([])
     setPremiosEdicao([])
+    setCuriosidadesEdicao([])
   }
 
   async function aprovar(sugestao) {
@@ -666,6 +707,13 @@ async function fazerUploadCapaNovo(arquivo) {
       fontesDeDocumento(sugestao),
       premiosDeDocumento(sugestao),
     )
+
+    // Campos que não passam pelo montarPayload
+    payload.curiosidades = Array.isArray(sugestao.curiosidades)
+      ? sugestao.curiosidades.map(t => String(t).trim()).filter(Boolean)
+      : []
+    payload.galeria = galeriaDeTexto(sugestao.galeria)
+    payload.videos = videosDeTexto(sugestao.videos)
 
     // Rede de segurança: se por acaso não veio nenhuma equipe, reconstrói a
     // partir das strings de direção antigas.
@@ -1248,6 +1296,8 @@ async function fazerUploadCapaNovo(arquivo) {
                   {campoSugestao("Ano", "ano")}
                   {renderEditorTeatros(teatrosEdicao, setTeatrosEdicao, moverTeatroEdicao)}
                   {renderEditorMusicas(formSugestao.musicas, valor => setFormSugestao(prev => ({ ...prev, musicas: valor })))}
+                  {campoSugestao("Galeria de fotos (uma URL por linha, opcional: url | crédito)", "galeria", true)}
+                  {campoSugestao("Vídeos do YouTube (um link por linha, opcional: link | título)", "videos", true)}
                   {campoSugestao("Link do programa digital (opcional)", "programaDigital")}
                   {campoSugestao("Links do álbum gravado (um por linha — só gravação da montagem brasileira)", "linkAlbum", true)}
                   {renderEditorPremios(premiosEdicao, setPremiosEdicao)}
@@ -1272,9 +1322,10 @@ async function fazerUploadCapaNovo(arquivo) {
                     )}
                   </div>
                   {renderEditorFontes(fontesEdicao, setFontesEdicao)}
+                  {renderEditorCuriosidades(curiosidadesEdicao, setCuriosidadesEdicao, moverCuriosidadeEdicao)}
                   <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
                     <button className="btn-comentar" onClick={() => salvarEdicaoSugestao(s.id)}>Salvar edição</button>
-                    <button className="btn-sair" onClick={() => { setEditandoSugestao(null); setFormSugestao({}); setEquipeEdicao(equipeInicial()); setMusicosEdicao([]); setTeatrosEdicao([]); setFontesEdicao([]); setPremiosEdicao([]) }}>Cancelar</button>
+                    <button className="btn-sair" onClick={() => { setEditandoSugestao(null); setFormSugestao({}); setEquipeEdicao(equipeInicial()); setMusicosEdicao([]); setTeatrosEdicao([]); setFontesEdicao([]); setPremiosEdicao([]); setCuriosidadesEdicao([]) }}>Cancelar</button>
                   </div>
                 </>
               ) : (
