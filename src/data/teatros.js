@@ -7,7 +7,7 @@ export const teatros = [
     aliases: ["Teatro Municipal", "Teatro Municipal SP"],
     endereco: "Praça Ramos de Azevedo, s/n",
     bairro: "Centro",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-renaissance",
@@ -15,7 +15,7 @@ export const teatros = [
     aliases: ["Renaissance Teatro"],
     endereco: "Alameda Santos, 2233",
     bairro: "Jardim Paulista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-gamaro",
@@ -23,7 +23,7 @@ export const teatros = [
     aliases: ["Teatro Anhembi Morumbi"],
     endereco: "R. Dr. Almeida Lima, 993",
     bairro: "Mooca",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-procopio-ferreira",
@@ -31,7 +31,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Augusta, 2823",
     bairro: "Cerqueira César",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
       {
     id: "teatro-santos-augusta",
@@ -39,7 +39,7 @@ export const teatros = [
     aliases: ["Teatro Unimed"],
     endereco: "Alameda Santos, 2159",
     bairro: "Jardim Paulista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
         {
     id: "teatro-uniao-cultural",
@@ -47,7 +47,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Mário Amaral, 209",
     bairro: "Paraíso",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
       {
     id: "teatro-augusta",
@@ -55,7 +55,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Augusta, 943",
     bairro: "Consolação",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-renault",
@@ -63,7 +63,7 @@ export const teatros = [
     aliases: ["Teatro Paramount", "Teatro Abril"],
     endereco: "Avenida Brigadeiro Luís Antônio, 411",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-niss",
@@ -71,15 +71,15 @@ export const teatros = [
     aliases: ["Teatro Brigadeiro", "Teatro Antônio Fagundes", "Teatro Jardel Filho"],
     endereco: "Avenida Brigadeiro Luís Antônio, 884",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-claro-mais-sp",
     nomeOficial: "Teatro Claro Mais SP",
-    aliases: ["Theatro Net SP", "Theatro Net São Paulo"],
+    aliases: ["Theatro Net SP", "Teatro Claro SP", "Theatro Net São Paulo"],
     endereco: "Rua Olimpíadas, 360",
     bairro: "Vila Olímpia",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "teatro-claro-mais-rj",
@@ -87,7 +87,7 @@ export const teatros = [
     aliases: ["Theatro Net RJ","Theatro Net Rio", "Teatro Tereza Raquel", "Teatro Tereza Rachel"],
     endereco: "Rua Siqueira Campos, 143",
     bairro: "Copacabana",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-btg-pactual-hall",
@@ -95,7 +95,7 @@ export const teatros = [
     aliases: ["Teatro Alfa", "Teatro Alfa Real"],
     endereco: "R. Bento Branco de Andrade Filho, 722",
     bairro: "Santo Amaro",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
  {
   id: "teatro-joao-caetano-sp",
@@ -103,7 +103,7 @@ export const teatros = [
   aliases: ["Teatro João Caetano SP"],
   endereco: "Rua Borges Lagoa, 650",
   bairro: "Vila Clementino",
-  cidade: "São Paulo – SP",
+  cidade: "São Paulo - SP",
 },
 {
   id: "teatro-joao-caetano-rj",
@@ -111,7 +111,7 @@ export const teatros = [
   aliases: ["Teatro João Caetano RJ"],
   endereco: "Praça Tiradentes, s/n",
   bairro: "Centro",
-  cidade: "Rio de Janeiro – RJ",
+  cidade: "Rio de Janeiro - RJ",
 },
   {
     id: "teatro-sergio-cardoso",
@@ -119,7 +119,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Rui Barbosa, 153",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "theatro-são-pedro",
@@ -127,7 +127,7 @@ export const teatros = [
     aliases: ["Teatro São Pedro"],
     endereco: "R. Barra Funda, 171",
     bairro: "Barra Funda",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-ruth-escobar",
@@ -135,7 +135,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua dos Ingleses, 209",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-opera",
@@ -143,7 +143,7 @@ export const teatros = [
     aliases: ["Teatro Stadium", "Teatro Zaccaro", "Teatro Aquarius"],
     endereco: "R. Rui Barbosa, 266",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
       {
     id: "teatro-imprensa",
@@ -151,7 +151,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Jaceguai, 400",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-carlos-gomes",
@@ -159,7 +159,7 @@ export const teatros = [
     aliases: [],
     endereco: "Prç. Tiradentes, s/n° ",
     bairro: "Centro",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-santander",
@@ -167,7 +167,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Presidente Juscelino Kubitschek, 2041",
     bairro: "Vila Nova Conceição",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-popular-sesi-sp",
@@ -175,7 +175,7 @@ export const teatros = [
     aliases: ["Teatro SESI"],
     endereco: "Av. Paulista, 1313",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-gazeta",
@@ -183,7 +183,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Paulista, 900",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-liberdade",
@@ -191,7 +191,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Hipódromo, 85",
     bairro: "Liberdade",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-porto",
@@ -199,7 +199,7 @@ export const teatros = [
     aliases: ["Teatro Porto Seguro"],
     endereco: "Rua Fradique Coutinho, 1284",
     bairro: "Vila Madalena",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-commune-sp",
@@ -207,15 +207,15 @@ export const teatros = [
     aliases: [],
     endereco: "Rua da Consolação, 1218",
     bairro: "Consolação",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "teatro-multiplan",
     nomeOficial: "Teatro Multiplan",
-    aliases: ["Teatro Bradesco RJ"],
+    aliases: ["Teatro Bradesco RJ", "Teatro Bradesco Rio"],
     endereco: "Av. das Américas, 3900",
     bairro: "Barra da Tijuca",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-multiplan-sp",
@@ -223,7 +223,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Roque Petroni Júnior, 1089",
     bairro: "Jardim das Acacias",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-viradalata-sp",
@@ -231,7 +231,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Apinajés, 1387",
     bairro: "Sumaré",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "nucleo-experimental-sp",
@@ -239,7 +239,7 @@ export const teatros = [
     aliases: ["Teatro do Núcleo Experimental"],
     endereco: "R. Barra Funda, 637",
     bairro: "Barra Funda",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-villa-lobos-rj",
@@ -247,7 +247,7 @@ export const teatros = [
     aliases: ["Teatro Villa-Lobos RJ"],
     endereco: "Av. Princesa Isabel, 451",
     bairro: "Copacabana",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-bravos",
@@ -255,7 +255,7 @@ export const teatros = [
     aliases: ["Teatro Tomie Ohtake", "Teatro Cetip", "Teatro Geo", "Teatro Prevent Sênior"],
     endereco: "Rua dos Coropés, 88",
     bairro: "Pinheiros",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-bradesco-sp",
@@ -263,7 +263,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Palestra Itália, 500",
     bairro: "Perdizes",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "teatro-cia-da-revista",
@@ -271,7 +271,7 @@ export const teatros = [
     aliases: ["Teatro Cia da Revista"],
     endereco: "Alameda Nothmann, 1135",
     bairro: "Campos Elísios",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-estudio",
@@ -279,7 +279,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Conselheiro Nébias, 891",
     bairro: "Campos Elísios",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-cultura-artistica",
@@ -287,7 +287,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Nestor Pestana, 196",
     bairro: "Consolação",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-popular-oscar-niemeyer",
@@ -295,7 +295,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Jorn. Rogério Coelho Neto, s/n",
     bairro: "Centro",
-    cidade: "Niterói – RJ",
+    cidade: "Niterói - RJ",
   },
   {
     id: "cidade-das-artes",
@@ -303,7 +303,7 @@ export const teatros = [
     aliases: ["Cidade das Artes RJ"],
     endereco: "Av. das Américas, 5300",
     bairro: "Barra da Tijuca",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-totalenergies-rj",
@@ -311,7 +311,7 @@ export const teatros = [
     aliases: ["Teatro Adolpho Bloch", "Teatro Prudential"],
     endereco: "Rua do Russel, 804",
     bairro: "Glória",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-riachuelo-rj",
@@ -319,7 +319,7 @@ export const teatros = [
     aliases: ["Teatro Riachuelo Rio"],
     endereco: "R. do Passeio, 38",
     bairro: "Centro",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-fernanda-montenegro",
@@ -327,7 +327,7 @@ export const teatros = [
     aliases: ["Teatro Copacabana Palace"],
     endereco: "Av. Nossa Sra. de Copacabana, 261 ",
     bairro: "Copacabana",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-ecovilla-ri-happy-rj",
@@ -335,7 +335,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Jardim Botânico, 1008",
     bairro: "Jardim Botânico",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
     {
     id: "teatro-nova-iguacu",
@@ -343,7 +343,7 @@ export const teatros = [
     aliases: ["Teatro Nova Iguaçu"],
     endereco: "R. Cel. Bernardino de Melo, 1081",
     bairro: "Caonze",
-    cidade: "Nova Iguaçu – RJ",
+    cidade: "Nova Iguaçu - RJ",
   },
     {
     id: "teatro-prio",
@@ -351,7 +351,7 @@ export const teatros = [
     aliases: ["Teatro XP Investimentos", "Teatro do Jockey"],
     endereco: "Av. Bartolomeu Mitre, 1110",
     bairro: "Lagoa",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-faap",
@@ -359,7 +359,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Alagoas, 903",
     bairro: "Higienópolis",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
  {
     id: "teatro-villa-lobos-sp",
@@ -367,7 +367,7 @@ export const teatros = [
     aliases: ["Teatro Villa-Lobos", "Teatro Opus"],
     endereco: "Av. Dra. Ruth Cardoso, 4777",
     bairro: "Jardim Universidade",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "teatro-italia",
@@ -375,15 +375,15 @@ export const teatros = [
     aliases: ["Teatro Itália Bandeirantes", "Teatro Itália São Paulo"],
     endereco: "Av. Ipiranga, 344",
     bairro: "Jardim Universidade",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "033-rooftop",
     nomeOficial: "033 Rooftop",
     aliases: [],
-    endereco: "AAv. Pres. Juscelino Kubitschek, 2041",
+    endereco: "Av. Pres. Juscelino Kubitschek, 2041",
     bairro: "Vila Nova Conceição",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "ccbb-sp",
@@ -391,7 +391,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Álvares Penteado, 112",
     bairro: "Centro Histórico de São Paulo",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-frei-caneca",
@@ -399,7 +399,7 @@ export const teatros = [
     aliases: ["Teatro Opus Frei Caneca", "Teatro Frei Caneca", "Teatro Shopping Frei Caneca"],
     endereco: "R. Frei Caneca, 569",
     bairro: "Consolação",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-nair-bello",
@@ -407,7 +407,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Frei Caneca, 569",
     bairro: "Consolação",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-tuca",
@@ -415,7 +415,7 @@ export const teatros = [
     aliases: ["Teatro Tuca", "Teatro da Universidade Católica de São Paulo"],
     endereco: "R. Monte Alegre, 1024",
     bairro: "Perdizes",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-das-artes",
@@ -423,7 +423,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Rebouças, 3970",
     bairro: "Pinheiros",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-maria-della-costa",
@@ -431,7 +431,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Paim, 72",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "sesc-pinheiros",
@@ -439,7 +439,7 @@ export const teatros = [
     aliases: ["SESC Pinheiros", "Teatro do Sesc Pinheiros"],
     endereco: "R. Pais Leme, 195",
     bairro: "Pinheiros",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "teatro-youtube",
@@ -447,7 +447,7 @@ export const teatros = [
     aliases: ["Teatro Eva Herz"],
     endereco: "Av. Paulista, 2073 - 3º andar",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "promon",
@@ -455,7 +455,7 @@ export const teatros = [
     aliases: ["Teatro Promon", "Espaço Promon"],
     endereco: "Av. Pres. Juscelino Kubitschek, 1830 ",
     bairro: "Itaim Bibi",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
      {
     id: "teatro-fernnado-torres",
@@ -463,7 +463,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Padre Estevão Pernet, 588",
     bairro: "Tatuapé",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "itau-cultural",
@@ -471,7 +471,7 @@ export const teatros = [
     aliases: ["Instituto Itaú Cultural"],
     endereco: "Av. Paulista, 149",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-uol",
@@ -479,7 +479,7 @@ export const teatros = [
     aliases: ["Teatro Folha"],
     endereco: "Av. Higienópolis, 618",
     bairro: "Higienópolis",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-vivo",
@@ -487,7 +487,7 @@ export const teatros = [
     aliases: [],
     endereco: "Avenida Doutor Chucri Zaidan, 2460",
     bairro: "Vila Cordeiro",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-jaragua",
@@ -495,7 +495,7 @@ export const teatros = [
     aliases: ["Teatro BDO Jaraguá", "Teatro D-Jaraguá"],
     endereco: "R. Martins Fontes, 71",
     bairro: "Consolação",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "ccsp",
@@ -503,7 +503,7 @@ export const teatros = [
     aliases: ["CCSP"],
     endereco: "Rua Vergueiro, 1000",
     bairro: "Liberdade",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "teatro-raul-cortez",
@@ -511,7 +511,7 @@ export const teatros = [
     aliases: ["Teatro Fecomercio"],
     endereco: "R. Dr. Plínio Barreto, 285",
     bairro: "Bela Vista",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
        {
     id: "farol-santander-poa",
@@ -519,7 +519,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Sete de Setembro, 1028",
     bairro: "Centro Histórico",
-    cidade: "Porto Alegre – RS",
+    cidade: "Porto Alegre - RS",
   },
          {
     id: "teatro-paulo-eiro",
@@ -527,7 +527,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Adolfo Pinheiro, 765",
     bairro: "Santo Amaro",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
   {
     id: "tom-brasil",
@@ -535,7 +535,7 @@ export const teatros = [
     aliases: ["Tom Brasil", "HSBC Brasil"],
     endereco: "R. Bragança Paulista, 1281",
     bairro: "Santo Amaro",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "sesc-vila-mariana",
@@ -543,7 +543,7 @@ export const teatros = [
     aliases: ["Teatro Antunes Filho"],
     endereco: "R. Pelotas, 141",
     bairro: "Vila Mariana",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
    {
     id: "sesc-bom-retiro",
@@ -551,7 +551,7 @@ export const teatros = [
     aliases: ["Teatro do SESC Bom Retiro"],
     endereco: "Alameda Nothmann, 185",
     bairro: "Campos Elíseos",
-    cidade: "São Paulo – SP",
+    cidade: "São Paulo - SP",
   },
     {
     id: "teatro-iguatemi-campinas",
@@ -559,7 +559,7 @@ export const teatros = [
     aliases: ["Teatro Iguatemi Campinas"],
     endereco: "Av. Iguatemi, 777",
     bairro: "Vila Brandina",
-    cidade: "Campinas – SP",
+    cidade: "Campinas - SP",
   },
      {
     id: "teatro-municipal-castro-mendes-campinas",
@@ -567,7 +567,7 @@ export const teatros = [
     aliases: ["Teatro Castro Mendes", "Teatro Municipal José de Castro Mendes"],
     endereco: "Praça Correa de Lemos, s/n",
     bairro: "Vila Industrial",
-    cidade: "Campinas – SP",
+    cidade: "Campinas - SP",
   },
        {
     id: "teatro-municipal-sylvia-de-alencar",
@@ -575,7 +575,7 @@ export const teatros = [
     aliases: ["Teatro Sylvia de Alencar Matheus"],
     endereco: "Rua Monteiro de Barros, 101",
     bairro: "Centro",
-    cidade: "Vinhedo – SP",
+    cidade: "Vinhedo - SP",
   },
   {
     id: "teatro-casa-grande-rj",
@@ -583,7 +583,7 @@ export const teatros = [
     aliases: ["Teatro Oi Casa Grande", "Teatro AXIA Casa Grande"],
     endereco: "Av. Afrânio de Melo Franco, 290",
     bairro: "Leblon",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-sesc-ginastico",
@@ -591,7 +591,7 @@ export const teatros = [
     aliases: ["Sesc Ginástico", "Teatro Ginástico"],
     endereco: "Av. Graça Aranha, 187",
     bairro: "Centro",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "ccbb-rj",
@@ -599,7 +599,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Primeiro de Março, 66",
     bairro: "Centro",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
     {
     id: "ccbb-bh",
@@ -607,7 +607,7 @@ export const teatros = [
     aliases: [],
     endereco: "Praça da Liberdade, 450",
     bairro: "Funcionários",
-    cidade: "Belo Horizonte – MG",
+    cidade: "Belo Horizonte - MG",
   },
     {
     id: "ccbb-df",
@@ -615,7 +615,7 @@ export const teatros = [
     aliases: [],
     endereco: "Setor de Clubes Sul, Trecho 2, Lote 22",
     bairro: "",
-    cidade: "Brasília – DF",
+    cidade: "Brasília - DF",
   },
   {
     id: "imperator",
@@ -623,7 +623,7 @@ export const teatros = [
     aliases: ["Imperator - Centro Cultural João Nogueira", "Teatro Imperator"],
     endereco: "R. Dias da Cruz, 170",
     bairro: "Méier",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "theatro-municipal-rj",
@@ -631,7 +631,7 @@ export const teatros = [
     aliases: ["Teatro Municipal do Rio de Janeiro"],
     endereco: "Praça Floriano, S/N ",
     bairro: "Centro",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-dos-quatro",
@@ -639,15 +639,15 @@ export const teatros = [
     aliases: ["Teatro dos Quatro"],
     endereco: "R. Marquês de São Vicente, 52",
     bairro: "Gávea",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-das-artes-rj",
     nomeOficial: "Teatro das Artes RJ",
-    aliases: [],
+    aliases: ["Teatro PetroRio das Artes"],
     endereco: "R. Marquês de São Vicente, 52",
     bairro: "Gávea",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-glaucio-gil",
@@ -655,7 +655,7 @@ export const teatros = [
     aliases: ["Teatro Glaucio Gil"],
     endereco: "Praça Cardeal Arcoverde, s/n",
     bairro: "Copacabana",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
      {
     id: "teatro-leblon",
@@ -663,7 +663,7 @@ export const teatros = [
     aliases: ["Teatro Leblon"],
     endereco: "Rua Conde de Bernadotte, 26",
     bairro: "Leblon",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
        {
     id: "teatro-dulcina",
@@ -671,7 +671,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Alcindo Guanabara, 17",
     bairro: "Centro",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-grande-atores",
@@ -679,7 +679,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. das Américas, 3555" ,
     bairro: "Barra da Tijuca",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-vannucci",
@@ -687,7 +687,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Marquês de São Vicente, 52" ,
     bairro: "Gávea",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
     {
     id: "eco-villa-ri-happy",
@@ -695,7 +695,7 @@ export const teatros = [
     aliases: ["EcoVilla Ri Happy", "Eco Villa RiHappy"],
     endereco: "Rua Jardim Botânico, 1008" ,
     bairro: "Jardim Botânico",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "vivo-rio",
@@ -703,7 +703,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Infante Dom Henrique, 85",
     bairro: "Parque do Flamengo",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "espaco-tapias",
@@ -711,7 +711,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Armando Lombardi, 175",
     bairro: "Barra da Tijuca",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
    {
     id: "teatro-cesgranrio",
@@ -719,7 +719,7 @@ export const teatros = [
     aliases: [],
     endereco: "Rua Santa Alexandrina, 1011",
     bairro: "Rio Comprido",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-clara-nunes",
@@ -727,7 +727,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Marquês de São Vicente, 52",
     bairro: "Gávea",
-    cidade: "Rio de Janeiro – RJ",
+    cidade: "Rio de Janeiro - RJ",
   },
   {
     id: "teatro-guaira",
@@ -735,7 +735,7 @@ export const teatros = [
     aliases: ["Teatro Guairão", "Teatro Guaíra", "Teatro Guairinha"],
     endereco: "R. XV de Novembro, 971",
     bairro: "Centro",
-    cidade: "Curitiba – PR",
+    cidade: "Curitiba - PR",
   },
     {
     id: "teatro-fernanda-montenegro-pr",
@@ -743,7 +743,7 @@ export const teatros = [
     aliases: [],
     endereco: "Shopping Novo, R. Cel. Dulcídio, 517",
     bairro: "Batel",
-    cidade: "Curitiba – PR",
+    cidade: "Curitiba - PR",
   },
       {
     id: "teatro-regina-vogue",
@@ -751,7 +751,7 @@ export const teatros = [
     aliases: ["Teatro Ebanx Regina Vogue"],
     endereco: "Av. Sete de Setembro, 2775",
     bairro: "Rebouças",
-    cidade: "Curitiba – PR",
+    cidade: "Curitiba - PR",
   },
    {
     id: "teatro-positivo",
@@ -759,7 +759,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Prof. Pedro Viriato Parigot de Souza, 5300",
     bairro: "Campo Comprido",
-    cidade: "Curitiba – PR",
+    cidade: "Curitiba - PR",
   },
      {
     id: "salao-de-atos",
@@ -767,7 +767,7 @@ export const teatros = [
     aliases: ["Salão de Atos Ir. Norberto Rauch da PUCRS"],
     endereco: "Avenida Ipiranga, 6.681",
     bairro: "Bairro Partenon",
-    cidade: "Porto Alegre – RS",
+    cidade: "Porto Alegre - RS",
   },
   {
     id: "theatro-da-paz",
@@ -775,7 +775,7 @@ export const teatros = [
     aliases: [],
     endereco: "Avenida da Paz, Praça da República, S/N",
     bairro: "Campina",
-    cidade: "Belém – PA",
+    cidade: "Belém - PA",
   },
   {
     id: "teatro-glauce-rocha-ms",
@@ -783,7 +783,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Ufms, S/N",
     bairro: "Universitário",
-    cidade: "Campo Grande – MS",
+    cidade: "Campo Grande - MS",
   },
     {
     id: "teatro-riachuelo-natal",
@@ -791,7 +791,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Nevaldo Rocha, 3775",
     bairro: "Tirol",
-    cidade: "Natal – RN",
+    cidade: "Natal - RN",
   },
     {
     id: "teatro-madre-esperanca-garrido",
@@ -799,7 +799,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Contorno, 241",
     bairro: "Central",
-    cidade: "Goiânia – GO",
+    cidade: "Goiânia - GO",
   },
    {
     id: "sesc-palladium",
@@ -807,7 +807,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. Augusto de Lima, 420",
     bairro: "Centro",
-    cidade: "Belo Horizonte – MG",
+    cidade: "Belo Horizonte - MG",
   },
   {
     id: "teatro-tca",
@@ -815,7 +815,7 @@ export const teatros = [
     aliases: [],
     endereco: "Praça Dois de Julho, s/n",
     bairro: "Campo Grande",
-    cidade: "Salvador – BA",
+    cidade: "Salvador - BA",
   },
    {
     id: "theatro-municipal-de-paulinia",
@@ -823,7 +823,7 @@ export const teatros = [
     aliases: [],
     endereco: "Av. José Lozano Araújo, 1551",
     bairro: "Parque Brasil 500",
-    cidade: "Paulínia – SP",
+    cidade: "Paulínia - SP",
   },
      {
     id: "cineteatro-sao-luiz",
@@ -831,7 +831,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Major Facundo, 500",
     bairro: "Centro",
-    cidade: "Fortaleza – CE",
+    cidade: "Fortaleza - CE",
   },
        {
     id: "teatro-claro-mais-fortaleza",
@@ -839,7 +839,7 @@ export const teatros = [
     aliases: ["Theatro Via Sul", "Theatro Via Sul Fortaleza", "Teatro Via Sul"],
     endereco: "Avenida Washington Soares, 4335",
     bairro: "Sapiranga",
-    cidade: "Fortaleza – CE",
+    cidade: "Fortaleza - CE",
   },
          {
     id: "teatro-paulo-pontes",
@@ -847,7 +847,7 @@ export const teatros = [
     aliases: [],
     endereco: "R. Abdias Gomes de Almeida, 800",
     bairro: "Tambauzinho",
-    cidade: "João Pessoa – PB",
+    cidade: "João Pessoa - PB",
   },
   {
     id: "teatro-universitario",
@@ -855,7 +855,7 @@ export const teatros = [
     aliases: ["Teatro Universitário da UFES","Teatro Universitário (UFES)"],
     endereco: "Av. Fernando Ferrari, 514 ",
     bairro: "Goiabeiras",
-    cidade: "Vitória – ES",
+    cidade: "Vitória - ES",
   },
   {
     id: "teatro-unip",
@@ -863,7 +863,7 @@ export const teatros = [
     aliases: ["Teatro da UNIP"],
     endereco: "SGAS I SGAS 913,",
     bairro: "Asa Sul",
-    cidade: "Brasília – DF",
+    cidade: "Brasília - DF",
   },
     {    
 id: "teatro-riomar-fortaleza",
@@ -948,7 +948,7 @@ id: "teatro-riomar-fortaleza",
   {
     id: "cine-horto",
     nomeOficial: "Galpão Cine Horto",
-    aliases: [],
+    aliases: ["Galpão Cine Horto"],
     endereco: "R. Pitangui, 3613",
     bairro: "Horto",
     cidade: "Belo Horizonte - MG",
@@ -1116,7 +1116,7 @@ id: "teatro-riomar-fortaleza",
   {
     id: "teatro-solar-botafogo",
     nomeOficial: "Teatro Solar de Botafogo",
-    aliases: [],
+    aliases: ["Solar de Botafogo"],
     endereco: "R. General Polidoro, 180",
     bairro: "Botafogo",
     cidade: "Rio de Janeiro - RJ",
@@ -1152,7 +1152,7 @@ id: "teatro-riomar-fortaleza",
     aliases: ["Cinema Tivoli"],
     endereco: "Av. da Liberdade 182 188",
     bairro: "",
-    cidade: "Lisboa – Portugal",
+    cidade: "Lisboa - Portugal",
   },
   // Adicione mais teatros aqui seguindo o mesmo padrão
 ];
