@@ -1634,6 +1634,22 @@ id: "teatro-riomar-fortaleza",
     bairro: "Santo Inácio",
     cidade: "Curitiba - PR",
   },
+    {
+    id: "teatro-municipal-de-santo-andre",
+    nomeOficial: "Teatro Municipal de Santo André",
+    aliases: [],
+    endereco: "Praça IV Centenário, 01",
+    bairro: "Centro",
+    cidade: "Santo André - SP"
+      },
+          {
+    id: "teatro-nacional-claudio-santoro",
+    nomeOficial: "Teatro Nacional Cláudio Santoro",
+    aliases: ["Teatro Nacional de Brasília"],
+    endereco: "Via N2 do Eixo Monumental",
+    bairro: "Setor Cultural Norte, Asa Norte",
+    cidade: "Brasília - DF"
+      },
   // Adicione mais teatros aqui seguindo o mesmo padrão
 ];
 
