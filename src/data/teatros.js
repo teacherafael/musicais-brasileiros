@@ -1650,6 +1650,14 @@ id: "teatro-riomar-fortaleza",
     bairro: "Setor Cultural Norte, Asa Norte",
     cidade: "Brasília - DF"
       },
+                {
+    id: "teatro-paschoal-carlos-magno",
+    nomeOficial: "Teatro Paschoal Carlos Magno",
+    aliases: [],
+    endereco: "Rua Gilberto de Alencar, nº 1",
+    bairro: "Centro",
+    cidade: "Juiz de Fora - MG"
+      },
   // Adicione mais teatros aqui seguindo o mesmo padrão
 ];
 
