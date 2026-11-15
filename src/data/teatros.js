@@ -1658,7 +1658,14 @@ id: "teatro-riomar-fortaleza",
     bairro: "Centro",
     cidade: "Juiz de Fora - MG"
       },
-  // Adicione mais teatros aqui seguindo o mesmo padrão
+                 {
+    id: "teatro-de-arena-de-são-paulo",
+    nomeOficial: "Teatro de Arena de São Paulo",
+    aliases: [],
+    endereco: "Rua Siqueira Campos, 143",
+    bairro: "Copacabana",
+    cidade: "Rio de Janeiro - RJ"
+      }, // Adicione mais teatros aqui seguindo o mesmo padrão
 ];
 
 export function encontrarTeatroPorNome(nome) {
