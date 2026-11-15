@@ -3,7 +3,7 @@
 export const teatros = [
   {
     id: "teatro-municipal-sp",
-    nomeOficial: "Teatro Municipal de São Paulo",
+    nomeOficial: "Theatro Municipal de São Paulo",
     aliases: ["Teatro Municipal", "Teatro Municipal SP"],
     endereco: "Praça Ramos de Azevedo, s/n",
     bairro: "Centro",
