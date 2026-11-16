@@ -1665,6 +1665,14 @@ id: "teatro-riomar-fortaleza",
     endereco: "Rua Siqueira Campos, 143",
     bairro: "Copacabana",
     cidade: "Rio de Janeiro - RJ"
+      },
+                      {
+    id: "teatro-west-plaza",
+    nomeOficial: "Teatro West Plaza",
+    aliases: [],
+    endereco: "Av. Antártica, 408",
+    bairro: "Água Branca",
+    cidade: "São Paulo - SP"
       }, // Adicione mais teatros aqui seguindo o mesmo padrão
 ];
 
