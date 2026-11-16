@@ -1661,7 +1661,7 @@ id: "teatro-riomar-fortaleza",
                  {
     id: "teatro-de-arena-de-são-paulo",
     nomeOficial: "Teatro de Arena de São Paulo",
-    aliases: [],
+    aliases: ["Teatro Super Shopping Center", "Teatro Opinião"],
     endereco: "Rua Siqueira Campos, 143",
     bairro: "Copacabana",
     cidade: "Rio de Janeiro - RJ"
