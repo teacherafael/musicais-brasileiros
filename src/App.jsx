@@ -104,6 +104,7 @@ function App() {
         <Route path="/mensagens" element={<Mensagens />} />
         <Route path="/produtor" element={<Produtor />} />
 <Route path="/produtor/musical/:id" element={<ProdutorMusical />} />
+<Route path="/produtor/carteira" element={<ProdutorCarteira />} />
         <Route path="/mensagens/:conversaId" element={<Conversa />} />
       </Routes>
       <VoltarAoTopo />

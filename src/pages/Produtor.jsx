@@ -1,7 +1,7 @@
 // src/pages/Produtor.jsx
 // Cartaz do jogo "Eu Quero Ser Produtor": semana atual, contagem regressiva,
 // os musicais com preço e variação, manchetes e desafio da semana.
-// Só leitura. Compra e venda entram na etapa 4.
+// Compra e venda ficam na ficha de cada musical (PainelOperacao).
 
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
@@ -10,8 +10,62 @@ import {
   variacaoDaSemana, bravos, pct, corVariacao, TAMANHO,
   textoMeta, nomeDaFonte, cartao, tituloCartao, cinza, miniatura, estiloPoster,
 } from "../jogo/publico"
+import { useUsuario, carregarCarteira, carteiraVazia, patrimonio } from "../jogo/carteira"
 
 const ORDEM_DIA = { segunda: 0, quinta: 1 }
+
+function ResumoCarteira({ t, sufixo }) {
+  const usuario = useUsuario()
+  const [carteira, setCarteira] = useState(undefined)
+
+  useEffect(() => {
+    let ativo = true
+    if (!usuario) return
+    carregarCarteira(t.id, usuario.uid)
+      .then((c) => { if (ativo) setCarteira(c) })
+      .catch(() => { if (ativo) setCarteira(null) })
+    return () => { ativo = false }
+  }, [usuario, t.id])
+
+  if (usuario === undefined) return null
+  if (!usuario) {
+    return (
+      <div style={cartao}>
+        <p style={{ ...cinza, color: "#333" }}>
+          Entre na sua conta pelo menu do site para investir. Todo mundo começa com {bravos(t.regras?.saldoInicial || 0)} Bravos.
+        </p>
+      </div>
+    )
+  }
+  if (carteira === undefined) return null
+
+  const c = carteira || carteiraVazia(t)
+  const total = patrimonio(c, t.musicais)
+  const inicial = t.regras?.saldoInicial || 0
+  const lucro = inicial ? total / inicial - 1 : 0
+  return (
+    <div style={{ ...cartao, display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "center" }}>
+      <div>
+        <p style={{ ...cinza, fontSize: "12px" }}>Seu patrimônio</p>
+        <p style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>
+          {bravos(total)}{" "}
+          {carteira && <span style={{ fontSize: "14px", color: corVariacao(lucro) }}>{pct(lucro)}</span>}
+        </p>
+      </div>
+      <div>
+        <p style={{ ...cinza, fontSize: "12px" }}>Saldo livre</p>
+        <p style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>{bravos(c.saldo)}</p>
+      </div>
+      <div style={{ marginLeft: "auto" }}>
+        {carteira ? (
+          <Link to={`/produtor/carteira${sufixo}`} className="btn-comentar" style={{ textDecoration: "none", display: "inline-block" }}>Minha carteira</Link>
+        ) : (
+          <span style={{ ...cinza, fontSize: "13px" }}>Escolha um musical abaixo para fazer o primeiro investimento.</span>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function Produtor() {
   const [params] = useSearchParams()
@@ -85,6 +139,8 @@ export default function Produtor() {
           <p style={{ margin: "6px 0 0", fontSize: "13px", opacity: 0.8 }}>{dataHora(momento.alvo)}</p>
         )}
       </div>
+
+      <ResumoCarteira t={t} sufixo={sufixo} />
 
       {/* Musicais */}
       <h2 style={{ ...tituloCartao, marginTop: "8px" }}>Em cartaz</h2>
@@ -162,9 +218,6 @@ export default function Produtor() {
         )}
       </div>
 
-      <div style={{ ...cartao, background: "transparent", borderStyle: "dashed" }}>
-        <p style={cinza}>Compra e venda chegam em breve. Por enquanto, conheça os musicais e acompanhe as manchetes.</p>
-      </div>
     </main>
   )
 }

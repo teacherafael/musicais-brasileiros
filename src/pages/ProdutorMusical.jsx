@@ -8,6 +8,7 @@ import {
   carregarTemporada, variacaoDaSemana, variacaoTotal, bravos, pct, corVariacao,
   TAMANHO, estrelas, critico, cartao, tituloCartao, cinza, estiloPoster,
 } from "../jogo/publico"
+import PainelOperacao from "../components/PainelOperacao"
 
 function GraficoPreco({ m }) {
   const pontos = [{ semana: 0, preco: m.precoInicial }, ...(m.historico || [])]
@@ -140,10 +141,8 @@ export default function ProdutorMusical() {
         )}
       </div>
 
-      {/* Compra e venda (etapa 4) */}
-      <div style={{ ...cartao, background: "transparent", borderStyle: "dashed" }}>
-        <p style={cinza}>Compra e venda chegam em breve.</p>
-      </div>
+      {/* Compra e venda */}
+      <PainelOperacao t={t} m={m} linkCarteira={`/produtor/carteira${idPedido ? `?temporada=${encodeURIComponent(idPedido)}` : ""}`} />
 
       {/* Bilheteria */}
       {historico.length > 0 && (
