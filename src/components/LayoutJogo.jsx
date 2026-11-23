@@ -19,6 +19,8 @@ const CSS = `
 .jogo-lampadas { display: flex; justify-content: center; gap: 10px; }
 .jogo-lampadas span { width: 7px; height: 7px; border-radius: 50%; background: ${TEMA.ouro}; animation: jogoPisca 1.6s infinite; }
 .jogo-lampadas span:nth-child(even) { animation-delay: 0.8s; }
+.jogo-lampadas.pequenas { gap: 8px; justify-content: flex-start; }
+.jogo-lampadas.pequenas span { width: 5px; height: 5px; }
 @keyframes jogoPisca { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 @media (prefers-reduced-motion: reduce) { .jogo-lampadas span { animation: none; } }
 .jogo-menu { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; }
@@ -49,15 +51,26 @@ function Marquise({ t, grande, chip }) {
         <div style={{ color: TEMA.textoFraco, fontSize: "12px" }}>
           um jogo do MCDb{t ? ` · ${t.nome}${t.modoTeste && !/teste/i.test(t.nome) ? " (teste)" : ""}` : ""}
         </div>
-        {chip && <div style={{ marginTop: "10px" }}>{chip}</div>}
+        <div className="jogo-lampadas" aria-hidden="true" style={{ marginTop: "10px" }}>
+          {Array.from({ length: 9 }, (_, i) => <span key={i} />)}
+        </div>
+        {chip && <div style={{ marginTop: "12px" }}>{chip}</div>}
       </div>
     )
   }
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "12px 20px", borderBottom: `1px solid ${TEMA.borda}` }}>
-      <span style={{ fontFamily: "var(--fonte-titulo)", color: TEMA.ouro, fontSize: "17px", letterSpacing: "1.5px", textTransform: "uppercase" }}>
-        Eu Quero Ser Produtor
-      </span>
+      <div>
+        <div className="jogo-lampadas pequenas" aria-hidden="true" style={{ marginBottom: "6px" }}>
+          {Array.from({ length: 12 }, (_, i) => <span key={i} />)}
+        </div>
+        <span style={{ fontFamily: "var(--fonte-titulo)", color: TEMA.ouro, fontSize: "17px", letterSpacing: "1.5px", textTransform: "uppercase", lineHeight: 1.15, display: "block" }}>
+          Eu Quero Ser Produtor
+        </span>
+        <div className="jogo-lampadas pequenas" aria-hidden="true" style={{ marginTop: "6px" }}>
+          {Array.from({ length: 12 }, (_, i) => <span key={i} />)}
+        </div>
+      </div>
       {chip}
     </div>
   )
