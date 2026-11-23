@@ -25,6 +25,7 @@ import NProgress from "nprogress"
 import AdminTitulos from "./pages/AdminTitulos"
 import Produtor from "./pages/Produtor"
 import ProdutorMusical from "./pages/ProdutorMusical"
+import ProdutorCarteira from "./pages/ProdutorCarteira"
 import "nprogress/nprogress.css"
 import { useLocation } from "react-router-dom"
 
