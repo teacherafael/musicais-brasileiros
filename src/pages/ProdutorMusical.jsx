@@ -36,10 +36,10 @@ function GraficoPreco({ m }) {
 
 function Pessoa({ rotulo, nome, descricao }) {
   return (
-    <div style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}>
-      {rotulo && <p style={{ fontSize: "12px", color: "#888", margin: "0 0 2px" }}>{rotulo}</p>}
-      <p style={{ fontSize: "15px", fontWeight: 600, margin: 0 }}>{nome}</p>
-      {descricao && <p style={{ ...cinza, marginTop: "2px" }}>{descricao}</p>}
+    <div style={{ marginBottom: "12px" }}>
+      {rotulo && <p style={{ fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: "#888", margin: "0 0 2px" }}>{rotulo}</p>}
+      <p style={{ fontSize: "15px", fontWeight: 600, margin: 0, lineHeight: 1.3 }}>{nome}</p>
+      {descricao && <p style={{ ...cinza, fontSize: "13px", marginTop: "1px" }}>{descricao}</p>}
     </div>
   )
 }
@@ -86,25 +86,39 @@ export default function ProdutorMusical() {
     <main>
       <Link to={voltar} style={{ fontSize: "14px", color: "#666", textDecoration: "none" }}>← Voltar ao cartaz</Link>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "flex-end", marginTop: "16px" }}>
+      {/* Pôster + ficha */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "28px", alignItems: "flex-start", marginTop: "16px" }}>
         {m.poster && (
-          <div style={estiloPoster({ width: "200px", flexShrink: 0, filter: m.fechado ? "grayscale(1)" : "none" })}>
+          <div style={estiloPoster({ width: "240px", maxWidth: "100%", flexShrink: 0, filter: m.fechado ? "grayscale(1)" : "none" })}>
             <img src={m.poster} alt={m.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         )}
-        <div style={{ flex: "1 1 240px" }}>
+        <div style={{ flex: "1 1 300px", minWidth: 0 }}>
           <h1 className="page-title" style={{ margin: 0 }}>{m.titulo}</h1>
-          <p style={{ ...cinza, marginTop: "6px" }}>{m.teatro?.nome} · {TAMANHO[m.teatro?.tamanho] || ""}</p>
           {m.fechado && (
-            <p style={{ color: "#cc0000", fontWeight: 600, margin: "10px 0 0" }}>
+            <p style={{ color: "#cc0000", fontWeight: 600, margin: "8px 0 0" }}>
               Este musical fechou{m.fechouNaSemana ? ` na semana ${m.fechouNaSemana}` : ""}. As ações foram vendidas automaticamente.
             </p>
           )}
+          <p style={{ fontSize: "15px", lineHeight: 1.6, margin: "12px 0 0" }}>{m.sinopse}</p>
+          {m.destaques && <p style={{ fontSize: "14px", lineHeight: 1.5, margin: "8px 0 0" }}><strong>Destaque:</strong> {m.destaques}</p>}
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", columnGap: "24px", marginTop: "20px" }}>
+            <Pessoa
+              rotulo="Teatro"
+              nome={m.teatro?.nome}
+              descricao={[TAMANHO[m.teatro?.tamanho], m.teatro?.capacidade ? `${m.teatro.capacidade.toLocaleString("pt-BR")} lugares` : ""].filter(Boolean).join(" · ")}
+            />
+            {m.produtora && <Pessoa rotulo="Produtora" nome={m.produtora} descricao={m.produtoraDescricao} />}
+            {m.direcao?.nome && <Pessoa rotulo="Direção" nome={m.direcao.nome} descricao={m.direcao.descricao} />}
+            {(m.equipe || []).map((p, i) => <Pessoa key={`e${i}`} rotulo={p.funcao} nome={p.nome} descricao={p.descricao} />)}
+            {(m.elenco || []).map((p, i) => <Pessoa key={`c${i}`} rotulo="Elenco" nome={p.nome} descricao={p.descricao} />)}
+          </div>
         </div>
       </div>
 
       {/* Preço */}
-      <div style={{ ...cartao, marginTop: "20px" }}>
+      <div style={{ ...cartao, marginTop: "28px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "flex-end" }}>
           <div>
             <p style={{ ...cinza, fontSize: "12px" }}>Preço por ação</p>
@@ -124,6 +138,11 @@ export default function ProdutorMusical() {
         ) : (
           <p style={{ ...cinza, marginTop: "12px" }}>Preço de estreia. O primeiro resultado sai na segunda depois da estreia.</p>
         )}
+      </div>
+
+      {/* Compra e venda (etapa 4) */}
+      <div style={{ ...cartao, background: "transparent", borderStyle: "dashed" }}>
+        <p style={cinza}>Compra e venda chegam em breve.</p>
       </div>
 
       {/* Bilheteria */}
@@ -150,31 +169,6 @@ export default function ProdutorMusical() {
           </table>
         </div>
       )}
-
-      {/* Compra e venda (etapa 4) */}
-      <div style={{ ...cartao, background: "transparent", borderStyle: "dashed" }}>
-        <p style={cinza}>Compra e venda chegam em breve.</p>
-      </div>
-
-      {/* Ficha */}
-      <div style={cartao}>
-        <h2 style={tituloCartao}>Sinopse</h2>
-        <p style={{ fontSize: "15px", lineHeight: 1.6, margin: 0 }}>{m.sinopse}</p>
-        {m.destaques && <p style={{ fontSize: "15px", lineHeight: 1.6, margin: "12px 0 0" }}><strong>Destaque:</strong> {m.destaques}</p>}
-      </div>
-
-      <div style={cartao}>
-        <h2 style={tituloCartao}>Ficha</h2>
-        <Pessoa
-          rotulo="Teatro"
-          nome={m.teatro?.nome}
-          descricao={[TAMANHO[m.teatro?.tamanho], m.teatro?.capacidade ? `${m.teatro.capacidade.toLocaleString("pt-BR")} lugares` : ""].filter(Boolean).join(" · ")}
-        />
-        {m.produtora && <Pessoa rotulo="Produtora" nome={m.produtora} descricao={m.produtoraDescricao} />}
-        {m.direcao?.nome && <Pessoa rotulo="Direção" nome={m.direcao.nome} descricao={m.direcao.descricao} />}
-        {(m.equipe || []).map((p, i) => <Pessoa key={`e${i}`} rotulo={p.funcao} nome={p.nome} descricao={p.descricao} />)}
-        {(m.elenco || []).map((p, i) => <Pessoa key={`c${i}`} rotulo={i === 0 ? "Elenco" : ""} nome={p.nome} descricao={p.descricao} />)}
-      </div>
 
       {/* Críticas */}
       <div style={cartao}>
