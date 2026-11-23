@@ -16,11 +16,13 @@ const CSS = `
 .jogo-palco { background: ${TEMA.fundo}; color: ${TEMA.texto}; border-radius: 16px; overflow: hidden; margin: 0 0 24px; }
 .jogo-palco a { color: inherit; }
 .jogo-conteudo { padding: 16px 20px 24px; }
-.jogo-lampadas { display: flex; justify-content: center; gap: 10px; }
+.jogo-lampadas { display: flex; justify-content: space-between; gap: 4px; }
 .jogo-lampadas span { width: 7px; height: 7px; border-radius: 50%; background: ${TEMA.ouro}; animation: jogoPisca 1.6s infinite; }
 .jogo-lampadas span:nth-child(even) { animation-delay: 0.8s; }
-.jogo-lampadas.pequenas { gap: 8px; justify-content: flex-start; }
 .jogo-lampadas.pequenas span { width: 5px; height: 5px; }
+.jogo-letreiro { font-family: 'Monoton', var(--fonte-titulo); color: ${TEMA.ouro}; font-weight: 400; line-height: 1.25; text-transform: uppercase; letter-spacing: 1px; padding: 8px 0; white-space: nowrap; font-size: 26px; }
+.jogo-letreiro.grande { font-size: clamp(28px, 7.5vw, 48px); line-height: 1.2; padding: 10px 0; }
+.jogo-quebra { display: none; }
 @keyframes jogoPisca { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 @media (prefers-reduced-motion: reduce) { .jogo-lampadas span { animation: none; } }
 .jogo-menu { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; }
@@ -35,42 +37,61 @@ const CSS = `
   .jogo-poster-ficha { width: 104px !important; }
   .jogo-preco-grande { font-size: 24px !important; }
   .jogo-titulo-ficha { font-size: 24px !important; }
+  .jogo-quebra { display: inline; }
+  .jogo-letreiro { font-size: 20px; }
 }
 `
 
+// Fonte de letreiro (Monoton) só para o nome do jogo. Carregada uma vez,
+// direto do Google Fonts; se não carregar, cai na fonte de título do MCDb.
+function useFonteLetreiro() {
+  useEffect(() => {
+    if (document.getElementById("fonte-jogo-monoton")) return
+    const link = document.createElement("link")
+    link.id = "fonte-jogo-monoton"
+    link.rel = "stylesheet"
+    link.href = "https://fonts.googleapis.com/css2?family=Monoton&display=swap"
+    document.head.appendChild(link)
+  }, [])
+}
+
+// Fileira de luzes: ocupa exatamente a largura do título acima ou abaixo dela
+function Luzes({ quantidade, pequenas }) {
+  return (
+    <div className={`jogo-lampadas${pequenas ? " pequenas" : ""}`} aria-hidden="true">
+      {Array.from({ length: quantidade }, (_, i) => <span key={i} />)}
+    </div>
+  )
+}
+
+function Letreiro({ grande }) {
+  return (
+    <div style={{ display: "inline-block", textAlign: grande ? "center" : "left" }}>
+      <Luzes quantidade={grande ? 16 : 14} pequenas={!grande} />
+      <div className={grande ? "jogo-letreiro grande" : "jogo-letreiro"}>
+        Eu Quero Ser<br className={grande ? "" : "jogo-quebra"} /> Produtor
+      </div>
+      <Luzes quantidade={grande ? 16 : 14} pequenas={!grande} />
+    </div>
+  )
+}
+
 function Marquise({ t, grande, chip }) {
+  useFonteLetreiro()
   if (grande) {
     return (
-      <div style={{ textAlign: "center", padding: "18px 16px 14px", borderBottom: `1px solid ${TEMA.borda}` }}>
-        <div className="jogo-lampadas" aria-hidden="true">
-          {Array.from({ length: 9 }, (_, i) => <span key={i} />)}
-        </div>
-        <div style={{ fontFamily: "var(--fonte-titulo)", color: TEMA.ouro, fontSize: "clamp(26px, 7vw, 40px)", letterSpacing: "2px", lineHeight: 1.05, margin: "10px 0 6px", textTransform: "uppercase" }}>
-          Eu Quero Ser Produtor
-        </div>
-        <div style={{ color: TEMA.textoFraco, fontSize: "12px" }}>
+      <div style={{ textAlign: "center", padding: "20px 16px 16px", borderBottom: `1px solid ${TEMA.borda}` }}>
+        <Letreiro grande />
+        <div style={{ color: TEMA.textoFraco, fontSize: "12px", marginTop: "10px" }}>
           um jogo do MCDb{t ? ` · ${t.nome}${t.modoTeste && !/teste/i.test(t.nome) ? " (teste)" : ""}` : ""}
-        </div>
-        <div className="jogo-lampadas" aria-hidden="true" style={{ marginTop: "10px" }}>
-          {Array.from({ length: 9 }, (_, i) => <span key={i} />)}
         </div>
         {chip && <div style={{ marginTop: "12px" }}>{chip}</div>}
       </div>
     )
   }
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "12px 20px", borderBottom: `1px solid ${TEMA.borda}` }}>
-      <div>
-        <div className="jogo-lampadas pequenas" aria-hidden="true" style={{ marginBottom: "6px" }}>
-          {Array.from({ length: 12 }, (_, i) => <span key={i} />)}
-        </div>
-        <span style={{ fontFamily: "var(--fonte-titulo)", color: TEMA.ouro, fontSize: "17px", letterSpacing: "1.5px", textTransform: "uppercase", lineHeight: 1.15, display: "block" }}>
-          Eu Quero Ser Produtor
-        </span>
-        <div className="jogo-lampadas pequenas" aria-hidden="true" style={{ marginTop: "6px" }}>
-          {Array.from({ length: 12 }, (_, i) => <span key={i} />)}
-        </div>
-      </div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "14px 20px", borderBottom: `1px solid ${TEMA.borda}` }}>
+      <Letreiro />
       {chip}
     </div>
   )
