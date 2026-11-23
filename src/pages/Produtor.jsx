@@ -49,6 +49,35 @@ export default function Produtor() {
 
   return (
     <LayoutJogo t={t} aba="cartaz" sufixo={sufixo}>
+      {/* Desafio da semana: em destaque, antes dos musicais */}
+      {desafio && (
+        <div style={{ background: TEMA.ouro, color: TEMA.fundo, borderRadius: "14px", padding: "18px 18px 16px", margin: "4px 0 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={TEMA.fundo} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3" />
+            </svg>
+            <span style={{ fontSize: "13px", fontWeight: 800, letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              Desafio da semana {desafio.semana}
+            </span>
+          </div>
+          <h2 style={{ fontFamily: "var(--fonte-titulo)", fontSize: "28px", lineHeight: 1.1, margin: "0 0 6px", color: TEMA.fundo }}>{desafio.titulo}</h2>
+          <p style={{ fontSize: "16px", margin: "0 0 14px", lineHeight: 1.45, fontWeight: 600 }}>{desafio.descricao}</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {[["ouro", "#F5C518"], ["prata", "#C9CDD3"], ["bronze", "#D08A4A"]].map(([nivel, cor]) =>
+              desafio.metas?.[nivel] != null ? (
+                <span key={nivel} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: TEMA.fundo, color: TEMA.texto, borderRadius: "999px", padding: "7px 14px 7px 8px", fontSize: "13px" }}>
+                  <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: cor, flexShrink: 0 }} aria-hidden="true" />
+                  <span>
+                    <strong style={{ textTransform: "capitalize" }}>{nivel}</strong>: {textoMeta(desafio.tipo, desafio.metas[nivel], nivel)}
+                    {bonus[nivel] ? <span style={{ color: TEMA.ouro }}> · +{bonus[nivel]} Bravos</span> : null}
+                  </span>
+                </span>
+              ) : null
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Musicais */}
       <h2 style={{ ...tituloCartao, margin: "4px 0 12px" }}>Em cartaz</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "12px", marginBottom: "24px" }}>
@@ -81,28 +110,6 @@ export default function Produtor() {
           )
         })}
       </div>
-
-      {/* Desafio da semana */}
-      {desafio && (
-        <div style={{ ...cartao, borderColor: TEMA.ouro }}>
-          <p style={{ fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: TEMA.ouro, margin: "0 0 4px" }}>
-            Desafio da semana {desafio.semana}
-          </p>
-          <h2 style={tituloCartao}>{desafio.titulo}</h2>
-          <p style={{ fontSize: "15px", margin: "0 0 12px", lineHeight: 1.5, color: TEMA.textoMedio }}>{desafio.descricao}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "14px", color: TEMA.textoMedio }}>
-            {["ouro", "prata", "bronze"].map((nivel) =>
-              desafio.metas?.[nivel] != null ? (
-                <span key={nivel}>
-                  <strong style={{ textTransform: "capitalize", color: TEMA.texto }}>{nivel}</strong>
-                  {": "}{textoMeta(desafio.tipo, desafio.metas[nivel], nivel)}
-                  {bonus[nivel] ? <span style={{ color: TEMA.textoFraco }}> (+{bonus[nivel]} Bravos)</span> : null}
-                </span>
-              ) : null
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Manchetes */}
       <div style={cartao}>
