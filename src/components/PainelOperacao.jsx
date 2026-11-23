@@ -84,7 +84,14 @@ export default function PainelOperacao({ t, m, linkCarteira }) {
 
   return (
     <div style={cartao}>
-      <h2 style={tituloCartao}>Investir</h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
+        <h2 style={{ ...tituloCartao, margin: 0 }}>Investir</h2>
+        {usuario && (
+          <Link to={linkCarteira} className="btn-comentar" style={{ textDecoration: "none", display: "inline-block" }}>
+            Minha carteira
+          </Link>
+        )}
+      </div>
 
       {m.fechado ? (
         <p style={cinza}>Este musical fechou. Não é mais possível comprar nem vender.</p>
@@ -165,7 +172,7 @@ export default function PainelOperacao({ t, m, linkCarteira }) {
                     className="btn-comentar"
                     onClick={confirmar}
                     disabled={!qtdValida || enviando}
-                    style={{ marginTop: "14px" }}
+                    style={{ marginTop: "14px", opacity: !qtdValida || enviando ? 0.4 : 1, cursor: !qtdValida || enviando ? "not-allowed" : "pointer" }}
                   >
                     {enviando ? "Enviando…" : tipo === "compra" ? "Confirmar compra" : "Confirmar venda"}
                   </button>
@@ -180,9 +187,6 @@ export default function PainelOperacao({ t, m, linkCarteira }) {
             </p>
           )}
 
-          <p style={{ ...cinza, fontSize: "13px", marginTop: "14px" }}>
-            <Link to={linkCarteira} style={{ color: "inherit" }}>Ver minha carteira</Link>
-          </p>
         </>
       )}
     </div>
