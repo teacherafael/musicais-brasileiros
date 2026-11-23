@@ -1,71 +1,39 @@
 // src/pages/ProdutorCarteira.jsx
-// Carteira do jogador no jogo "Eu Quero Ser Produtor": saldo, patrimônio,
+// Carteira do jogador no jogo "Eu Quero Ser Produtor": patrimônio, saldo,
 // ações por musical e histórico de operações. Só leitura.
+// A moldura escura e a carteira vêm do LayoutJogo (useJogo).
 
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { carregarTemporada, bravos, pct, corVariacao, paraData, cartao, tituloCartao, cinza } from "../jogo/publico"
-import { useUsuario, carregarCarteira, carregarOperacoes, carteiraVazia, patrimonio } from "../jogo/carteira"
+import LayoutJogo, { useJogo } from "../components/LayoutJogo"
+import { carregarTemporada, bravos, pct, corVariacao, paraData, cartao, tituloCartao, cinza, rotulo, botaoOuro, TEMA } from "../jogo/publico"
+import { carregarOperacoes, carteiraVazia, patrimonio } from "../jogo/carteira"
 
-const celula = { padding: "8px", borderBottom: "1px solid #eee", textAlign: "right", whiteSpace: "nowrap" }
+const celula = { padding: "8px", borderBottom: `1px solid ${TEMA.borda}`, textAlign: "right", whiteSpace: "nowrap" }
 const celulaEsq = { ...celula, textAlign: "left", whiteSpace: "normal" }
+const cabecalho = { color: TEMA.textoFraco, fontWeight: 600 }
 
 const dataCurta = (d) =>
   d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
 
-export default function ProdutorCarteira() {
-  const [params] = useSearchParams()
-  const idPedido = params.get("temporada")
-  const sufixo = idPedido ? `?temporada=${encodeURIComponent(idPedido)}` : ""
-  const usuario = useUsuario()
-  const [t, setT] = useState(null)
-  const [carteira, setCarteira] = useState(null)
+function ConteudoCarteira({ t, sufixo }) {
+  const { usuario, carteira } = useJogo()
   const [operacoes, setOperacoes] = useState([])
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState("")
 
   useEffect(() => {
-    if (usuario === undefined) return
+    if (!usuario) return
     let ativo = true
-    setCarregando(true)
-    ;(async () => {
-      try {
-        const temporada = await carregarTemporada(idPedido)
-        if (!ativo) return
-        setT(temporada)
-        if (temporada && usuario) {
-          const [c, ops] = await Promise.all([
-            carregarCarteira(temporada.id, usuario.uid),
-            carregarOperacoes(temporada.id, usuario.uid),
-          ])
-          if (!ativo) return
-          setCarteira(c)
-          setOperacoes(ops)
-        }
-      } catch (e) {
-        console.error("Erro ao carregar a carteira:", e)
-        if (ativo) setErro("Não foi possível carregar a carteira agora.")
-      } finally {
-        if (ativo) setCarregando(false)
-      }
-    })()
+    carregarOperacoes(t.id, usuario.uid)
+      .then((ops) => { if (ativo) setOperacoes(ops) })
+      .catch((e) => console.error("Erro ao carregar o histórico:", e))
     return () => { ativo = false }
-  }, [idPedido, usuario])
+  }, [t.id, usuario])
 
-  const voltar = <Link to={`/produtor${sufixo}`} style={{ fontSize: "14px", color: "#666", textDecoration: "none" }}>← Voltar ao cartaz</Link>
-
-  if (carregando || usuario === undefined) return <main><p style={cinza}>Carregando…</p></main>
-  if (erro) return <main>{voltar}<p style={{ ...cinza, marginTop: "16px" }}>{erro}</p></main>
-  if (!t) return <main>{voltar}<p style={{ ...cinza, marginTop: "16px" }}>Nenhuma temporada no ar no momento.</p></main>
-
+  if (usuario === undefined || (usuario && carteira === undefined)) {
+    return <p style={{ ...cinza, textAlign: "center", padding: "24px 0" }}>Carregando…</p>
+  }
   if (!usuario) {
-    return (
-      <main>
-        {voltar}
-        <h1 className="page-title" style={{ marginTop: "16px" }}>Minha carteira</h1>
-        <p style={{ ...cinza, marginTop: "12px" }}>Entre na sua conta pelo menu do site para ver a sua carteira.</p>
-      </main>
-    )
+    return <p style={{ ...cinza, textAlign: "center", padding: "24px 0" }}>Entre na sua conta pelo menu do site para ver a sua carteira.</p>
   }
 
   const c = carteira || carteiraVazia(t)
@@ -82,24 +50,20 @@ export default function ProdutorCarteira() {
     })
 
   return (
-    <main>
-      {voltar}
-      <h1 className="page-title" style={{ marginTop: "16px" }}>Minha carteira</h1>
-      <p style={{ ...cinza, marginTop: "8px", marginBottom: "20px" }}>{t.nome}{t.modoTeste ? " · teste" : ""}</p>
-
-      <div style={{ ...cartao, background: "#0a2c59", border: "none", color: "#fff" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "28px" }}>
+    <>
+      <div style={{ ...cartao, borderColor: TEMA.ouro }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px 28px" }}>
           <div>
-            <p style={{ margin: 0, fontSize: "13px", opacity: 0.8 }}>Patrimônio</p>
-            <p style={{ margin: "4px 0 0", fontSize: "28px", fontWeight: 700, color: "#F5C518" }}>{bravos(total)}</p>
+            <p style={rotulo}>Patrimônio</p>
+            <p style={{ margin: 0, fontSize: "30px", fontWeight: 700, color: TEMA.ouro }}>{bravos(total)}</p>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: "13px", opacity: 0.8 }}>Saldo livre</p>
-            <p style={{ margin: "4px 0 0", fontSize: "20px", fontWeight: 600 }}>{bravos(c.saldo)}</p>
+            <p style={rotulo}>Saldo livre</p>
+            <p style={{ margin: "6px 0 0", fontSize: "20px", fontWeight: 700 }}>{bravos(c.saldo)}</p>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: "13px", opacity: 0.8 }}>Desde o início</p>
-            <p style={{ margin: "4px 0 0", fontSize: "20px", fontWeight: 600, color: lucro > 0 ? "#7ee2a0" : lucro < 0 ? "#ff9b9b" : "#fff" }}>
+            <p style={rotulo}>Desde o início</p>
+            <p style={{ margin: "6px 0 0", fontSize: "20px", fontWeight: 700, color: carteira ? corVariacao(lucro) : TEMA.textoFraco }}>
               {carteira ? pct(lucro) : "-"}
             </p>
           </div>
@@ -109,14 +73,15 @@ export default function ProdutorCarteira() {
       <div style={cartao}>
         <h2 style={tituloCartao}>Minhas ações</h2>
         {posicoes.length === 0 ? (
-          <p style={cinza}>
-            Você ainda não tem ações. <Link to={`/produtor${sufixo}`} style={{ color: "inherit" }}>Escolha um musical no cartaz</Link> e invista.
-          </p>
+          <>
+            <p style={{ ...cinza, marginBottom: "12px" }}>Você ainda não tem ações. Escolha um musical no cartaz e faça o primeiro investimento.</p>
+            <Link to={`/produtor${sufixo}`} style={botaoOuro}>Ver o cartaz</Link>
+          </>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ borderCollapse: "collapse", fontSize: "14px", width: "100%" }}>
               <thead>
-                <tr>
+                <tr style={cabecalho}>
                   <th style={celulaEsq}>Musical</th>
                   <th style={celula}>Ações</th>
                   <th style={celula}>Preço</th>
@@ -128,12 +93,12 @@ export default function ProdutorCarteira() {
                 {posicoes.map(({ m, qtd, valor, resultado }) => (
                   <tr key={m.id}>
                     <td style={celulaEsq}>
-                      <Link to={`/produtor/musical/${m.id}${sufixo}`} style={{ color: "inherit", fontWeight: 600 }}>{m.titulo}</Link>
+                      <Link to={`/produtor/musical/${m.id}${sufixo}`} style={{ color: TEMA.texto, fontWeight: 700 }}>{m.titulo}</Link>
                     </td>
                     <td style={celula}>{qtd}</td>
                     <td style={celula}>{bravos(m.precoAtual)}</td>
                     <td style={celula}>{bravos(valor)}</td>
-                    <td style={{ ...celula, fontWeight: 600, color: corVariacao(resultado) }}>{resultado == null ? "-" : pct(resultado)}</td>
+                    <td style={{ ...celula, fontWeight: 700, color: corVariacao(resultado) }}>{resultado == null ? "-" : pct(resultado)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -151,7 +116,7 @@ export default function ProdutorCarteira() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ borderCollapse: "collapse", fontSize: "14px", width: "100%" }}>
               <thead>
-                <tr>
+                <tr style={cabecalho}>
                   <th style={celulaEsq}>Quando</th>
                   <th style={celulaEsq}>Operação</th>
                   <th style={celula}>Preço</th>
@@ -162,9 +127,9 @@ export default function ProdutorCarteira() {
               <tbody>
                 {operacoes.map((op) => (
                   <tr key={op.id}>
-                    <td style={{ ...celulaEsq, whiteSpace: "nowrap", color: "#666" }}>{op.criadaEm ? dataCurta(paraData(op.criadaEm)) : ""}</td>
+                    <td style={{ ...celulaEsq, whiteSpace: "nowrap", color: TEMA.textoFraco }}>{op.criadaEm ? dataCurta(paraData(op.criadaEm)) : ""}</td>
                     <td style={celulaEsq}>
-                      <strong style={{ color: op.tipo === "compra" ? "#0a2c59" : "#8a5a00" }}>{op.tipo === "compra" ? "Compra" : "Venda"}</strong>
+                      <strong style={{ color: op.tipo === "compra" ? TEMA.ouro : TEMA.alta }}>{op.tipo === "compra" ? "Compra" : "Venda"}</strong>
                       {" "}de {op.quantidade} · {op.titulo}
                     </td>
                     <td style={celula}>{bravos(op.preco)}</td>
@@ -177,6 +142,37 @@ export default function ProdutorCarteira() {
           </div>
         )}
       </div>
-    </main>
+    </>
+  )
+}
+
+export default function ProdutorCarteira() {
+  const [params] = useSearchParams()
+  const idPedido = params.get("temporada")
+  const sufixo = idPedido ? `?temporada=${encodeURIComponent(idPedido)}` : ""
+  const [t, setT] = useState(null)
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState("")
+
+  useEffect(() => {
+    let ativo = true
+    setCarregando(true)
+    carregarTemporada(idPedido)
+      .then((dados) => { if (ativo) setT(dados) })
+      .catch((e) => { console.error("Erro ao carregar a carteira:", e); if (ativo) setErro("Não foi possível carregar a carteira agora.") })
+      .finally(() => { if (ativo) setCarregando(false) })
+    return () => { ativo = false }
+  }, [idPedido])
+
+  return (
+    <LayoutJogo t={t} aba="carteira" sufixo={sufixo}>
+      {carregando || erro || !t ? (
+        <p style={{ ...cinza, textAlign: "center", padding: "24px 0" }}>
+          {carregando ? "Carregando…" : erro || "Nenhuma temporada no ar no momento."}
+        </p>
+      ) : (
+        <ConteudoCarteira t={t} sufixo={sufixo} />
+      )}
+    </LayoutJogo>
   )
 }

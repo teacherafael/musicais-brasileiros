@@ -95,7 +95,7 @@ export function variacaoTotal(m) {
 // ─────────────────────────────────────────────────────────────
 export const bravos = (n) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 export const pct = (x) => `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1).replace(".", ",")}%`
-export const corVariacao = (x) => (x == null || x === 0 ? "#666" : x > 0 ? "#1a7f37" : "#cc0000")
+export const corVariacao = (x) => (x == null || x === 0 ? TEMA.textoFraco : x > 0 ? TEMA.alta : TEMA.queda)
 
 export const dataHora = (d) =>
   d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "long", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
@@ -132,18 +132,47 @@ export function critico(t, id) {
   return (t.criticos || []).find((c) => c.id === id) || { nome: id, veiculo: "" }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Tema escuro do jogo: tudo o que fica dentro do LayoutJogo usa estas cores,
+// para o jogo não parecer uma página comum do MCDb.
+// ─────────────────────────────────────────────────────────────
+export const TEMA = {
+  fundo: "#0e0e12",
+  faixa: "#17171d",
+  cartao: "#17171d",
+  borda: "#2a2a33",
+  bordaForte: "#3a3a45",
+  texto: "#f2efe6",
+  textoMedio: "#cfcac0",
+  textoFraco: "#9a968d",
+  ouro: "#F5C518",
+  alta: "#4fd18b",
+  queda: "#ff7a7a",
+  posterVazio: "#1f2740",
+}
+
 // Miniatura -400 a partir da URL -800 do R2
 export const miniatura = (url) => (url && url.includes("-800.webp") ? url.replace("-800.webp", "-400.webp") : url || "")
 
-// Pôster 3:4; sem imagem, mostra o título em dourado sobre o azul do MCDb
+// Pôster 3:4; sem imagem, fundo azul-escuro
 export function estiloPoster(extra = {}) {
   return {
-    aspectRatio: "3 / 4", borderRadius: "8px", overflow: "hidden", background: "#0a2c59",
+    aspectRatio: "3 / 4", borderRadius: "8px", overflow: "hidden", background: TEMA.posterVazio,
     display: "flex", alignItems: "center", justifyContent: "center", ...extra,
   }
 }
 
 // Estilos comuns
-export const cartao = { background: "#fff", border: "1px solid #e8e8e4", borderRadius: "12px", padding: "20px", marginBottom: "20px" }
-export const tituloCartao = { fontFamily: "var(--fonte-titulo)", fontSize: "20px", margin: "0 0 12px" }
-export const cinza = { color: "#666", fontSize: "14px", margin: 0, lineHeight: 1.5 }
+export const cartao = { background: TEMA.cartao, border: `1px solid ${TEMA.borda}`, borderRadius: "12px", padding: "16px", marginBottom: "16px", color: TEMA.texto }
+export const tituloCartao = { fontFamily: "var(--fonte-titulo)", fontSize: "20px", margin: "0 0 12px", color: TEMA.texto, letterSpacing: "0.5px" }
+export const cinza = { color: TEMA.textoFraco, fontSize: "14px", margin: 0, lineHeight: 1.5 }
+export const rotulo = { fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: TEMA.textoFraco, margin: "0 0 2px" }
+
+export const botaoOuro = {
+  background: TEMA.ouro, color: TEMA.fundo, border: "none", borderRadius: "8px", padding: "10px 16px",
+  fontSize: "14px", fontWeight: 700, cursor: "pointer", textDecoration: "none", display: "inline-block", fontFamily: "inherit",
+}
+export const botaoContorno = {
+  background: "transparent", color: TEMA.textoMedio, border: `1px solid ${TEMA.bordaForte}`, borderRadius: "8px", padding: "10px 16px",
+  fontSize: "14px", fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-block", fontFamily: "inherit",
+}
