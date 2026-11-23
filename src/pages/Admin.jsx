@@ -3,9 +3,10 @@ import { collection, collectionGroup, getDocs, getDoc, addDoc, setDoc, updateDoc
 import { db, auth } from "../firebase"
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth"
-import { ADMINS } from "../admins"
+import { ADMINS, ehDonoDoJogo } from "../admins"
 import EnviarComunicado from "../components/EnviarComunicado"
 import PainelPendencias from "../components/PainelPendencias"
+import AdminProdutor from "../components/AdminProdutor"
 import { lerIndiceHome } from "../indiceHome"
 import {
   ESSENCIAIS,
@@ -1261,6 +1262,11 @@ async function fazerUploadCapaNovo(arquivo) {
         <button onClick={() => trocarAba("pendencias")} className={aba === "pendencias" ? "btn-comentar" : "btn-sair"}>
           Pendências
         </button>
+                {ehDonoDoJogo(usuario) && (
+          <button onClick={() => trocarAba("produtor")} className={aba === "produtor" ? "btn-comentar" : "btn-sair"}>
+            Produtor (jogo)
+          </button>
+        )}
         <button onClick={() => trocarAba("comunicado")} className={aba === "comunicado" ? "btn-comentar" : "btn-sair"}>
           📢 Comunicado
         </button>
@@ -1841,6 +1847,8 @@ async function fazerUploadCapaNovo(arquivo) {
             ))
           )}
         </>
+      ) : aba === "produtor" && ehDonoDoJogo(usuario) ? (
+        <AdminProdutor />
       ) : aba === "pendencias" ? (
         <PainelPendencias />
       ) : aba === "comunicado" ? (
