@@ -23,6 +23,8 @@ import Conversa from "./pages/Conversa"
 import { useState, useEffect } from "react"
 import NProgress from "nprogress"
 import AdminTitulos from "./pages/AdminTitulos"
+import Produtor from "./pages/Produtor"
+import ProdutorMusical from "./pages/ProdutorMusical"
 import "nprogress/nprogress.css"
 import { useLocation } from "react-router-dom"
 
@@ -100,6 +102,8 @@ function App() {
         <Route path="/pessoa/:nome" element={<Pessoa />} />
         <Route path="/teatro/:id" element={<Teatro />} />
         <Route path="/mensagens" element={<Mensagens />} />
+        <Route path="/produtor" element={<Produtor />} />
+<Route path="/produtor/musical/:id" element={<ProdutorMusical />} />
         <Route path="/mensagens/:conversaId" element={<Conversa />} />
       </Routes>
       <VoltarAoTopo />

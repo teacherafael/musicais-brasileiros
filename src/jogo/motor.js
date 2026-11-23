@@ -59,6 +59,8 @@ export function validarRoteiro(r) {
 
   const musicais = Array.isArray(r.musicais) ? r.musicais : []
   if (musicais.length < 2) e('"musicais" precisa ter pelo menos 2 musicais.')
+  const semPoster = musicais.filter((m) => !m.poster).length
+  if (semPoster > 0) a(`${semPoster} musical(is) ainda sem pôster. Dá para enviar na seção "Pôsteres", abaixo da prévia.`)
   const ids = new Set()
   musicais.forEach((m, i) => {
     const nome = m.titulo || `Musical ${i + 1}`
@@ -263,8 +265,8 @@ export function montarPublico(r) {
     musicais: r.musicais.map((m) => ({
       id: m.id,
       titulo: m.titulo,
-      parodiaDe: m.parodiaDe || "",
       sinopse: m.sinopse || "",
+      poster: m.poster || "",
       teatro: { nome: m.teatro.nome, capacidade: m.teatro.capacidade || null, tamanho: m.teatro.tamanho },
       produtora: m.produtora || "",
       produtoraDescricao: m.produtoraDescricao || "",

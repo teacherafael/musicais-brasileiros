@@ -5,7 +5,7 @@
 // deixam o dono ler e gravar o jogoSecreto.
 
 import { useEffect, useMemo, useState } from "react"
-import { collection, getDocs, getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, getDoc, setDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore"
 import { db } from "../firebase"
 import {
   validarRoteiro,
@@ -24,6 +24,18 @@ const celulaEsq = { ...celula, textAlign: "left" }
 
 const bravos = (n) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const pct = (x) => `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1).replace(".", ",")}%`
+// Miniatura -400 a partir da URL -800 do R2 (mesmo padrão do Destaques)
+const miniatura = (url) => (url && url.includes("-800.webp") ? url.replace("-800.webp", "-400.webp") : url || "")
+
+function lerComoBase64(arquivo) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error("Falha ao ler o arquivo"))
+    reader.readAsDataURL(arquivo)
+  })
+}
+
 const dataHora = (d) => d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
 
 function AdminProdutor() {
@@ -32,6 +44,7 @@ function AdminProdutor() {
   const [resultado, setResultado] = useState(null)
   const [status, setStatus] = useState("")
   const [ocupado, setOcupado] = useState(false)
+  const [enviandoPoster, setEnviandoPoster] = useState(null)
 
   useEffect(() => {
     carregarLista()
@@ -135,6 +148,50 @@ function AdminProdutor() {
     setOcupado(false)
   }
 
+  // Sobe o pôster para o R2, grava a URL no roteiro secreto e, se a temporada
+  // já estiver publicada, também no cartaz público.
+  async function enviarPoster(musicalId, arquivo) {
+    if (!arquivo || !valido) return
+    if (!arquivo.type.startsWith("image/")) {
+      setStatus("Selecione um arquivo de imagem.")
+      return
+    }
+    const r = resultado.roteiro
+    setEnviandoPoster(musicalId)
+    setStatus("")
+    try {
+      const base64 = await lerComoBase64(arquivo)
+      const resposta = await fetch("/api/upload-imagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagemBase64: base64, nomeArquivo: `${r.id}-${musicalId}`, pasta: "jogo" }),
+      })
+      const dados = await resposta.json().catch(() => ({}))
+      if (!resposta.ok || !dados.urlGrande) {
+        throw new Error(dados.erro || "o upload só funciona no site publicado, não no localhost")
+      }
+      const novo = { ...r, musicais: r.musicais.map((m) => (m.id === musicalId ? { ...m, poster: dados.urlGrande } : m)) }
+      const novoTexto = JSON.stringify(novo, null, 2)
+      await setDoc(doc(db, "jogoSecreto", r.id), { roteiro: novo, texto: novoTexto, atualizadoEm: serverTimestamp() })
+
+      const refPublico = doc(db, "jogoPublico", r.id)
+      const publico = await getDoc(refPublico)
+      if (publico.exists()) {
+        const musicais = (publico.data().musicais || []).map((m) => (m.id === musicalId ? { ...m, poster: dados.urlGrande } : m))
+        await updateDoc(refPublico, { musicais })
+      }
+
+      setTexto(novoTexto)
+      setResultado((atual) => ({ ...atual, roteiro: novo, avisos: validarRoteiro(novo).avisos }))
+      const nomeMusical = r.musicais.find((m) => m.id === musicalId)?.titulo || musicalId
+      setStatus(`Pôster de "${nomeMusical}" salvo${publico.exists() ? " e já aparece no cartaz" : ""}.`)
+      await carregarLista()
+    } catch (e) {
+      setStatus("Erro ao enviar o pôster: " + e.message)
+    }
+    setEnviandoPoster(null)
+  }
+
   return (
     <div>
       <div style={cartao}>
@@ -191,6 +248,40 @@ function AdminProdutor() {
         </div>
       )}
 
+      {valido && (
+        <div style={cartao}>
+          <h2 style={titulo}>Pôsteres</h2>
+          <p style={{ fontSize: "13px", color: "#666", margin: "0 0 14px", lineHeight: 1.5 }}>
+            Formato vertical 3:4 (por exemplo, 1200 x 1600), em JPG ou PNG. O envio já salva o roteiro e, se a temporada
+            estiver publicada, atualiza o cartaz na hora. Só funciona no site publicado, não no localhost.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "14px" }}>
+            {resultado.roteiro.musicais.map((m) => (
+              <div key={m.id}>
+                <div style={{ aspectRatio: "3 / 4", borderRadius: "6px", overflow: "hidden", background: "#0a2c59", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {m.poster ? (
+                    <img src={miniatura(m.poster)} alt={m.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <span style={{ color: "#F5C518", fontSize: "12px", padding: "8px", textAlign: "center" }}>sem pôster</span>
+                  )}
+                </div>
+                <p style={{ fontSize: "12px", fontWeight: 600, margin: "6px 0 4px", lineHeight: 1.3 }}>{m.titulo}</p>
+                <label className="btn-sair" style={{ display: "inline-block", fontSize: "12px", padding: "4px 10px", cursor: enviandoPoster ? "wait" : "pointer" }}>
+                  {enviandoPoster === m.id ? "Enviando…" : m.poster ? "Trocar" : "Enviar"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    disabled={!!enviandoPoster || ocupado}
+                    onChange={(e) => { enviarPoster(m.id, e.target.files?.[0]); e.target.value = "" }}
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {previa && (
         <>
           <div style={cartao}>
@@ -212,7 +303,7 @@ function AdminProdutor() {
                       {Array.from({ length: resultado.roteiro.semanas + 1 }, (_, w) => (
                         <td key={w} style={{ ...celula, color: (p.fechouNaSemana > 0 && p.fechouNaSemana === w) ? "#cc0000" : undefined }}>
                           {w < p.precos.length ? bravos(p.precos[w]) : ""}
-                          {(p.fechouNaSemana > 0 && p.fechouNaSemana === w)? " (fecha)" : ""}
+                          {(p.fechouNaSemana > 0 && p.fechouNaSemana === w) ? " (fecha)" : ""}
                         </td>
                       ))}
                       <td style={{ ...celula, fontWeight: 700, color: p.variacaoFinal >= 0 ? "#1a7f37" : "#cc0000" }}>{pct(p.variacaoFinal)}</td>
