@@ -1,79 +1,25 @@
 // src/pages/Produtor.jsx
-// Cartaz do jogo "Eu Quero Ser Produtor": semana atual, contagem regressiva,
-// os musicais com preço e variação, manchetes e desafio da semana.
-// Compra e venda ficam na ficha de cada musical (PainelOperacao).
+// Cartaz do jogo "Eu Quero Ser Produtor": os musicais com preço e variação,
+// o desafio da semana e as manchetes. A moldura escura (marquise, status,
+// menu e patrimônio) vem do LayoutJogo. Compra e venda ficam na ficha.
 
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
+import LayoutJogo from "../components/LayoutJogo"
 import {
-  carregarTemporada, momentoDoMercado, contagem, dataHora,
-  variacaoDaSemana, bravos, pct, corVariacao, TAMANHO,
-  textoMeta, nomeDaFonte, cartao, tituloCartao, cinza, miniatura, estiloPoster,
+  carregarTemporada, variacaoDaSemana, bravos, pct, corVariacao,
+  textoMeta, nomeDaFonte, cartao, tituloCartao, cinza, miniatura, estiloPoster, TEMA,
 } from "../jogo/publico"
-import { useUsuario, carregarCarteira, carteiraVazia, patrimonio } from "../jogo/carteira"
 
 const ORDEM_DIA = { segunda: 0, quinta: 1 }
-
-function ResumoCarteira({ t, sufixo }) {
-  const usuario = useUsuario()
-  const [carteira, setCarteira] = useState(undefined)
-
-  useEffect(() => {
-    let ativo = true
-    if (!usuario) return
-    carregarCarteira(t.id, usuario.uid)
-      .then((c) => { if (ativo) setCarteira(c) })
-      .catch(() => { if (ativo) setCarteira(null) })
-    return () => { ativo = false }
-  }, [usuario, t.id])
-
-  if (usuario === undefined) return null
-  if (!usuario) {
-    return (
-      <div style={cartao}>
-        <p style={{ ...cinza, color: "#333" }}>
-          Entre na sua conta pelo menu do site para investir. Todo mundo começa com {bravos(t.regras?.saldoInicial || 0)} Bravos.
-        </p>
-      </div>
-    )
-  }
-  if (carteira === undefined) return null
-
-  const c = carteira || carteiraVazia(t)
-  const total = patrimonio(c, t.musicais)
-  const inicial = t.regras?.saldoInicial || 0
-  const lucro = inicial ? total / inicial - 1 : 0
-  return (
-    <div style={{ ...cartao, display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "center" }}>
-      <div>
-        <p style={{ ...cinza, fontSize: "12px" }}>Seu patrimônio</p>
-        <p style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>
-          {bravos(total)}{" "}
-          {carteira && <span style={{ fontSize: "14px", color: corVariacao(lucro) }}>{pct(lucro)}</span>}
-        </p>
-      </div>
-      <div>
-        <p style={{ ...cinza, fontSize: "12px" }}>Saldo livre</p>
-        <p style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>{bravos(c.saldo)}</p>
-      </div>
-      <div style={{ marginLeft: "auto" }}>
-        {carteira ? (
-          <Link to={`/produtor/carteira${sufixo}`} className="btn-comentar" style={{ textDecoration: "none", display: "inline-block" }}>Minha carteira</Link>
-        ) : (
-          <span style={{ ...cinza, fontSize: "13px" }}>Escolha um musical abaixo para fazer o primeiro investimento.</span>
-        )}
-      </div>
-    </div>
-  )
-}
 
 export default function Produtor() {
   const [params] = useSearchParams()
   const idPedido = params.get("temporada")
+  const sufixo = idPedido ? `?temporada=${encodeURIComponent(idPedido)}` : ""
   const [t, setT] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState("")
-  const [agora, setAgora] = useState(new Date())
 
   useEffect(() => {
     let ativo = true
@@ -85,91 +31,51 @@ export default function Produtor() {
     return () => { ativo = false }
   }, [idPedido])
 
-  // Atualiza a contagem regressiva a cada 30 segundos
-  useEffect(() => {
-    const timer = setInterval(() => setAgora(new Date()), 30000)
-    return () => clearInterval(timer)
-  }, [])
-
-  if (carregando) return <main><p style={cinza}>Carregando…</p></main>
-  if (erro) return <main><p style={cinza}>{erro}</p></main>
-  if (!t) {
+  if (carregando || erro || !t) {
     return (
-      <main>
-        <h1 className="page-title">Eu Quero Ser Produtor</h1>
-        <p style={{ ...cinza, marginTop: "12px" }}>Nenhuma temporada no ar no momento. Volte em breve.</p>
-      </main>
+      <LayoutJogo t={null} aba="cartaz" sufixo={sufixo}>
+        <p style={{ ...cinza, textAlign: "center", padding: "24px 0" }}>
+          {carregando ? "Carregando…" : erro || "Nenhuma temporada no ar no momento. Volte em breve."}
+        </p>
+      </LayoutJogo>
     )
   }
 
-  const momento = momentoDoMercado(t, agora)
-  const sufixo = idPedido ? `?temporada=${encodeURIComponent(idPedido)}` : ""
   const manchetes = [...(t.manchetes || [])].sort(
     (a, b) => b.semana - a.semana || (ORDEM_DIA[b.dia] ?? 0) - (ORDEM_DIA[a.dia] ?? 0)
   )
-  const semana = t.estado?.semanaAtual || 0
   const desafio = t.desafioAtual
   const bonus = t.regras?.bonusDesafio || {}
 
   return (
-    <main>
-      <p style={{ fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase", color: "#888", margin: "0 0 6px" }}>
-        {t.nome}{t.modoTeste ? " · teste" : ""}
-      </p>
-      <h1 className="page-title">Eu Quero Ser Produtor</h1>
-      <p style={{ ...cinza, marginTop: "10px", marginBottom: "24px" }}>
-        Invista Bravos nos musicais da temporada. Os resultados saem toda segunda.
-      </p>
-
-      {/* Situação do mercado */}
-      <div style={{ ...cartao, background: "#0a2c59", border: "none", color: "#fff" }}>
-        <p style={{ margin: 0, fontSize: "13px", opacity: 0.8 }}>
-          {semana === 0 ? "Antes da estreia" : `Semana ${semana} de ${t.semanas}`}
-        </p>
-        <p style={{ margin: "6px 0 0", fontSize: "18px", fontWeight: 600 }}>
-          {momento.texto}
-          {momento.alvo && <span style={{ color: "#F5C518" }}> {contagem(momento.alvo, agora)}</span>}
-        </p>
-        {momento.fase === "aberto" && (
-          <p style={{ margin: "6px 0 0", fontSize: "13px", opacity: 0.8 }}>
-            Últimas operações até {dataHora(momento.fechaVisivel)}.
-          </p>
-        )}
-        {momento.fase === "antes" && (
-          <p style={{ margin: "6px 0 0", fontSize: "13px", opacity: 0.8 }}>{dataHora(momento.alvo)}</p>
-        )}
-      </div>
-
-      <ResumoCarteira t={t} sufixo={sufixo} />
-
+    <LayoutJogo t={t} aba="cartaz" sufixo={sufixo}>
       {/* Musicais */}
-      <h2 style={{ ...tituloCartao, marginTop: "8px" }}>Em cartaz</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px", marginBottom: "28px" }}>
+      <h2 style={{ ...tituloCartao, margin: "4px 0 12px" }}>Em cartaz</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "12px", marginBottom: "24px" }}>
         {(t.musicais || []).map((m) => {
           const v = variacaoDaSemana(m)
           return (
             <Link key={m.id} to={`/produtor/musical/${m.id}${sufixo}`} style={{ textDecoration: "none", color: "inherit" }}>
-              <div style={{ ...cartao, padding: "12px", marginBottom: 0, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", opacity: m.fechado ? 0.6 : 1 }}>
-                <div style={estiloPoster({ marginBottom: "12px", filter: m.fechado ? "grayscale(1)" : "none" })}>
+              <div style={{ ...cartao, padding: "8px", marginBottom: 0, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", opacity: m.fechado ? 0.55 : 1 }}>
+                <div style={estiloPoster({ marginBottom: "8px", filter: m.fechado ? "grayscale(1)" : "none" })}>
                   {m.poster ? (
                     <img src={miniatura(m.poster)} alt={m.titulo} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
-                    <span style={{ fontSize: "12px", color: "#F5C518", opacity: 0.8 }}>pôster em breve</span>
+                    <span style={{ fontSize: "12px", color: TEMA.ouro, opacity: 0.8 }}>pôster em breve</span>
                   )}
                 </div>
-                <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "18px", margin: "0 0 4px", lineHeight: 1.2 }}>{m.titulo}</p>
-                <p style={{ ...cinza, fontSize: "13px" }}>{m.teatro?.nome} · {TAMANHO[m.teatro?.tamanho] || ""}</p>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: "auto", paddingTop: "12px" }}>
-                  <span style={{ fontSize: "20px", fontWeight: 700 }}>{bravos(m.precoAtual)}</span>
+                <p style={{ fontFamily: "var(--fonte-titulo)", fontSize: "16px", margin: "0 0 2px", lineHeight: 1.15, color: TEMA.texto }}>{m.titulo}</p>
+                <p style={{ ...cinza, fontSize: "12px", lineHeight: 1.3 }}>{m.teatro?.nome}</p>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: "auto", paddingTop: "8px" }}>
+                  <span style={{ fontSize: "17px", fontWeight: 700, color: TEMA.texto }}>{bravos(m.precoAtual)}</span>
                   {m.fechado ? (
-                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#cc0000" }}>Fechou</span>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: TEMA.queda }}>Fechou</span>
                   ) : v != null ? (
-                    <span style={{ fontSize: "14px", fontWeight: 600, color: corVariacao(v) }}>{pct(v)}</span>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: corVariacao(v) }}>{pct(v)}</span>
                   ) : (
-                    <span style={{ fontSize: "13px", color: "#888" }}>estreia</span>
+                    <span style={{ fontSize: "12px", color: TEMA.textoFraco }}>estreia</span>
                   )}
                 </div>
-                <p style={{ ...cinza, fontSize: "12px", marginTop: "2px" }}>Bravos por ação</p>
               </div>
             </Link>
           )
@@ -178,19 +84,19 @@ export default function Produtor() {
 
       {/* Desafio da semana */}
       {desafio && (
-        <div style={{ ...cartao, borderColor: "#F5C518" }}>
-          <p style={{ fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase", color: "#888", margin: "0 0 4px" }}>
+        <div style={{ ...cartao, borderColor: TEMA.ouro }}>
+          <p style={{ fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: TEMA.ouro, margin: "0 0 4px" }}>
             Desafio da semana {desafio.semana}
           </p>
           <h2 style={tituloCartao}>{desafio.titulo}</h2>
-          <p style={{ fontSize: "15px", margin: "0 0 12px", lineHeight: 1.5 }}>{desafio.descricao}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "14px" }}>
+          <p style={{ fontSize: "15px", margin: "0 0 12px", lineHeight: 1.5, color: TEMA.textoMedio }}>{desafio.descricao}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "14px", color: TEMA.textoMedio }}>
             {["ouro", "prata", "bronze"].map((nivel) =>
               desafio.metas?.[nivel] != null ? (
                 <span key={nivel}>
-                  <strong style={{ textTransform: "capitalize" }}>{nivel}</strong>
+                  <strong style={{ textTransform: "capitalize", color: TEMA.texto }}>{nivel}</strong>
                   {": "}{textoMeta(desafio.tipo, desafio.metas[nivel], nivel)}
-                  {bonus[nivel] ? <span style={{ color: "#888" }}> (+{bonus[nivel]} Bravos)</span> : null}
+                  {bonus[nivel] ? <span style={{ color: TEMA.textoFraco }}> (+{bonus[nivel]} Bravos)</span> : null}
                 </span>
               ) : null
             )}
@@ -206,18 +112,17 @@ export default function Produtor() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column" }}>
             {manchetes.map((n, i) => (
-              <div key={i} style={{ padding: "12px 0", borderBottom: i < manchetes.length - 1 ? "1px solid #eee" : "none" }}>
-                <p style={{ fontSize: "12px", color: "#888", margin: "0 0 4px" }}>
-                  {n.dia === "quinta" && <strong style={{ color: "#cc0000" }}>PLANTÃO · </strong>}
+              <div key={i} style={{ padding: "12px 0", borderBottom: i < manchetes.length - 1 ? `1px solid ${TEMA.borda}` : "none" }}>
+                <p style={{ fontSize: "12px", color: TEMA.textoFraco, margin: "0 0 4px" }}>
+                  {n.dia === "quinta" && <strong style={{ color: TEMA.queda }}>PLANTÃO · </strong>}
                   {nomeDaFonte(t, n.fonte)} · {n.semana === 0 ? "antes da estreia" : `semana ${n.semana}, ${n.dia}`}
                 </p>
-                <p style={{ fontSize: "15px", margin: 0, lineHeight: 1.4 }}>{n.texto}</p>
+                <p style={{ fontSize: "15px", margin: 0, lineHeight: 1.4, color: TEMA.texto }}>{n.texto}</p>
               </div>
             ))}
           </div>
         )}
       </div>
-
-    </main>
+    </LayoutJogo>
   )
 }
