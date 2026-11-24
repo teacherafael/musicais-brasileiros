@@ -4,7 +4,7 @@
 
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"
 import { db } from "../firebase"
-import { FRACAO_FECHA_ANTES } from "./motor"
+import { FRACAO_FECHA_ANTES, FRACAO_PLANTAO } from "./motor"
 
 // ─────────────────────────────────────────────────────────────
 // Carregar a temporada
@@ -12,6 +12,20 @@ import { FRACAO_FECHA_ANTES } from "./motor"
 // Com ?temporada=id na URL: aquela temporada (usado para testar).
 // ─────────────────────────────────────────────────────────────
 export async function carregarTemporada(idPedido) {
+  const t = await buscarTemporada(idPedido)
+  if (!t || !precisaAtualizar(t)) return t
+  // Liberação "preguiçosa": se o plantão ou o resultado já passou do horário
+  // e ainda não saiu, pede ao servidor para liberar e lê de novo.
+  try {
+    await fetch(`/api/jogo-atualizar?temporada=${encodeURIComponent(t.id)}`, { method: "POST" })
+  } catch (e) {
+    console.error("Não foi possível pedir a atualização do jogo:", e)
+    return t
+  }
+  return (await buscarTemporada(t.id)) || t
+}
+
+async function buscarTemporada(idPedido) {
   if (idPedido) {
     const snap = await getDoc(doc(db, "jogoPublico", idPedido))
     return snap.exists() ? { id: snap.id, ...snap.data() } : null
@@ -22,6 +36,19 @@ export async function carregarTemporada(idPedido) {
   const lista = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
   lista.sort((a, b) => paraData(b.publicadoEm) - paraData(a.publicadoEm))
   return lista[0]
+}
+
+// Mesmo critério do servidor (api/_jogoSemana.js, proximaAcao)
+export function precisaAtualizar(t, agora = new Date()) {
+  if (!t || t.estado?.encerrada) return false
+  const t0 = paraData(t.aberturaMercado).getTime()
+  const H = t.horasPorSemana * 3600 * 1000
+  const w = t.estado?.semanaAtual || 0
+  const plantaoFeito = t.estado?.plantaoLiberado ?? -1
+  const ms = agora.getTime()
+  if (w < t.semanas && plantaoFeito < w && ms >= t0 + w * H + H * FRACAO_PLANTAO) return true
+  if (w < t.semanas && ms >= t0 + (w + 1) * H) return true
+  return false
 }
 
 // Timestamp do Firestore, Date ou texto -> Date

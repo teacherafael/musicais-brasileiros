@@ -7,7 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { useUsuario, carregarCarteira, carteiraVazia, patrimonio } from "../jogo/carteira"
-import { momentoDoMercado, contagem, dataHora, bravos, TEMA } from "../jogo/publico"
+import { momentoDoMercado, contagem, dataHora, bravos, precisaAtualizar, TEMA } from "../jogo/publico"
 
 const JogoContexto = createContext({ usuario: undefined, carteira: undefined, recarregarCarteira: async () => {} })
 export const useJogo = () => useContext(JogoContexto)
@@ -105,6 +105,21 @@ function FaixaStatus({ t }) {
   }, [])
   const momento = momentoDoMercado(t, agora)
   const semana = t.estado?.semanaAtual || 0
+
+  // Se o plantão ou o resultado chegar com a página aberta, recarrega para buscar.
+  // No máximo uma vez a cada 2 minutos, para nunca ficar recarregando sem parar.
+  useEffect(() => {
+    if (!precisaAtualizar(t, agora)) return
+    try {
+      const chave = `jogo-recarga-${t.id}`
+      const ultima = Number(sessionStorage.getItem(chave) || 0)
+      if (Date.now() - ultima < 120000) return
+      sessionStorage.setItem(chave, String(Date.now()))
+    } catch (e) {
+      return
+    }
+    window.location.reload()
+  }, [t, agora])
   return (
     <div style={{ background: TEMA.faixa, padding: "9px 20px", fontSize: "13px", color: TEMA.textoMedio, display: "flex", flexWrap: "wrap", gap: "4px 14px" }}>
       <span style={{ color: TEMA.texto, fontWeight: 600 }}>{semana === 0 ? "Antes da estreia" : `Semana ${semana} de ${t.semanas}`}</span>
