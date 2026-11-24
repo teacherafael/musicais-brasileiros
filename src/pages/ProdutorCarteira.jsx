@@ -19,6 +19,37 @@ const TIPO_OPERACAO = {
   venda: { nome: "Venda", cor: TEMA.alta },
   liquidacao: { nome: "Liquidação", cor: "#ff9b6a", nota: "O musical fechou: as ações foram vendidas automaticamente por 30% do último preço, sem taxa." },
   encerramento: { nome: "Fim da temporada", cor: "#b9a7ff", nota: "A temporada terminou: as ações foram vendidas automaticamente pelo preço final, sem taxa." },
+  bonus: { nome: "Bônus", cor: TEMA.ouro },
+}
+
+const COR_SELO = { ouro: "#F5C518", prata: "#C9CDD3", bronze: "#D08A4A" }
+
+function Selos({ selos }) {
+  return (
+    <div style={cartao}>
+      <h2 style={tituloCartao}>Meus selos</h2>
+      {selos.length === 0 ? (
+        <p style={cinza}>Cumpra o desafio da semana para ganhar selos de bronze, prata ou ouro, com bônus em Bravos.</p>
+      ) : (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {selos.map((selo) => (
+            <div key={selo.semana} style={{ display: "flex", alignItems: "center", gap: "10px", background: TEMA.fundo, border: `1px solid ${TEMA.borda}`, borderRadius: "12px", padding: "8px 14px 8px 8px" }}>
+              <span aria-hidden="true" style={{ width: "34px", height: "34px", borderRadius: "50%", background: COR_SELO[selo.nivel], color: TEMA.fundo, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "14px", flexShrink: 0 }}>
+                {selo.semana}
+              </span>
+              <div style={{ lineHeight: 1.25 }}>
+                <div style={{ fontWeight: 700, fontSize: "14px" }}>{selo.titulo}</div>
+                <div style={{ fontSize: "12px", color: TEMA.textoFraco }}>
+                  <span style={{ color: COR_SELO[selo.nivel], textTransform: "capitalize", fontWeight: 700 }}>{selo.nivel}</span>
+                  {" · "}semana {selo.semana}{selo.bonus ? ` · +${bravos(selo.bonus)} Bravos` : ""}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 const dataCurta = (d) =>
@@ -122,6 +153,8 @@ function ConteudoCarteira({ t, sufixo }) {
         )}
       </div>
 
+      <Selos selos={c.selos || []} />
+
       <div style={cartao}>
         <h2 style={tituloCartao}>Histórico</h2>
         {operacoes.length === 0 ? (
@@ -144,13 +177,13 @@ function ConteudoCarteira({ t, sufixo }) {
                     <td style={{ ...celulaEsq, whiteSpace: "nowrap", color: TEMA.textoFraco }}>{op.criadaEm ? dataCurta(paraData(op.criadaEm)) : ""}</td>
                     <td style={celulaEsq}>
                       <strong style={{ color: (TIPO_OPERACAO[op.tipo] || TIPO_OPERACAO.venda).cor }}>{(TIPO_OPERACAO[op.tipo] || TIPO_OPERACAO.venda).nome}</strong>
-                      {" "}de {op.quantidade} · {op.titulo}
+                      {op.tipo === "bonus" ? ` · ${op.titulo}` : ` de ${op.quantidade} · ${op.titulo}`}
                       {TIPO_OPERACAO[op.tipo]?.nota && (
                         <div style={{ fontSize: "12px", color: TEMA.textoFraco, marginTop: "2px" }}>{TIPO_OPERACAO[op.tipo].nota}</div>
                       )}
                     </td>
-                    <td style={celula}>{bravos(op.preco)}</td>
-                    <td style={celula}>{bravos(op.taxa)}</td>
+                    <td style={celula}>{op.tipo === "bonus" ? "-" : bravos(op.preco)}</td>
+                    <td style={celula}>{op.tipo === "bonus" ? "-" : bravos(op.taxa)}</td>
                     <td style={celula}>{op.tipo === "compra" ? "-" : "+"}{bravos(op.total)}</td>
                   </tr>
                 ))}

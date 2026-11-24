@@ -107,6 +107,13 @@ async function processarTemporada(banco, temporadaId) {
           })
           const uid = out.carteira.uid
           if (uid) {
+            // Selo do desafio da semana
+            if (out.selo) {
+              escritor.create(
+                banco.collection("notificacoes").doc(uid).collection("itens").doc(),
+                notificacao(`Desafio "${out.selo.titulo}": você ganhou o selo de ${out.selo.nivel}!${out.selo.bonus ? ` +${bravos(out.selo.bonus)} Bravos na carteira.` : ""}`, link)
+              )
+            }
             // Aviso próprio para cada musical que fechou com ações do jogador
             out.operacoes.filter((op) => op.tipo === "liquidacao").forEach((op) => {
               escritor.create(
@@ -122,7 +129,6 @@ async function processarTemporada(banco, temporadaId) {
         })
         await escritor.close()
 
-        // TODO etapa 6: avaliar o desafio da semana s e pagar o bônus antes da foto.
         // TODO etapa 7: ranking da temporada, ranking geral e Hall da Fama.
 
         await refPublico.update({

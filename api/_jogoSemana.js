@@ -70,13 +70,75 @@ function montarResultado(t, r, precos, s) {
       .map(({ semana, dia, fonte, texto }) => ({ semana, dia, fonte, texto })),
   ]
 
+  // Para os desafios: preço no começo da semana, preço novo e média do mercado
+  const precoAntes = Object.fromEntries(t.musicais.map((m) => [m.id, m.precoAtual]))
+  const precoInicial = Object.fromEntries(t.musicais.map((m) => [m.id, m.precoInicial]))
+  const abertosAntes = t.musicais.filter((m) => !m.fechado)
+  const precoDepoisPorId = Object.fromEntries(musicais.map((m) => [m.id, m.precoAtual]))
+  const media = abertosAntes.length
+    ? abertosAntes.reduce((soma, m) => soma + (precoDepoisPorId[m.id] / m.precoAtual - 1), 0) / abertosAntes.length
+    : 0
+  const desafioDaSemana = (r.desafios || []).find((d) => d.semana === s) || null
+
   const final = s >= t.semanas
   const proximo = (r.desafios || []).find((d) => d.semana === s + 1)
   const desafioAtual = !final && proximo
     ? { semana: proximo.semana, tipo: proximo.tipo, titulo: proximo.titulo, descricao: proximo.descricao, metas: proximo.metas || null }
     : null
 
-  return { musicais, criticas, manchetes, desafioAtual, fecharam, final }
+  const bonusDesafio = t.regras?.bonusDesafio || r.regras?.bonusDesafio || {}
+  return { musicais, criticas, manchetes, desafioAtual, fecharam, final, precoAntes, precoInicial, media, desafioDaSemana, bonusDesafio }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Desafios
+// "acima(x, meta)": meta 0 quer dizer "maior que zero"; meta positiva, "pelo menos a meta".
+// Valores em %: metas 3 e 5 = 3% e 5%.
+// ─────────────────────────────────────────────────────────────
+const NIVEIS = ["ouro", "prata", "bronze"]
+const acima = (x, meta) => (meta > 0 ? x >= meta / 100 - 1e-9 : x > 1e-9)
+
+function avaliarDesafio({ desafio, acoesAntes, precoAntes, precoDepois, precoInicial, patAntes, patDepois, media }) {
+  if (!desafio || !desafio.metas) return null
+  const ids = Object.keys(acoesAntes).filter((id) => (acoesAntes[id] || 0) > 0)
+  const n = ids.length
+  const minimo = desafio.minMusicais || 0
+  const varCarteira = patAntes ? patDepois / patAntes - 1 : 0
+  const varMusical = (id) => (precoAntes[id] ? precoDepois[id] / precoAntes[id] - 1 : 0)
+  const metas = desafio.metas
+
+  let passou
+  switch (desafio.tipo) {
+    case "primeira-carteira":
+      passou = (meta) => n >= minimo && acima(varCarteira, meta)
+      break
+    case "bata-o-mercado":
+      passou = (meta) => n >= minimo && acima(varCarteira - media, meta)
+      break
+    case "contra-a-mare": {
+      const melhor = ids
+        .filter((id) => precoAntes[id] < precoInicial[id])
+        .reduce((m, id) => Math.max(m, varMusical(id)), -Infinity)
+      passou = (meta) => melhor > -Infinity && acima(melhor, meta)
+      break
+    }
+    case "sem-tombo": {
+      const cumpriu = n >= minimo && n > 0 && ids.every((id) => varMusical(id) >= -0.10 - 1e-9)
+      passou = (meta, nivel) => cumpriu && (nivel === "bronze" || acima(varCarteira, meta))
+      break
+    }
+    case "tudo-no-azul": {
+      const cumpriu = n >= Math.max(minimo, 1) && ids.every((id) => varMusical(id) > 1e-9)
+      passou = (meta, nivel) => cumpriu && (nivel === "bronze" || acima(varCarteira, meta))
+      break
+    }
+    case "grande-final":
+      passou = (meta) => patDepois >= meta - 1e-9
+      break
+    default:
+      return null
+  }
+  return NIVEIS.find((nivel) => metas[nivel] != null && passou(metas[nivel], nivel)) || null
 }
 
 // Aplica o resultado da semana s numa carteira:
@@ -106,21 +168,47 @@ function aplicarResultadoNaCarteira(c, resultado, s) {
   if (resultado.final) Object.keys(acoes).forEach((id) => vender(id, "encerramento"))
 
   const anterior = c.fotoSemana?.patrimonio ?? c.saldo
-  const total = patrimonio({ saldo, acoes }, resultado.musicais)
+  let total = patrimonio({ saldo, acoes }, resultado.musicais)
+
+  // Desafio da semana: avaliado com as ações que o jogador tinha quando o mercado fechou
+  let selo = null
+  const d = resultado.desafioDaSemana
+  if (d) {
+    const nivel = avaliarDesafio({
+      desafio: d,
+      acoesAntes: c.acoes || {},
+      precoAntes: resultado.precoAntes,
+      precoDepois: precoPorId,
+      precoInicial: resultado.precoInicial,
+      patAntes: anterior,
+      patDepois: total,
+      media: resultado.media,
+    })
+    if (nivel) {
+      const bonus = (resultado.bonusDesafio || {})[nivel] || 0
+      saldo = r2(saldo + bonus)
+      total = r2(total + bonus)
+      selo = { semana: s, tipo: d.tipo, titulo: d.titulo, nivel, bonus }
+      if (bonus) operacoes.push({ tipo: "bonus", musicalId: "", titulo: `Desafio ${d.titulo} (${nivel})`, quantidade: 0, preco: 0, valor: bonus, taxa: 0, total: bonus, semana: s })
+    }
+  }
+
   return {
     carteira: {
       ...c,
       saldo,
       acoes,
       custo,
+      selos: selo ? [...(c.selos || []), selo] : c.selos || [],
       patrimonioAnterior: anterior,
       fotoSemana: { semana: s, saldo, acoes, patrimonio: total },
       ultimaSemanaProcessada: s,
     },
     operacoes,
+    selo,
     patrimonio: total,
     variacaoSemana: anterior ? total / anterior - 1 : 0,
   }
 }
 
-module.exports = { FRACAO_PLANTAO, proximaAcao, manchetesDoPlantao, montarResultado, aplicarResultadoNaCarteira }
+module.exports = { FRACAO_PLANTAO, proximaAcao, manchetesDoPlantao, montarResultado, aplicarResultadoNaCarteira, avaliarDesafio }
