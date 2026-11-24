@@ -82,8 +82,14 @@ function ConteudoCarteira({ t, sufixo }) {
         <h2 style={tituloCartao}>Minhas ações</h2>
         {posicoes.length === 0 ? (
           <>
-            <p style={{ ...cinza, marginBottom: "12px" }}>Você ainda não tem ações. Escolha um musical no cartaz e faça o primeiro investimento.</p>
-            <Link to={`/produtor${sufixo}`} style={botaoOuro}>Ver o cartaz</Link>
+            {t.estado?.encerrada ? (
+              <p style={cinza}>A temporada terminou e todas as ações foram vendidas pelo preço final. O seu resultado está no patrimônio acima.</p>
+            ) : (
+              <>
+                <p style={{ ...cinza, marginBottom: "12px" }}>Você ainda não tem ações. Escolha um musical no cartaz e faça o primeiro investimento.</p>
+                <Link to={`/produtor${sufixo}`} style={botaoOuro}>Ver o cartaz</Link>
+              </>
+            )}
           </>
         ) : (
           <div style={{ overflowX: "auto" }}>

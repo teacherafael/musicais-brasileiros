@@ -390,9 +390,35 @@ function Header() {
                             alignItems: "flex-start",
                           }}
                         >
-                          <span style={{ fontSize: "20px", flexShrink: 0, marginTop: "1px" }}>
-                            {n.tipo === "reacao" ? (n.emoji || "👍") : n.tipo === "comunicado" ? "📢" : "👤"}
-                          </span>
+                          {n.tipo === "jogo" || n.origem === "jogo" ? (
+                            // Notificação do jogo "Eu Quero Ser Produtor": moeda Bravos
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                width: "24px",
+                                height: "24px",
+                                borderRadius: "50%",
+                                background: "#F5C518",
+                                border: "2px solid #b8960a",
+                                color: "#1a1a1a",
+                                fontWeight: 900,
+                                fontSize: "13px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                marginTop: "1px",
+                                boxSizing: "border-box",
+                                fontFamily: "var(--fonte-corpo)",
+                              }}
+                            >
+                              B
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: "20px", flexShrink: 0, marginTop: "1px" }}>
+                              {n.tipo === "reacao" ? (n.emoji || "👍") : n.tipo === "comunicado" ? "📢" : "👤"}
+                            </span>
+                          )}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: "13px", color: "#1a1a1a", margin: 0, lineHeight: "1.4" }}>
                               {n.texto}

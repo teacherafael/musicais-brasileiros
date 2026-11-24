@@ -26,7 +26,7 @@ const pct = (x) => `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1).replace(".", ",")
 
 function notificacao(texto, link) {
   return {
-    tipo: "comunicado",
+    tipo: "jogo",
     texto,
     link,
     lida: false,
