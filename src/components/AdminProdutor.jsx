@@ -5,7 +5,7 @@
 // deixam o dono ler e gravar o jogoSecreto.
 
 import { useEffect, useMemo, useState } from "react"
-import { collection, getDocs, getDoc, setDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, getDoc, setDoc, updateDoc, doc, serverTimestamp, query, where, limit } from "firebase/firestore"
 import { db } from "../firebase"
 import {
   validarRoteiro,
@@ -131,6 +131,23 @@ function AdminProdutor() {
     setOcupado(true)
     try {
       const existente = await getDoc(doc(db, "jogoPublico", r.id))
+
+      // Trava: temporada que já tem jogador ou resultado não pode ser publicada de novo.
+      // Publicar por cima zeraria o cartaz, mas as carteiras continuariam marcadas como
+      // "já processadas", e os próximos resultados pulariam os jogadores.
+      if (existente.exists()) {
+        const comResultado = (existente.data().estado?.semanaAtual || 0) > 0
+        const comJogador = !(await getDocs(query(collection(db, "jogoCarteiras"), where("temporadaId", "==", r.id), limit(1)))).empty
+        if (comResultado || comJogador) {
+          setStatus(
+            `A temporada "${r.id}" já está em andamento${comJogador ? " e tem jogadores" : ""}. Não dá para publicar de novo. ` +
+              `Para corrigir texto do roteiro, use "Salvar roteiro (sem publicar)". Para um novo teste, use outro id (ex.: "${r.id}b").`
+          )
+          setOcupado(false)
+          return
+        }
+      }
+
       const aviso = existente.exists()
         ? `A temporada "${r.id}" JÁ ESTÁ PUBLICADA.\n\nPublicar de novo apaga o cartaz atual (preços, críticas e manchetes já liberadas) e volta tudo para antes da estreia.\n\nContinuar?`
         : `Publicar a temporada "${r.id}" (${r.nome})?\n\nO cartaz público vai ao ar com as fichas e os preços iniciais, e o mercado abre em ${dataHora(new Date(Date.parse(r.aberturaMercado)))}.`

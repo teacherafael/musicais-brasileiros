@@ -15,7 +15,7 @@
 
 const { FieldValue, Timestamp } = require("firebase-admin/firestore")
 const { db } = require("./_firebaseAdmin")
-const { proximaAcao, manchetesDoPlantao, montarResultado, aplicarResultadoNaCarteira } = require("./_jogoSemana")
+const { proximaAcao, manchetesDoPlantao, montarResultado, aplicarResultadoNaCarteira, montarRanking } = require("./_jogoSemana")
 
 const ID_VALIDO = /^[a-z0-9-]+$/
 const TRAVA_MS = 4 * 60 * 1000
@@ -97,8 +97,10 @@ async function processarTemporada(banco, temporadaId) {
         const resultado = montarResultado(t, roteiro, motor.calcularPrecos(roteiro), s)
 
         let processadas = 0
+        const paraRanking = []
         carteiras.forEach((doc) => {
           const out = aplicarResultadoNaCarteira(doc.data(), resultado, s)
+          paraRanking.push(out ? out.carteira : doc.data())
           if (!out) return
           processadas++
           escritor.set(doc.ref, { ...out.carteira, atualizadaEm: FieldValue.serverTimestamp() })
@@ -129,7 +131,12 @@ async function processarTemporada(banco, temporadaId) {
         })
         await escritor.close()
 
-        // TODO etapa 7: ranking da temporada, ranking geral e Hall da Fama.
+        // Ranking da temporada (ranking geral e Hall da Fama ficam para a etapa 7)
+        await banco.collection("jogoRanking").doc(temporadaId).set({
+          ...montarRanking(paraRanking, s, t.regras?.saldoInicial || 0, !!t.modoTeste),
+          final: resultado.final,
+          atualizadoEm: FieldValue.serverTimestamp(),
+        })
 
         await refPublico.update({
           musicais: resultado.musicais,

@@ -6,6 +6,9 @@
 
 const FRACAO_FECHA_ANTES = 10 / 168
 
+// O Rafael cria o roteiro, então joga com informação privilegiada: fica fora do ranking.
+const DONO_DO_JOGO = "LFDNXIXywqQrLsDLobaGzOOmok03"
+
 const r2 = (n) => Math.round(n * 100) / 100
 
 function paraMs(x) {
@@ -119,4 +122,4 @@ function lerCorpo(req) {
   return req.body
 }
 
-module.exports = { FRACAO_FECHA_ANTES, r2, paraMs, mercadoAberto, patrimonio, aplicarOperacao, ErroDoJogo, usuarioDoToken, lerCorpo }
+module.exports = { FRACAO_FECHA_ANTES, DONO_DO_JOGO, r2, paraMs, mercadoAberto, patrimonio, aplicarOperacao, ErroDoJogo, usuarioDoToken, lerCorpo }

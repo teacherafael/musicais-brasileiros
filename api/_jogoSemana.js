@@ -3,7 +3,7 @@
 // "Eu Quero Ser Produtor". Funções puras: recebem dados, devolvem dados.
 // Quem lê e grava no Firestore é o api/jogo-atualizar.js.
 
-const { r2, paraMs, patrimonio } = require("./_jogo")
+const { r2, paraMs, patrimonio, DONO_DO_JOGO } = require("./_jogo")
 
 const FRACAO_PLANTAO = 72 / 168
 
@@ -211,4 +211,34 @@ function aplicarResultadoNaCarteira(c, resultado, s) {
   }
 }
 
-module.exports = { FRACAO_PLANTAO, proximaAcao, manchetesDoPlantao, montarResultado, aplicarResultadoNaCarteira, avaliarDesafio }
+// Ranking da temporada: todas as carteiras (já com o resultado da semana),
+// sem o dono do jogo, ordenadas por patrimônio. Desempate: quem fez a
+// primeira operação antes fica na frente.
+// Em temporada de teste o dono entra, para dar para testar o ranking sozinho.
+function montarRanking(carteiras, semana, saldoInicial, incluirDono = false) {
+  const lista = carteiras
+    .filter((c) => c.uid && (incluirDono || c.uid !== DONO_DO_JOGO))
+    .map((c) => {
+      const pat = c.fotoSemana?.patrimonio ?? c.saldo
+      const anterior = c.patrimonioAnterior ?? saldoInicial
+      const selos = { ouro: 0, prata: 0, bronze: 0 }
+      ;(c.selos || []).forEach((s) => { if (selos[s.nivel] != null) selos[s.nivel]++ })
+      return {
+        uid: c.uid,
+        nome: c.nome || "Produtor anônimo",
+        foto: c.foto || "",
+        patrimonio: r2(pat),
+        lucro: saldoInicial ? pat / saldoInicial - 1 : 0,
+        variacaoSemana: anterior ? pat / anterior - 1 : 0,
+        selos,
+        desempate: paraMs(c.primeiraOperacaoEm) || Number.MAX_SAFE_INTEGER,
+      }
+    })
+    .sort((a, b) => b.patrimonio - a.patrimonio || a.desempate - b.desempate)
+    // eslint-disable-next-line no-unused-vars
+    .map(({ desempate, ...item }, i) => ({ posicao: i + 1, ...item }))
+  return { semana, total: lista.length, jogadores: lista }
+}
+
+module.exports = {
+  montarRanking, FRACAO_PLANTAO, proximaAcao, manchetesDoPlantao, montarResultado, aplicarResultadoNaCarteira, avaliarDesafio }

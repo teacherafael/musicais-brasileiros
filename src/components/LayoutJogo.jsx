@@ -174,6 +174,7 @@ export default function LayoutJogo({ t, aba, sufixo = "", children }) {
           <nav className="jogo-menu" aria-label="Menu do jogo">
             <Link to={`/produtor${sufixo}`} className={aba === "cartaz" ? "ativo" : ""}>Cartaz</Link>
             <Link to={`/produtor/carteira${sufixo}`} className={aba === "carteira" ? "ativo" : ""}>Minha carteira</Link>
+            <Link to={`/produtor/ranking${sufixo}`} className={aba === "ranking" ? "ativo" : ""}>Ranking</Link>
           </nav>
         )}
         <div className="jogo-conteudo">

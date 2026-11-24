@@ -34,7 +34,11 @@ module.exports = async (req, res) => {
 
   try {
     const resultado = await banco.runTransaction(async (tx) => {
-      const [snapT, snapC] = await Promise.all([tx.get(refTemporada), tx.get(refCarteira)])
+      const [snapT, snapC, snapU] = await Promise.all([
+        tx.get(refTemporada),
+        tx.get(refCarteira),
+        tx.get(banco.collection("usuarios").doc(usuario.uid)),
+      ])
       if (!snapT.exists) throw new ErroDoJogo("Temporada não encontrada.")
 
       const r = aplicarOperacao({
@@ -51,8 +55,9 @@ module.exports = async (req, res) => {
         ...c,
         temporadaId,
         uid: usuario.uid,
-        nome: usuario.name || c.nome || "Produtor anônimo",
-        foto: usuario.picture || c.foto || "",
+        // Nome e foto do perfil do MCDb (o que a pessoa já escolheu mostrar no site)
+        nome: (snapU.exists && snapU.data().nome) || usuario.name || c.nome || "Produtor anônimo",
+        foto: (snapU.exists && (snapU.data().fotoCustom || snapU.data().foto)) || usuario.picture || c.foto || "",
         primeiraOperacaoEm: c.primeiraOperacaoEm || agora,
         atualizadaEm: agora,
       }

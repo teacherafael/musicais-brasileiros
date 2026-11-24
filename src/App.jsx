@@ -26,6 +26,7 @@ import AdminTitulos from "./pages/AdminTitulos"
 import Produtor from "./pages/Produtor"
 import ProdutorMusical from "./pages/ProdutorMusical"
 import ProdutorCarteira from "./pages/ProdutorCarteira"
+import ProdutorRanking from "./pages/ProdutorRanking"
 import "nprogress/nprogress.css"
 import { useLocation } from "react-router-dom"
 
@@ -106,6 +107,7 @@ function App() {
         <Route path="/produtor" element={<Produtor />} />
 <Route path="/produtor/musical/:id" element={<ProdutorMusical />} />
 <Route path="/produtor/carteira" element={<ProdutorCarteira />} />
+<Route path="/produtor/ranking" element={<ProdutorRanking />} />
         <Route path="/mensagens/:conversaId" element={<Conversa />} />
       </Routes>
       <VoltarAoTopo />
