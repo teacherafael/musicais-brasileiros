@@ -107,6 +107,13 @@ async function processarTemporada(banco, temporadaId) {
           })
           const uid = out.carteira.uid
           if (uid) {
+            // Aviso próprio para cada musical que fechou com ações do jogador
+            out.operacoes.filter((op) => op.tipo === "liquidacao").forEach((op) => {
+              escritor.create(
+                banco.collection("notificacoes").doc(uid).collection("itens").doc(),
+                notificacao(`${op.titulo} fechou. Suas ${op.quantidade} ações foram vendidas por ${bravos(op.preco)} cada (total ${bravos(op.total)} Bravos).`, link)
+              )
+            })
             const texto = resultado.final
               ? `A temporada do Eu Quero Ser Produtor terminou! Seu patrimônio final: ${bravos(out.patrimonio)} Bravos.`
               : `Saiu o resultado da semana ${s} no Eu Quero Ser Produtor! Seu patrimônio: ${bravos(out.patrimonio)} Bravos (${pct(out.variacaoSemana)}).`

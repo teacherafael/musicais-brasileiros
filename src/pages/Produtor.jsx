@@ -6,12 +6,11 @@
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import LayoutJogo from "../components/LayoutJogo"
+import ManchetesJogo from "../components/ManchetesJogo"
 import {
   carregarTemporada, variacaoDaSemana, bravos, pct, corVariacao,
-  textoMeta, nomeDaFonte, cartao, tituloCartao, cinza, miniatura, estiloPoster, TEMA,
+  textoMeta, cartao, tituloCartao, cinza, miniatura, estiloPoster, TEMA,
 } from "../jogo/publico"
-
-const ORDEM_DIA = { segunda: 0, quinta: 1 }
 
 export default function Produtor() {
   const [params] = useSearchParams()
@@ -41,9 +40,6 @@ export default function Produtor() {
     )
   }
 
-  const manchetes = [...(t.manchetes || [])].sort(
-    (a, b) => b.semana - a.semana || (ORDEM_DIA[b.dia] ?? 0) - (ORDEM_DIA[a.dia] ?? 0)
-  )
   const desafio = t.desafioAtual
   const bonus = t.regras?.bonusDesafio || {}
 
@@ -112,24 +108,7 @@ export default function Produtor() {
       </div>
 
       {/* Manchetes */}
-      <div style={cartao}>
-        <h2 style={tituloCartao}>Manchetes</h2>
-        {manchetes.length === 0 ? (
-          <p style={cinza}>As primeiras manchetes saem na quinta antes da estreia. Fique de olho: nem toda fonte fala a verdade.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {manchetes.map((n, i) => (
-              <div key={i} style={{ padding: "12px 0", borderBottom: i < manchetes.length - 1 ? `1px solid ${TEMA.borda}` : "none" }}>
-                <p style={{ fontSize: "12px", color: TEMA.textoFraco, margin: "0 0 4px" }}>
-                  {n.dia === "quinta" && <strong style={{ color: TEMA.queda }}>PLANTÃO · </strong>}
-                  {nomeDaFonte(t, n.fonte)} · {n.semana === 0 ? "antes da estreia" : `semana ${n.semana}, ${n.dia}`}
-                </p>
-                <p style={{ fontSize: "15px", margin: 0, lineHeight: 1.4, color: TEMA.texto }}>{n.texto}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ManchetesJogo t={t} />
     </LayoutJogo>
   )
 }

@@ -13,6 +13,14 @@ const celula = { padding: "8px", borderBottom: `1px solid ${TEMA.borda}`, textAl
 const celulaEsq = { ...celula, textAlign: "left", whiteSpace: "normal" }
 const cabecalho = { color: TEMA.textoFraco, fontWeight: 600 }
 
+// Como cada tipo de operação aparece no histórico
+const TIPO_OPERACAO = {
+  compra: { nome: "Compra", cor: TEMA.ouro },
+  venda: { nome: "Venda", cor: TEMA.alta },
+  liquidacao: { nome: "Liquidação", cor: "#ff9b6a", nota: "O musical fechou: as ações foram vendidas automaticamente por 30% do último preço, sem taxa." },
+  encerramento: { nome: "Fim da temporada", cor: "#b9a7ff", nota: "A temporada terminou: as ações foram vendidas automaticamente pelo preço final, sem taxa." },
+}
+
 const dataCurta = (d) =>
   d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
 
@@ -129,8 +137,11 @@ function ConteudoCarteira({ t, sufixo }) {
                   <tr key={op.id}>
                     <td style={{ ...celulaEsq, whiteSpace: "nowrap", color: TEMA.textoFraco }}>{op.criadaEm ? dataCurta(paraData(op.criadaEm)) : ""}</td>
                     <td style={celulaEsq}>
-                      <strong style={{ color: op.tipo === "compra" ? TEMA.ouro : TEMA.alta }}>{op.tipo === "compra" ? "Compra" : "Venda"}</strong>
+                      <strong style={{ color: (TIPO_OPERACAO[op.tipo] || TIPO_OPERACAO.venda).cor }}>{(TIPO_OPERACAO[op.tipo] || TIPO_OPERACAO.venda).nome}</strong>
                       {" "}de {op.quantidade} · {op.titulo}
+                      {TIPO_OPERACAO[op.tipo]?.nota && (
+                        <div style={{ fontSize: "12px", color: TEMA.textoFraco, marginTop: "2px" }}>{TIPO_OPERACAO[op.tipo].nota}</div>
+                      )}
                     </td>
                     <td style={celula}>{bravos(op.preco)}</td>
                     <td style={celula}>{bravos(op.taxa)}</td>
