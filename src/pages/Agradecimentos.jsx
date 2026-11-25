@@ -5,6 +5,7 @@ const PESSOAS = [
   "Julio Cesar Figueiredo Jr.",
   "Karina Okamoto",
   "Luan Andrade",
+"Leonardo Braga",
   "Pedro Blois",
   "Pedro Costa",
   "Rafael Oliveira",
