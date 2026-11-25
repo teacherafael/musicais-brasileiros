@@ -14,6 +14,7 @@ import Comunidade from "./pages/Comunidade"
 import Museu from "./pages/Museu"
 import Termos from "./pages/Termos"
 import Privacidade from "./pages/Privacidade"
+import Agradecimentos from "./pages/Agradecimentos"
 import FAQ from "./pages/FAQ"
 import Sobre from "./pages/Sobre"
 import Pessoa from "./pages/Pessoa"
@@ -97,7 +98,8 @@ function App() {
         <Route path="/comunidade" element={<Comunidade />} />
         <Route path="/museu" element={<Museu />} />
         <Route path="/termos" element={<Termos />} />
-        <Route path="/privacidade" element={<Privacidade />} />
+<Route path="/privacidade" element={<Privacidade />} />
+<Route path="/agradecimentos" element={<Agradecimentos />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/sobre" element={<Sobre />} />
         <Route path="*" element={<NotFound />} />
