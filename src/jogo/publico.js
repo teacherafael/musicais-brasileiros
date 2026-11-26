@@ -4,7 +4,7 @@
 
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"
 import { db } from "../firebase"
-import { FRACAO_FECHA_ANTES, FRACAO_PLANTAO } from "./motor"
+import { agendaDaTemporada } from "./motor"
 
 // ─────────────────────────────────────────────────────────────
 // Carregar a temporada
@@ -41,14 +41,12 @@ async function buscarTemporada(idPedido) {
 // Mesmo critério do servidor (api/_jogoSemana.js, proximaAcao)
 export function precisaAtualizar(t, agora = new Date()) {
   if (!t || t.estado?.encerrada) return false
-  const t0 = paraData(t.aberturaMercado).getTime()
-  const H = t.horasPorSemana * 3600 * 1000
   const w = t.estado?.semanaAtual || 0
+  if (w >= t.semanas) return false
+  const rd = agendaDaTemporada(t)[w]
   const plantaoFeito = t.estado?.plantaoLiberado ?? -1
   const ms = agora.getTime()
-  if (w < t.semanas && plantaoFeito < w && ms >= t0 + w * H + H * FRACAO_PLANTAO) return true
-  if (w < t.semanas && ms >= t0 + (w + 1) * H) return true
-  return false
+  return (plantaoFeito < w && ms >= rd.plantao) || ms >= rd.resultado
 }
 
 // Timestamp do Firestore, Date ou texto -> Date
@@ -64,11 +62,12 @@ export function paraData(x) {
 // O relógio só serve para a contagem regressiva; quem libera resultado é o servidor.
 // ─────────────────────────────────────────────────────────────
 export function momentoDoMercado(t, agora = new Date()) {
-  const t0 = paraData(t.aberturaMercado).getTime()
-  const H = t.horasPorSemana * 3600 * 1000
   const w = t.estado?.semanaAtual || 0
-  const fecha = t0 + (w + 1) * H - H * FRACAO_FECHA_ANTES
-  const resultado = t0 + (w + 1) * H
+  const rodadas = agendaDaTemporada(t)
+  const rd = rodadas[Math.min(w, rodadas.length - 1)]
+  const t0 = rodadas[0].abre
+  const fecha = rd.fecha
+  const resultado = rd.resultado
   const ultimaSemana = w + 1 === t.semanas
 
   if (t.estado?.encerrada) {
@@ -78,7 +77,7 @@ export function momentoDoMercado(t, agora = new Date()) {
     return { fase: "antes", texto: "O mercado abre em", alvo: new Date(t0) }
   }
   if (agora.getTime() < fecha) {
-    // Mostra 1 minuto antes do fechamento real (domingo 23:59 em vez de segunda 00:00)
+    // Mostra 1 minuto antes do fechamento real (23:59 em vez de 00:00)
     return { fase: "aberto", texto: "Mercado aberto. Fecha em", alvo: new Date(fecha), fechaVisivel: new Date(fecha - 60000) }
   }
   if (agora.getTime() < resultado) {

@@ -1,6 +1,6 @@
 // src/pages/ProdutorRanking.jsx
 // Ranking da temporada do jogo "Eu Quero Ser Produtor".
-// O servidor monta o ranking a cada resultado de segunda (jogoRanking/{temporada}),
+// O servidor monta o ranking a cada resultado (jogoRanking/{temporada}),
 // então a página custa 1 leitura a mais que o cartaz.
 
 import { useEffect, useState } from "react"
@@ -76,7 +76,7 @@ function ConteudoRanking({ t }) {
     return (
       <div style={cartao}>
         <h2 style={tituloCartao}>Ranking</h2>
-        <p style={cinza}>O ranking sai junto com o primeiro resultado de segunda. Invista antes disso para aparecer nele.</p>
+        <p style={cinza}>O ranking sai junto com o primeiro resultado. Invista antes disso para aparecer nele.</p>
       </div>
     )
   }
@@ -114,7 +114,7 @@ function ConteudoRanking({ t }) {
           </>
         )}
         <p style={{ ...cinza, fontSize: "12px", marginTop: "12px" }}>
-          Atualizado a cada resultado de segunda. Quem começou a investir depois do último resultado aparece no próximo.
+          Atualizado a cada resultado. Quem começou a investir depois do último resultado aparece no próximo.
         </p>
       </div>
     </>

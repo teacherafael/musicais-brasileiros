@@ -3,24 +3,20 @@
 // "Eu Quero Ser Produtor". Funções puras: recebem dados, devolvem dados.
 // Quem lê e grava no Firestore é o api/jogo-atualizar.js.
 
-const { r2, paraMs, patrimonio, DONO_DO_JOGO } = require("./_jogo")
+const { r2, paraMs, patrimonio, DONO_DO_JOGO, agendaDaTemporada } = require("./_jogo")
 
 const FRACAO_PLANTAO = 72 / 168
 
 // O que está pendente agora nesta temporada, na ordem certa.
-// Plantão da semana w (quinta) vem antes do resultado da semana w+1 (segunda).
+// O plantão da rodada w vem antes do resultado da rodada w+1.
 function proximaAcao(t, agoraMs = Date.now()) {
   if (t.estado?.encerrada) return null
-  const t0 = paraMs(t.aberturaMercado)
-  const H = t.horasPorSemana * 3600 * 1000
   const w = t.estado?.semanaAtual || 0
+  if (w >= t.semanas) return null
+  const rd = agendaDaTemporada(t)[w]
   const plantaoFeito = t.estado?.plantaoLiberado ?? -1
-  if (w < t.semanas && plantaoFeito < w && agoraMs >= t0 + w * H + H * FRACAO_PLANTAO) {
-    return { tipo: "plantao", semana: w }
-  }
-  if (w < t.semanas && agoraMs >= t0 + (w + 1) * H) {
-    return { tipo: "resultado", semana: w + 1 }
-  }
+  if (plantaoFeito < w && agoraMs >= rd.plantao) return { tipo: "plantao", semana: w }
+  if (agoraMs >= rd.resultado) return { tipo: "resultado", semana: w + 1 }
   return null
 }
 

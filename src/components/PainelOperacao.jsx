@@ -13,7 +13,7 @@ import { momentoDoMercado, bravos, cartao, tituloCartao, cinza, rotulo, botaoOur
 
 const FECHADO = {
   antes: "O mercado ainda não abriu. As operações começam na abertura da temporada.",
-  fechado: "O mercado está fechado até o resultado de segunda. Dá para operar de novo assim que ele sair.",
+  fechado: "O mercado está fechado até o próximo resultado. Dá para operar de novo assim que ele sair.",
   aguardando: "O resultado da semana está saindo. Atualize a página em instantes.",
   encerrada: "A temporada terminou.",
 }

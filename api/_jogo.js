@@ -18,18 +18,58 @@ function paraMs(x) {
   return new Date(x).getTime()
 }
 
+// ─────────────────────────────────────────────────────────────
+// Agenda das rodadas ("semanas" do jogo)
+// ritmo "semanal" (padrão): uma rodada a cada horasPorSemana horas
+//   (168 = semana real; valores pequenos = teste acelerado).
+// ritmo "segunda-quinta": duas rodadas por semana real, resultados
+//   segunda e quinta às 10h. Plantão: terça 20h (rodada seg→qui) e
+//   sábado 12h (rodada qui→seg). Mercado fecha 10h antes do resultado
+//   (quarta e domingo 23h59). escalaTempo encolhe tudo para teste
+//   (ex.: 0.0015 = rodadas de 6 a 9 minutos).
+// ESPELHO de src/jogo/motor.js (agendaDaTemporada). Mudou lá, mude aqui.
+// ─────────────────────────────────────────────────────────────
+const HORA_MS = 3600 * 1000
+
+function cicloDoRitmo(t, t0) {
+  if (t.ritmo === "segunda-quinta") {
+    const segQui = { duracao: 72, plantao: 34, fechaAntes: 10 } // seg 10h -> qui 10h; plantão ter 20h
+    const quiSeg = { duracao: 96, plantao: 50, fechaAntes: 10 } // qui 10h -> seg 10h; plantão sáb 12h
+    const diaEmSP = new Date(t0 - 3 * HORA_MS).getUTCDay() // 4 = quinta
+    return diaEmSP === 4 ? [quiSeg, segQui] : [segQui, quiSeg]
+  }
+  const H = t.horasPorSemana
+  return [{ duracao: H, plantao: (H * 72) / 168, fechaAntes: (H * 10) / 168 }]
+}
+
+function agendaDaTemporadaBase(t, t0) {
+  const escala = t.ritmo === "segunda-quinta" ? t.escalaTempo || 1 : 1
+  const ciclo = cicloDoRitmo(t, t0)
+  const rodadas = []
+  let inicio = t0
+  for (let w = 0; w < t.semanas; w++) {
+    const c = ciclo[w % ciclo.length]
+    const fim = inicio + c.duracao * escala * HORA_MS
+    rodadas.push({ abre: inicio, plantao: inicio + c.plantao * escala * HORA_MS, fecha: fim - c.fechaAntes * escala * HORA_MS, resultado: fim })
+    inicio = fim
+  }
+  return rodadas
+}
+
+function agendaDaTemporada(t) {
+  return agendaDaTemporadaBase(t, paraMs(t.aberturaMercado))
+}
+
 // O mercado está aberto entre a liberação da semana atual e o fechamento
-// (domingo 23:59 na temporada real). Antes da estreia, depois do fechamento
+// (10h antes do resultado). Antes da estreia, depois do fechamento
 // ou com a temporada encerrada, está fechado.
 function mercadoAberto(t, agoraMs = Date.now()) {
   if (t.estado?.encerrada) return { aberto: false, motivo: "A temporada já terminou." }
-  const t0 = paraMs(t.aberturaMercado)
-  const H = t.horasPorSemana * 3600 * 1000
   const w = t.estado?.semanaAtual || 0
-  const abre = t0 + w * H
-  const fecha = t0 + (w + 1) * H - H * FRACAO_FECHA_ANTES
+  if (w >= t.semanas) return { aberto: false, motivo: "A temporada já terminou." }
+  const { abre, fecha } = agendaDaTemporada(t)[w]
   if (agoraMs < abre) return { aberto: false, motivo: "O mercado ainda não abriu." }
-  if (agoraMs >= fecha) return { aberto: false, motivo: "O mercado está fechado até o resultado de segunda." }
+  if (agoraMs >= fecha) return { aberto: false, motivo: "O mercado está fechado até o próximo resultado." }
   return { aberto: true, semana: w }
 }
 
@@ -122,4 +162,4 @@ function lerCorpo(req) {
   return req.body
 }
 
-module.exports = { FRACAO_FECHA_ANTES, DONO_DO_JOGO, r2, paraMs, mercadoAberto, patrimonio, aplicarOperacao, ErroDoJogo, usuarioDoToken, lerCorpo }
+module.exports = { FRACAO_FECHA_ANTES, DONO_DO_JOGO, agendaDaTemporada, r2, paraMs, mercadoAberto, patrimonio, aplicarOperacao, ErroDoJogo, usuarioDoToken, lerCorpo }

@@ -1,7 +1,7 @@
 // src/components/ManchetesJogo.jsx
 // Manchetes do jogo "Eu Quero Ser Produtor", como uma banca de jornal:
 // cada tipo de fonte tem um visual bem diferente (jornal, coluna de fofoca,
-// influencer), o plantão de quinta aparece como notícia urgente, e só a
+// influencer), o plantão aparece como notícia urgente, e só a
 // semana mais recente fica aberta. As anteriores ficam recolhidas.
 
 import { useEffect, useState } from "react"
@@ -28,7 +28,8 @@ function estiloDaFonte(fonte) {
   return "geral"
 }
 
-const quando = (n) => (n.semana === 0 ? "antes da estreia" : `semana ${n.semana}, ${n.dia}`)
+// No roteiro, "segunda" = manchete que sai com o resultado; "quinta" = manchete do plantão
+const quando = (n) => (n.semana === 0 ? "antes da estreia" : `semana ${n.semana} · ${n.dia === "quinta" ? "plantão" : "resultado"}`)
 
 const arroba = (nome) =>
   "@" + (nome || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]/g, "")
@@ -122,7 +123,7 @@ export default function ManchetesJogo({ t }) {
     return (
       <div style={cartao}>
         <h2 style={tituloCartao}>Manchetes</h2>
-        <p style={cinza}>As primeiras manchetes saem na quinta antes da estreia. Fique de olho: nem toda fonte fala a verdade.</p>
+        <p style={cinza}>As primeiras manchetes saem no plantão antes da estreia. Fique de olho: nem toda fonte fala a verdade.</p>
       </div>
     )
   }

@@ -10,6 +10,52 @@ export const FRACAO_PLANTAO = 72 / 168
 // Fração da semana antes do resultado em que o mercado fecha (domingo 24h -> segunda 10h = 10h de 168h)
 export const FRACAO_FECHA_ANTES = 10 / 168
 
+// ─────────────────────────────────────────────────────────────
+// Agenda das rodadas ("semanas" do jogo)
+// ritmo "semanal" (padrão): uma rodada a cada horasPorSemana horas
+//   (168 = semana real; valores pequenos = teste acelerado).
+// ritmo "segunda-quinta": duas rodadas por semana real, resultados
+//   segunda e quinta às 10h. Plantão: terça 20h (rodada seg→qui) e
+//   sábado 12h (rodada qui→seg). Mercado fecha 10h antes do resultado
+//   (quarta e domingo 23h59). escalaTempo encolhe tudo para teste
+//   (ex.: 0.0015 = rodadas de 6 a 9 minutos).
+// ESPELHADA em api/_jogo.js (agendaDaTemporada). Mudou aqui, mude lá.
+// ─────────────────────────────────────────────────────────────
+const HORA_MS = 3600 * 1000
+
+function cicloDoRitmo(t, t0) {
+  if (t.ritmo === "segunda-quinta") {
+    const segQui = { duracao: 72, plantao: 34, fechaAntes: 10 } // seg 10h -> qui 10h; plantão ter 20h
+    const quiSeg = { duracao: 96, plantao: 50, fechaAntes: 10 } // qui 10h -> seg 10h; plantão sáb 12h
+    const diaEmSP = new Date(t0 - 3 * HORA_MS).getUTCDay() // 4 = quinta
+    return diaEmSP === 4 ? [quiSeg, segQui] : [segQui, quiSeg]
+  }
+  const H = t.horasPorSemana
+  return [{ duracao: H, plantao: (H * 72) / 168, fechaAntes: (H * 10) / 168 }]
+}
+
+function agendaDaTemporadaBase(t, t0) {
+  const escala = t.ritmo === "segunda-quinta" ? t.escalaTempo || 1 : 1
+  const ciclo = cicloDoRitmo(t, t0)
+  const rodadas = []
+  let inicio = t0
+  for (let w = 0; w < t.semanas; w++) {
+    const c = ciclo[w % ciclo.length]
+    const fim = inicio + c.duracao * escala * HORA_MS
+    rodadas.push({ abre: inicio, plantao: inicio + c.plantao * escala * HORA_MS, fecha: fim - c.fechaAntes * escala * HORA_MS, resultado: fim })
+    inicio = fim
+  }
+  return rodadas
+}
+
+export function agendaDaTemporada(t) {
+  const t0 = typeof t.aberturaMercado === "string" ? Date.parse(t.aberturaMercado)
+    : t.aberturaMercado?.toMillis ? t.aberturaMercado.toMillis()
+    : t.aberturaMercado?.getTime ? t.aberturaMercado.getTime()
+    : Date.parse(t.aberturaMercado)
+  return agendaDaTemporadaBase(t, t0)
+}
+
 export const TIPOS_DESAFIO = {
   "primeira-carteira": "Ter ações de pelo menos N musicais e terminar a semana com lucro (metas em % de lucro da carteira)",
   "bata-o-mercado": "Ter ações de pelo menos N musicais e render mais que a média dos musicais (metas em pontos acima da média)",
@@ -40,10 +86,24 @@ export function validarRoteiro(r) {
   if (!r.nome) e('Falta "nome" da temporada.')
   const S = r.semanas
   if (!Number.isInteger(S) || S < 1 || S > 20) e('"semanas" precisa ser um número inteiro entre 1 e 20.')
-  if (!(r.horasPorSemana > 0)) e('"horasPorSemana" precisa ser maior que zero (168 = semana real, 24 = teste acelerado).')
+  const ritmo = r.ritmo || "semanal"
+  if (!["semanal", "segunda-quinta"].includes(ritmo)) e('"ritmo" precisa ser "semanal" ou "segunda-quinta".')
   if (isNaN(Date.parse(r.aberturaMercado))) e('"aberturaMercado" não é uma data válida. Exemplo: "2026-12-07T10:00:00-03:00".')
   if (typeof r.modoTeste !== "boolean") e('"modoTeste" precisa ser true ou false.')
-  if (r.modoTeste === false && r.horasPorSemana !== 168) a('Temporada real (modoTeste false) com "horasPorSemana" diferente de 168.')
+  if (ritmo === "semanal") {
+    if (!(r.horasPorSemana > 0)) e('"horasPorSemana" precisa ser maior que zero (168 = semana real, 0.1 = teste acelerado).')
+    if (r.modoTeste === false && r.horasPorSemana !== 168) a('Temporada real (modoTeste false) com "horasPorSemana" diferente de 168.')
+  } else {
+    if (r.escalaTempo != null && !(r.escalaTempo > 0 && r.escalaTempo <= 1)) e('"escalaTempo" precisa ser um número entre 0 e 1 (1 = tempo real; 0.0015 = teste acelerado).')
+    if (r.modoTeste === false && r.escalaTempo != null && r.escalaTempo !== 1) e('Temporada real não pode ter "escalaTempo" diferente de 1.')
+    if (r.modoTeste === false && !isNaN(Date.parse(r.aberturaMercado))) {
+      const sp = new Date(Date.parse(r.aberturaMercado) - 3 * 3600 * 1000)
+      const dia = sp.getUTCDay()
+      if (!((dia === 1 || dia === 4) && sp.getUTCHours() === 10 && sp.getUTCMinutes() === 0)) {
+        e('Com "ritmo": "segunda-quinta", a abertura precisa ser numa segunda ou quinta às 10h00 (horário de Brasília).')
+      }
+    }
+  }
   if (r.modoTeste === true && !/teste/.test(r.id || "")) a('Temporada de teste sem "teste" no id. Recomendado, para não confundir com a real.')
 
   const g = r.regras || {}
@@ -226,14 +286,13 @@ export function conferirFontes(r) {
 }
 
 export function calendario(r) {
-  const t0 = Date.parse(r.aberturaMercado)
-  const H = r.horasPorSemana * 3600 * 1000
-  const eventos = [{ quando: new Date(t0), texto: "Mercado abre (antes da estreia)" }]
-  for (let w = 0; w < r.semanas; w++) {
-    eventos.push({ quando: new Date(t0 + w * H + H * FRACAO_PLANTAO), texto: w === 0 ? "Plantão antes da estreia" : `Plantão da semana ${w}` })
-    eventos.push({ quando: new Date(t0 + (w + 1) * H - H * FRACAO_FECHA_ANTES), texto: "Mercado fecha" })
-    eventos.push({ quando: new Date(t0 + (w + 1) * H), texto: w + 1 === r.semanas ? `Resultado da semana ${w + 1} e fim da temporada` : `Resultado da semana ${w + 1}` })
-  }
+  const rodadas = agendaDaTemporada(r)
+  const eventos = [{ quando: new Date(rodadas[0]?.abre ?? Date.parse(r.aberturaMercado)), texto: "Mercado abre (antes da estreia)" }]
+  rodadas.forEach((rd, w) => {
+    eventos.push({ quando: new Date(rd.plantao), texto: w === 0 ? "Plantão antes da estreia" : `Plantão da semana ${w}` })
+    eventos.push({ quando: new Date(rd.fecha), texto: "Mercado fecha" })
+    eventos.push({ quando: new Date(rd.resultado), texto: w + 1 === r.semanas ? `Resultado da semana ${w + 1} e fim da temporada` : `Resultado da semana ${w + 1}` })
+  })
   return eventos.sort((x, y) => x.quando - y.quando)
 }
 
@@ -249,7 +308,9 @@ export function montarPublico(r) {
     temporadaId: r.id,
     nome: r.nome,
     modoTeste: r.modoTeste,
-    horasPorSemana: r.horasPorSemana,
+    horasPorSemana: r.horasPorSemana ?? null,
+    ritmo: r.ritmo || "semanal",
+    escalaTempo: r.escalaTempo ?? 1,
     semanas: r.semanas,
     aberturaMercado: new Date(Date.parse(r.aberturaMercado)),
     regras: {
